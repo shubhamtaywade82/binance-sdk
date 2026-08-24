@@ -17,6 +17,40 @@ describe('HttpClient', () => {
     await expect(client.get<{ ok: boolean }>('/ping')).resolves.toEqual({ ok: true });
   });
 
+  it('syncs server time and applies the offset to signed timestamps', async () => {
+    const serverTime = Date.now() + 5000;
+    server.use(http.get('https://api.example.com/time', () => HttpResponse.json({ serverTime })));
+
+    let capturedUrl = '';
+    server.use(
+      http.get('https://api.example.com/account', ({ request }) => {
+        capturedUrl = request.url;
+        return HttpResponse.json({ ok: true });
+      }),
+    );
+
+    const client = new HttpClient({ baseURL: 'https://api.example.com', apiKey: 'k', apiSecret: 's' });
+    const offset = await client.syncTime('/time');
+    expect(offset).toBeGreaterThan(4000);
+    expect(client.getTimeOffsetMs()).toBe(offset);
+
+    await client.get('/account', undefined, 'signed');
+    const timestamp = Number(new URL(capturedUrl).searchParams.get('timestamp'));
+    expect(timestamp).toBeGreaterThanOrEqual(serverTime - 1000);
+  });
+
+  it('exposes rate-limit usage parsed from response headers', async () => {
+    server.use(
+      http.get('https://api.example.com/weighted', () =>
+        HttpResponse.json({ ok: true }, { headers: { 'X-MBX-USED-WEIGHT-1M': '42' } }),
+      ),
+    );
+
+    const client = new HttpClient({ baseURL: 'https://api.example.com' });
+    await client.get('/weighted');
+    expect(client.getRateLimitUsage().usedWeightByInterval['1m']).toBe(42);
+  });
+
   it('serializes array params as repeated query keys', async () => {
     let capturedUrl = '';
     server.use(
@@ -40,6 +74,17 @@ describe('HttpClient', () => {
 
     const client = new HttpClient({ baseURL: 'https://api.example.com' });
     await expect(client.get('/bad')).rejects.toThrow(BinanceApiError);
+
+    try {
+      await client.get('/bad');
+      expect.unreachable();
+    } catch (err) {
+      expect(err).toBeInstanceOf(BinanceApiError);
+      const apiErr = err as BinanceApiError;
+      expect(apiErr.endpoint).toBe('/bad');
+      expect(apiErr.method).toBe('GET');
+      expect(apiErr.isInsufficientBalance()).toBe(false);
+    }
   });
 
   it('retries on 429 honoring Retry-After, then resolves', async () => {
@@ -78,5 +123,15 @@ describe('HttpClient', () => {
       minTimeMs: 0,
     });
     await expect(client.get('/always-limited')).rejects.toThrow(RateLimitError);
+
+    try {
+      await client.get('/always-limited');
+      expect.unreachable();
+    } catch (err) {
+      expect(err).toBeInstanceOf(RateLimitError);
+      const rateLimitErr = err as RateLimitError;
+      expect(rateLimitErr.retryAfterMs).toBe(0);
+      expect(rateLimitErr.isRateLimitError()).toBe(true);
+    }
   });
 });

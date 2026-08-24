@@ -96,6 +96,20 @@ describe('BinanceClient', () => {
     client.spot.ws.close();
   });
 
+  it('syncs server time across all REST hosts via syncTime()', async () => {
+    const serverTime = Date.now() + 3000;
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/time', () => HttpResponse.json({ serverTime })),
+      http.get('https://dapi.binance.com/dapi/v1/time', () => HttpResponse.json({ serverTime })),
+      http.get('https://api.binance.com/api/v3/time', () => HttpResponse.json({ serverTime })),
+    );
+
+    const client = new BinanceClient();
+    await expect(client.syncTime()).resolves.toBeUndefined();
+    client.futures.ws.close();
+    client.spot.ws.close();
+  });
+
   it('resolves COIN-M host to testnet.binancefuture.com when testnet is enabled', async () => {
     server.use(
       http.get('https://testnet.binancefuture.com/dapi/v1/balance', () => HttpResponse.json([])),

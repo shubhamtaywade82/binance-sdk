@@ -3,9 +3,13 @@ export const VERSION = '2.1.0';
 export { BinanceClient } from './client/BinanceClient.js';
 export type { BinanceClientOptions } from './client/BinanceClient.js';
 export { HttpClient } from './client/HttpClient.js';
-export type { HttpClientOptions, AuthMode, HttpMethod } from './client/HttpClient.js';
+export type { HttpClientOptions, AuthMode, HttpMethod, SignatureAlgorithm } from './client/HttpClient.js';
 export { resolveEnvironment } from './client/endpoints.js';
 export type { Environment, Endpoints } from './client/endpoints.js';
+export { Signer } from './client/Signer.js';
+export type { SignerOptions } from './client/Signer.js';
+export { RateLimitTracker } from './client/RateLimitTracker.js';
+export type { RateLimitUsage, RateLimitTrackerOptions } from './client/RateLimitTracker.js';
 
 export { MarketDataBase } from './resources/MarketDataBase.js';
 export { SpotMarket } from './resources/SpotMarket.js';

@@ -1,4 +1,5 @@
-import { HttpClient } from './HttpClient.js';
+import type { AxiosRequestConfig } from 'axios';
+import { HttpClient, type SignatureAlgorithm } from './HttpClient.js';
 import { resolveEnvironment } from './endpoints.js';
 import { FuturesData } from '../resources/FuturesData.js';
 import { FuturesMarket } from '../resources/FuturesMarket.js';
@@ -24,6 +25,10 @@ import { WsApi } from '../ws/WsApi.js';
 export interface BinanceClientOptions {
   apiKey?: string;
   apiSecret?: string;
+  /** PEM-encoded Ed25519 or RSA private key. When set, requests are signed with it instead of HMAC. */
+  privateKey?: string | Buffer;
+  /** Defaults to 'ED25519' when privateKey is set, otherwise 'HMAC'. */
+  signatureAlgorithm?: SignatureAlgorithm;
   testnet?: boolean;
   demo?: boolean;
   recvWindow?: number;
@@ -34,10 +39,20 @@ export interface BinanceClientOptions {
   dapiBase?: string;
   timeoutMs?: number;
   maxRetries?: number;
+  /** @deprecated unused; superseded by header-based tracking (rateLimitWeightPerMinute/rateLimitSafetyMargin). */
   rateLimitTokensPerSecond?: number;
+  /** @deprecated unused; superseded by header-based tracking (rateLimitWeightPerMinute/rateLimitSafetyMargin). */
   rateLimitMaxTokens?: number;
+  /** Assumed per-minute IP weight ceiling used to preempt -1003 bans. Binance's default is 6000 for most REST hosts. */
+  rateLimitWeightPerMinute?: number;
+  /** Fraction of rateLimitWeightPerMinute at which requests are delayed until the next minute window. Set >=1 to disable. */
+  rateLimitSafetyMargin?: number;
   retryBaseDelayMs?: number;
   retryMaxDelayMs?: number;
+  /** Custom keep-alive/https agent, e.g. for corporate proxies or connection pooling. */
+  httpsAgent?: AxiosRequestConfig['httpsAgent'];
+  /** Axios proxy configuration. */
+  proxy?: AxiosRequestConfig['proxy'];
 }
 
 export class BinanceClient {
@@ -73,6 +88,9 @@ export class BinanceClient {
   readonly subaccount: SubAccount;
 
   private readonly authHttp: HttpClient;
+  private readonly spotHttp: HttpClient;
+  private readonly dapiHttp: HttpClient;
+  private readonly sapiHttp: HttpClient;
   private listenKeyValue: string | null = null;
   private keepAliveInterval: NodeJS.Timeout | null = null;
   private spotListenKeyValue: string | null = null;
@@ -104,16 +122,23 @@ export class BinanceClient {
     const httpOptions = {
       apiKey: options.apiKey,
       apiSecret: options.apiSecret,
+      privateKey: options.privateKey,
+      signatureAlgorithm: options.signatureAlgorithm,
       recvWindow: options.recvWindow ?? 5000,
       timeoutMs: options.timeoutMs ?? 15_000,
       maxRetries: options.maxRetries ?? 3,
       retryBaseDelayMs: options.retryBaseDelayMs,
       retryMaxDelayMs: options.retryMaxDelayMs,
+      rateLimitWeightPerMinute: options.rateLimitWeightPerMinute,
+      rateLimitSafetyMargin: options.rateLimitSafetyMargin,
+      httpsAgent: options.httpsAgent,
+      proxy: options.proxy,
     };
 
     this.authHttp = new HttpClient({ baseURL: endpoints.restRoot, ...httpOptions });
 
-    const spotHttp = new HttpClient({ baseURL: endpoints.restSpot, ...httpOptions });
+    this.spotHttp = new HttpClient({ baseURL: endpoints.restSpot, ...httpOptions });
+    const spotHttp = this.spotHttp;
     this.spot = {
       market: new SpotMarket(spotHttp),
       account: new SpotAccount(spotHttp),
@@ -158,20 +183,34 @@ export class BinanceClient {
       }),
     };
 
-    const dapiHttp = new HttpClient({ baseURL: endpoints.restDapiRoot, ...httpOptions });
+    this.dapiHttp = new HttpClient({ baseURL: endpoints.restDapiRoot, ...httpOptions });
     this.coinm = {
       market: new CoinMMarket(new HttpClient({ baseURL: endpoints.restDapi, ...httpOptions })),
-      account: new CoinMAccount(dapiHttp),
-      trading: new CoinMTrading(dapiHttp),
+      account: new CoinMAccount(this.dapiHttp),
+      trading: new CoinMTrading(this.dapiHttp),
     };
 
-    const sapiHttp = new HttpClient({ baseURL: endpoints.restApiRoot, ...httpOptions });
+    this.sapiHttp = new HttpClient({ baseURL: endpoints.restApiRoot, ...httpOptions });
     this.margin = {
-      account: new MarginAccount(sapiHttp),
-      trading: new MarginTrading(sapiHttp),
+      account: new MarginAccount(this.sapiHttp),
+      trading: new MarginTrading(this.sapiHttp),
     };
-    this.wallet = new Wallet(sapiHttp);
-    this.subaccount = new SubAccount(sapiHttp);
+    this.wallet = new Wallet(this.sapiHttp);
+    this.subaccount = new SubAccount(this.sapiHttp);
+  }
+
+  /**
+   * Syncs local time against each REST host's server clock and stores the offset, applied to
+   * every subsequent signed request's `timestamp` param. Call this once after construction to
+   * mitigate `-1021` errors caused by local clock drift.
+   */
+  async syncTime(): Promise<void> {
+    await Promise.all([
+      this.authHttp.syncTime('/fapi/v1/time'),
+      this.spotHttp.syncTime('/time'),
+      this.dapiHttp.syncTime('/dapi/v1/time'),
+      this.sapiHttp.syncTime('/api/v3/time'),
+    ]);
   }
 
   async startUserStream(): Promise<string> {
