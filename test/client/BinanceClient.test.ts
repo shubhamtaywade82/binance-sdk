@@ -110,6 +110,24 @@ describe('BinanceClient', () => {
     client.spot.ws.close();
   });
 
+  it('reports per-host rate-limit usage via getRateLimitUsage()', async () => {
+    server.use(
+      http.get('https://api.binance.com/api/v3/klines', () =>
+        HttpResponse.json([], { headers: { 'X-MBX-USED-WEIGHT-1M': '7' } }),
+      ),
+    );
+
+    const client = new BinanceClient();
+    await client.spot.market.klines('BTCUSDT', '1m');
+
+    const usage = client.getRateLimitUsage();
+    expect(usage.spot.usedWeightByInterval['1m']).toBe(7);
+    expect(usage.futures.usedWeightByInterval).toEqual({});
+
+    client.futures.ws.close();
+    client.spot.ws.close();
+  });
+
   it('resolves COIN-M host to testnet.binancefuture.com when testnet is enabled', async () => {
     server.use(
       http.get('https://testnet.binancefuture.com/dapi/v1/balance', () => HttpResponse.json([])),
