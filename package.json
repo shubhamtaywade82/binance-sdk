@@ -1,7 +1,7 @@
 {
   "name": "@nemesis-oss/binance-sdk",
-  "version": "1.0.0",
-  "description": "TypeScript SDK for Binance APIs (Spot + USD-M Futures) — market data, account, trading, algo orders, user data streams, signed WS API, LLM tool layer + MCP server",
+  "version": "3.0.0",
+  "description": "TypeScript SDK for Binance APIs (Spot, USD-M Futures, COIN-M Futures, Margin, Wallet, Sub-account) — market data, account, trading, algo orders, user data streams, signed REST + WS APIs (HMAC/Ed25519/RSA), LLM tool layer + MCP server",
   "license": "MIT",
   "author": "Shubham Taywade",
   "repository": {
@@ -46,13 +46,17 @@
     "binance",
     "futures",
     "usdm",
+    "coinm",
+    "margin",
     "spot",
     "api",
     "client",
     "crypto",
     "trading",
     "websocket",
-    "typescript"
+    "typescript",
+    "mcp",
+    "llm"
   ],
   "scripts": {
     "build": "tsup",
