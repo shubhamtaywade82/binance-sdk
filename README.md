@@ -1,10 +1,13 @@
 # binance-sdk
 
-TypeScript SDK for Binance — **Spot + USD-M Futures**, REST + WebSocket, public market data
-and authenticated trading, with zod-validated typed responses.
+TypeScript SDK for Binance — **Spot, USD-M Futures, COIN-M Futures, Margin, Wallet, and
+Sub-account**, REST + WebSocket, public market data and authenticated trading, with
+zod-validated typed responses throughout.
 
 Canonical Binance client for the `trading-workspace` `sdk/` directory (mirrors `sdk/dhanhq-ts`'s
-role for DhanHQ). Feature-parity with `binance-client-js` (REST + WS), with typed schemas.
+role for DhanHQ). Feature-parity with `binance-client-js` (REST + WS), with typed schemas, plus
+production infrastructure (header-based rate-limit tracking, server time sync, HMAC/Ed25519/RSA
+signing) and client-side safety guardrails for autonomous/LLM-driven callers.
 
 ## Install
 
@@ -91,6 +94,34 @@ client.closeUserStream();
 await client.startSpotUserStream();
 client.spot.wsUser.on('executionReport', (event) => console.log(event.s));
 client.closeSpotUserStream();
+
+// COIN-M Futures (inverse contracts, margined in the base asset)
+const coinmBalance = await client.coinm.account.balance();
+await client.coinm.trading.createOrder({
+  symbol: 'BTCUSD_PERP',
+  side: 'BUY',
+  type: 'LIMIT',
+  price: 60000,
+  quantity: 1,          // contracts, not base-asset quantity
+  timeInForce: 'GTC',
+});
+client.coinm.ws.subscribe([client.coinm.ws.kline('BTCUSD_PERP', '1m')]);
+await client.startCoinMUserStream();
+
+// Margin (cross + isolated)
+const marginAccount = await client.margin.account.crossAccount();
+await client.margin.account.borrow('USDT', 100);
+await client.margin.trading.createOrder({ symbol: 'BTCUSDT', side: 'BUY', type: 'LIMIT', price: 60000, quantity: 0.001 });
+
+// Wallet
+await client.wallet.universalTransfer({ type: 'MAIN_UMFUTURE', asset: 'USDT', amount: 500 });
+const deposits = await client.wallet.depositHistory({ coin: 'USDT' });
+
+// Sub-accounts (master account only)
+const subAccounts = await client.subaccount.list();
+
+// Server time sync — mitigates -1021 (timestamp outside recvWindow) from local clock drift
+await client.syncTime();
 ```
 
 ## API Surface
@@ -105,6 +136,49 @@ client.closeSpotUserStream();
 - `ws` — market WebSocket streams (kline, trade, aggTrade, depth incl. diff-depth, ticker incl.
   rolling-window, bookTicker, miniTicker, avgPrice + all-market/arr variants)
 - `wsUser` — spot user data stream (executionReport, outboundAccountPosition, balanceUpdate, listStatus)
+- `wsApi` — Spot WebSocket API (`wss://ws-api.binance.com/ws-api/v3`): signed trading
+  (`order.place/test/cancel/cancelReplace/status`, `openOrders.status/cancelAll`,
+  `orderList.place/cancel/status`, `openOrderLists.status`), account (`account.status/commission`,
+  `allOrders`, `allOrderLists`, `myTrades`), `userDataStream.start/ping/stop`, and public market
+  data (`ping`, `time`, `exchangeInfo`, `depth`, `trades.recent/historical/aggregate`, `klines`,
+  `uiKlines`, `avgPrice`, `ticker.24hr/tradingDay/price/book`) — its own method names, distinct
+  from the futures WS API below.
+
+### COIN-M Futures (`client.coinm`)
+
+Inverse contracts (e.g. `BTCUSD_PERP`) margined in the base asset rather than USDT — same shape
+as `client.futures`, against `dapi.binance.com`.
+
+- `market` — klines (incl. continuous/index/mark-price variants), funding-rate history, open
+  interest + history, premium index, plus the standard public REST inherited from spot/futures
+- `account` — balance, account info, position risk, income history, user trades, leverage
+  brackets, commission rate, position mode
+- `trading` — order lifecycle (create/test/get/cancel/cancelAll/all), leverage/margin-type
+  changes, position margin
+- `userStream` — listenKey lifecycle (create / keep-alive / close)
+- `ws` — market WebSocket streams, same naming scheme as `client.futures.ws`
+- `wsUser` — user data stream (ACCOUNT_UPDATE, ORDER_TRADE_UPDATE, MARGIN_CALL)
+
+### Margin (`client.margin`)
+
+Cross and isolated margin trading.
+
+- `account` — cross/isolated account info, max borrowable/transferable, `borrow`/`repay` (via
+  the unified `borrow-repay` endpoint), cross/isolated transfers, interest history,
+  force-liquidation history, price index
+- `trading` — order lifecycle (create/get/cancel/cancelAll/all), myTrades
+
+### Wallet (`client.wallet`)
+
+- Universal transfer (+ history) between Spot/Margin/USD-M/COIN-M/Funding
+- Deposit history, deposit address, withdraw history, withdraw submission
+- Funding wallet / user asset queries, account snapshot, API key permissions, asset detail
+- Dust log + dust-to-BNB conversion, trade fees
+
+### Sub-account (`client.subaccount`, master account only)
+
+List/status, spot/futures/margin summaries, universal transfer (+ history), virtual sub-account
+creation, futures/margin enablement, deposit address/history.
 
 ### Futures (`client.futures`)
 
@@ -134,13 +208,62 @@ client.closeSpotUserStream();
 
 ### Client options
 
-`apiKey`, `apiSecret`, `testnet`, `demo`, `recvWindow`, `apiBase`, `wsBase`, `wsUserBase`,
-`wsApiBase`, `timeoutMs`, `maxRetries`, `retryBaseDelayMs`, `retryMaxDelayMs`.
+`apiKey`, `apiSecret`, `privateKey` + `signatureAlgorithm` (Ed25519/RSA, instead of HMAC),
+`testnet`, `demo`, `recvWindow`, `apiBase`, `wsBase`, `wsUserBase`, `wsApiBase`, `dapiBase`,
+`wsSpotApiBase`, `wsDapiBase`, `timeoutMs`, `maxRetries`, `retryBaseDelayMs`, `retryMaxDelayMs`,
+`rateLimitWeightPerMinute`, `rateLimitSafetyMargin`, `httpsAgent`, `proxy`, `safety`
+(see [Agent safety](#agent-safety)).
+
+### Reliability
+
+- **Rate-limit tracking**: `RateLimitTracker` parses `X-MBX-USED-WEIGHT-*` /
+  `X-MBX-ORDER-COUNT-*` response headers and delays queued requests once usage crosses a
+  configurable safety margin (`rateLimitWeightPerMinute` / `rateLimitSafetyMargin`), to preempt
+  `-1003` IP bans rather than react to them. Inspect the live per-host snapshot via
+  `client.getRateLimitUsage()`.
+- **Server time sync**: `client.syncTime()` fetches each REST host's server time and applies the
+  offset to every signed request's `timestamp`, mitigating `-1021` errors from local clock drift.
+- **Retry**: exponential backoff with jitter on `429`/`418`/`5xx`, configurable via
+  `maxRetries`/`retryBaseDelayMs`/`retryMaxDelayMs`.
+
+### Agent safety
+
+`BinanceClientOptions.safety` configures a `TradingPolicy`, evaluated on every mutating request
+before it leaves the process — for autonomous/LLM-driven callers where a misread prompt
+shouldn't be able to spend the account. Shared across every product namespace.
+
+```typescript
+const client = new BinanceClient({
+  apiKey, apiSecret,
+  safety: {
+    dryRun: true,                          // throws DryRunError instead of sending the request
+    allowedSymbols: ['BTCUSDT', 'ETHUSDT'],
+    maxNotionalPerOrder: 100,              // an order whose notional can't be verified is refused
+    allowWithdrawals: false,               // default once `safety` is set at all
+  },
+});
+```
+
+- `dryRun` — intercepts `POST`/`PUT`/`DELETE` and throws `DryRunError` (carrying the request that
+  would have been sent, via `.describe()`) instead of sending it. It never returns a synthetic
+  success payload — a fabricated `orderId` would lead a caller to believe an order exists.
+- `readOnly` — refuses mutating requests outright.
+- `allowedSymbols` — rejects orders naming a symbol outside the list.
+- `maxNotionalPerOrder` — caps a single order's notional (from `price*quantity` or
+  `quoteOrderQty`); an order whose notional can't be determined (e.g. a MARKET order with no
+  price) is refused rather than waved through.
+- `allowWithdrawals` / `allowTransfers` / `blockedPaths` — withdrawals are denied by default the
+  moment any `safety` config is set; transfers and arbitrary endpoints can be pinned off too.
+
+Omitting `safety` entirely leaves behavior exactly as without a policy.
 
 ### Errors
 
-`BinanceError` base, `BinanceAuthError`, `BinanceApiError` (code + status), `RateLimitError`,
-`NetworkError`.
+`BinanceError` base, `BinanceAuthError`, `BinanceApiError` (`code`, `status`, `endpoint`,
+`method`, response `headers`, plus `isRateLimitError()`/`isTimestampError()`/
+`isInsufficientBalance()`), `RateLimitError` (`retryAfterMs`), `NetworkError`,
+`PolicyViolationError` (a `TradingPolicy` rule blocked the request), `DryRunError` (dry-run
+suppressed the request).
 
 ### Paper trading
 
@@ -195,4 +318,6 @@ npm run build   # tsup -> dist/ (ESM + CJS + .d.ts)
 npm run smoke   # hits live public Binance endpoints, no keys needed
 ```
 
-CI runs typecheck, build and tests on Node 18/20/22; pushing a `v*` tag publishes to npm.
+CI runs typecheck, build and tests on Node LTS and latest. Publishing to npm happens by
+cutting a GitHub Release (`.github/workflows/release.yml` runs on `release: published`), a
+separate, deliberate step — not on every push or tag.

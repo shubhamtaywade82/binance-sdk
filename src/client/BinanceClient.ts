@@ -1,5 +1,6 @@
 import type { AxiosRequestConfig } from 'axios';
 import { HttpClient, type SignatureAlgorithm } from './HttpClient.js';
+import type { RateLimitUsage } from './RateLimitTracker.js';
 import { TradingPolicy, type TradingPolicyOptions } from './TradingPolicy.js';
 import { resolveEnvironment } from './endpoints.js';
 import { FuturesData } from '../resources/FuturesData.js';
@@ -250,6 +251,24 @@ export class BinanceClient {
       this.dapiHttp.syncTime('/dapi/v1/time'),
       this.sapiHttp.syncTime('/api/v3/time'),
     ]);
+  }
+
+  /**
+   * Snapshot of the most recently observed `X-MBX-USED-WEIGHT-*` / `X-MBX-ORDER-COUNT-*`
+   * response headers, per REST host. Each host tracks its own weight budget independently.
+   */
+  getRateLimitUsage(): {
+    spot: RateLimitUsage;
+    futures: RateLimitUsage;
+    coinm: RateLimitUsage;
+    sapi: RateLimitUsage;
+  } {
+    return {
+      spot: this.spotHttp.getRateLimitUsage(),
+      futures: this.authHttp.getRateLimitUsage(),
+      coinm: this.dapiHttp.getRateLimitUsage(),
+      sapi: this.sapiHttp.getRateLimitUsage(),
+    };
   }
 
   async startUserStream(): Promise<string> {
