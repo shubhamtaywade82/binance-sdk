@@ -120,4 +120,24 @@ describe('BinanceClient', () => {
     client.futures.ws.close();
     client.spot.ws.close();
   });
+
+  it('creates a COIN-M listenKey through client.coinm.userStream', async () => {
+    server.use(
+      http.post('https://dapi.binance.com/dapi/v1/listenKey', () => HttpResponse.json({ listenKey: 'coinm-lk' })),
+    );
+
+    const client = new BinanceClient({ apiKey: 'k', apiSecret: 's' });
+    const { listenKey } = await client.coinm.userStream.createListenKey();
+    expect(listenKey).toBe('coinm-lk');
+    client.futures.ws.close();
+    client.spot.ws.close();
+  });
+
+  it('builds COIN-M market stream names via client.coinm.ws', () => {
+    const client = new BinanceClient();
+    expect(client.coinm.ws.kline('BTCUSD_PERP', '1m')).toBe('btcusd_perp@kline_1m');
+    client.futures.ws.close();
+    client.spot.ws.close();
+    client.coinm.ws.close();
+  });
 });

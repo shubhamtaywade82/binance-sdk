@@ -13,6 +13,9 @@ export interface Endpoints {
   wsApi: string;
   wsSpotMarket: string;
   wsSpotUser: string;
+  wsSpotApi: string;
+  wsDapiMarket: string;
+  wsDapiUser: string;
 }
 
 export function resolveEnvironment(options?: {
@@ -23,6 +26,8 @@ export function resolveEnvironment(options?: {
   wsUserBase?: string;
   wsApiBase?: string;
   dapiBase?: string;
+  wsSpotApiBase?: string;
+  wsDapiBase?: string;
 }): { env: Environment; endpoints: Endpoints } {
   const env: Environment = options?.demo ? 'demo' : options?.testnet ? 'testnet' : 'live';
 
@@ -73,6 +78,15 @@ export function resolveEnvironment(options?: {
     options?.dapiBase ??
     (env === 'testnet' || env === 'demo' ? 'https://testnet.binancefuture.com' : 'https://dapi.binance.com');
 
+  const wsSpotApiHost =
+    options?.wsSpotApiBase ??
+    (env === 'testnet' ? 'wss://testnet.binance.vision/ws-api/v3' : 'wss://ws-api.binance.com:443/ws-api/v3');
+
+  // Binance has no dedicated COIN-M demo WS host either, so demo mode falls back to testnet here too.
+  const wsDapiHost =
+    options?.wsDapiBase ??
+    (env === 'testnet' || env === 'demo' ? 'wss://dstream.binancefuture.com' : 'wss://dstream.binance.com');
+
   return {
     env,
     endpoints: {
@@ -88,6 +102,9 @@ export function resolveEnvironment(options?: {
       wsApi: wsApiHost,
       wsSpotMarket: wsSpotMarketHost,
       wsSpotUser: wsSpotUserHost,
+      wsSpotApi: wsSpotApiHost,
+      wsDapiMarket: `${wsDapiHost}/stream`,
+      wsDapiUser: `${wsDapiHost}/ws`,
     },
   };
 }

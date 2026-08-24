@@ -14,6 +14,7 @@ import { UserDataStream } from '../resources/UserDataStream.js';
 import { CoinMMarket } from '../resources/CoinMMarket.js';
 import { CoinMAccount } from '../resources/CoinMAccount.js';
 import { CoinMTrading } from '../resources/CoinMTrading.js';
+import { CoinMUserDataStream } from '../resources/CoinMUserDataStream.js';
 import { MarginAccount, MarginTrading } from '../resources/Margin.js';
 import { Wallet } from '../resources/Wallet.js';
 import { SubAccount } from '../resources/SubAccount.js';
@@ -21,7 +22,10 @@ import { FuturesMarketWS } from '../ws/FuturesMarketWS.js';
 import { SpotMarketWS } from '../ws/SpotMarketWS.js';
 import { SpotUserWS } from '../ws/SpotUserWS.js';
 import { FuturesUserWS } from '../ws/FuturesUserWS.js';
+import { CoinMMarketWS } from '../ws/CoinMMarketWS.js';
+import { CoinMUserWS } from '../ws/CoinMUserWS.js';
 import { WsApi } from '../ws/WsApi.js';
+import { SpotWsApi } from '../ws/SpotWsApi.js';
 
 export interface BinanceClientOptions {
   apiKey?: string;
@@ -38,6 +42,8 @@ export interface BinanceClientOptions {
   wsUserBase?: string;
   wsApiBase?: string;
   dapiBase?: string;
+  wsSpotApiBase?: string;
+  wsDapiBase?: string;
   timeoutMs?: number;
   maxRetries?: number;
   /** @deprecated unused; superseded by header-based tracking (rateLimitWeightPerMinute/rateLimitSafetyMargin). */
@@ -70,6 +76,7 @@ export class BinanceClient {
     userStream: SpotUserDataStream;
     ws: SpotMarketWS;
     wsUser: SpotUserWS;
+    wsApi: SpotWsApi;
   };
   readonly futures: {
     market: FuturesMarket;
@@ -86,6 +93,9 @@ export class BinanceClient {
     market: CoinMMarket;
     account: CoinMAccount;
     trading: CoinMTrading;
+    userStream: CoinMUserDataStream;
+    ws: CoinMMarketWS;
+    wsUser: CoinMUserWS;
   };
   readonly margin: {
     account: MarginAccount;
@@ -104,6 +114,8 @@ export class BinanceClient {
   private keepAliveInterval: NodeJS.Timeout | null = null;
   private spotListenKeyValue: string | null = null;
   private spotKeepAliveInterval: NodeJS.Timeout | null = null;
+  private coinmListenKeyValue: string | null = null;
+  private coinmKeepAliveInterval: NodeJS.Timeout | null = null;
 
   static nowSeconds(): number {
     return Math.floor(Date.now() / 1000);
@@ -160,6 +172,14 @@ export class BinanceClient {
         baseUserUrl: endpoints.wsSpotUser,
         getListenKey: () => this.spotListenKeyValue,
       }),
+      wsApi: new SpotWsApi({
+        baseUrl: endpoints.wsSpotApi,
+        apiKey: options.apiKey,
+        apiSecret: options.apiSecret,
+        privateKey: options.privateKey,
+        signatureAlgorithm: options.signatureAlgorithm,
+        recvWindow: options.recvWindow,
+      }),
     };
 
     const futuresMarket = new FuturesMarket(
@@ -190,6 +210,8 @@ export class BinanceClient {
         baseUrl: endpoints.wsApi,
         apiKey: options.apiKey,
         apiSecret: options.apiSecret,
+        privateKey: options.privateKey,
+        signatureAlgorithm: options.signatureAlgorithm,
         recvWindow: options.recvWindow,
       }),
     };
@@ -199,6 +221,12 @@ export class BinanceClient {
       market: new CoinMMarket(new HttpClient({ baseURL: endpoints.restDapi, ...httpOptions })),
       account: new CoinMAccount(this.dapiHttp),
       trading: new CoinMTrading(this.dapiHttp),
+      userStream: new CoinMUserDataStream(this.dapiHttp),
+      ws: new CoinMMarketWS(endpoints.wsDapiMarket),
+      wsUser: new CoinMUserWS({
+        baseUserUrl: endpoints.wsDapiUser,
+        getListenKey: () => this.coinmListenKeyValue,
+      }),
     };
 
     this.sapiHttp = new HttpClient({ baseURL: endpoints.restApiRoot, ...httpOptions });
@@ -268,20 +296,47 @@ export class BinanceClient {
     this.spotListenKeyValue = null;
   }
 
+  async startCoinMUserStream(): Promise<string> {
+    const { listenKey } = await this.coinm.userStream.createListenKey();
+    this.coinmListenKeyValue = listenKey;
+    this.coinmKeepAliveInterval = setInterval(() => {
+      this.coinm.userStream.keepAliveListenKey().catch(() => {
+        /* COIN-M listenKey keep-alive failures are retried on the next tick */
+      });
+    }, 30 * 60 * 1000);
+    this.coinm.wsUser.connect();
+    return listenKey;
+  }
+
+  closeCoinMUserStream(): void {
+    if (this.coinmKeepAliveInterval) clearInterval(this.coinmKeepAliveInterval);
+    this.coinmKeepAliveInterval = null;
+    this.coinm.wsUser.close();
+    this.coinm.userStream.closeListenKey().catch(() => {
+      /* best-effort cleanup */
+    });
+    this.coinmListenKeyValue = null;
+  }
+
   closeAllWebSockets(): void {
     this.futures.ws.close();
     this.futures.wsUser.close();
     this.spot.ws.close();
     this.spot.wsUser.close();
+    this.coinm.ws.close();
+    this.coinm.wsUser.close();
     this.closeUserStream();
     this.closeSpotUserStream();
+    this.closeCoinMUserStream();
   }
 
-  reconnectWebSocket(target: 'ws' | 'wsUser' | 'spot' | 'spotUser'): void {
+  reconnectWebSocket(target: 'ws' | 'wsUser' | 'spot' | 'spotUser' | 'coinm' | 'coinmUser'): void {
     if (target === 'ws') this.futures.ws.reconnect();
     else if (target === 'wsUser') this.futures.wsUser.reconnect();
     else if (target === 'spot') this.spot.ws.reconnect();
-    else this.spot.wsUser.reconnect();
+    else if (target === 'spotUser') this.spot.wsUser.reconnect();
+    else if (target === 'coinm') this.coinm.ws.reconnect();
+    else this.coinm.wsUser.reconnect();
   }
 
   resetReconnectAttempts(): void {
@@ -289,5 +344,7 @@ export class BinanceClient {
     this.futures.wsUser.resetReconnectAttempts();
     this.spot.ws.resetReconnectAttempts();
     this.spot.wsUser.resetReconnectAttempts();
+    this.coinm.ws.resetReconnectAttempts();
+    this.coinm.wsUser.resetReconnectAttempts();
   }
 }
