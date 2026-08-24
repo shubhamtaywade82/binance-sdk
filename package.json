@@ -65,6 +65,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "smoke": "tsx scripts/smoke-test.ts",
+    "smoke:testnet": "tsx scripts/testnet-smoke.ts",
     "mcp": "tsx src/mcp/index.ts",
     "mcp:http": "tsx src/mcp/index.ts --http",
     "example:quickstart": "tsx examples/quickstart.ts",

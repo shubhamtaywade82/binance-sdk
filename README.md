@@ -316,6 +316,9 @@ npm test        # vitest, HTTP/WS mocked
 npm run typecheck
 npm run build   # tsup -> dist/ (ESM + CJS + .d.ts)
 npm run smoke   # hits live public Binance endpoints, no keys needed
+npm run smoke:testnet  # exercises COIN-M/Margin/Wallet/Sub-account/Spot-WS-API against
+                        # Binance testnet (see script header for the required env vars);
+                        # unauthenticated sections still run without keys
 ```
 
 CI runs typecheck, build and tests on Node LTS and latest. Publishing to npm happens by
