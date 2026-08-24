@@ -3,7 +3,7 @@ import type { BinanceClient } from '../client/BinanceClient.js';
 import { createFuturesToolkit } from '../tools/index.js';
 
 export function createBinanceMcpServer(client: BinanceClient): McpServer {
-  const server = new McpServer({ name: 'binance-sdk', version: '3.0.0' });
+  const server = new McpServer({ name: 'binance-sdk', version: '2.0.0' });
   const toolkit = createFuturesToolkit(client);
 
   toolkit.tools.forEach((tool) => {

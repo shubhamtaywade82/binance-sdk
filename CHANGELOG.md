@@ -5,12 +5,14 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-## [3.0.0] - 2026-08-24
+## [2.0.0] - 2026-08-24
 
-Nothing past `1.0.0` has been published to npm before this release, so everything below —
-accumulated across local development — ships together as one major version. The breaking
-changes are limited to the package/binary rename; every SDK method from `1.0.0` still works
-the same way.
+The only version ever published to npm before this release is `1.0.0`. Everything below —
+accumulated across local development in several rounds that never shipped — goes out together
+as this one release, numbered `2.0.0` because it contains breaking changes (the package rename,
+and the TypeScript/Zod rewrite of the original client). If you're upgrading from the `1.0.0` on
+npm, read the Breaking section below; if you're picking this package up for the first time,
+everything else is just capability.
 
 ### Breaking
 
@@ -18,11 +20,38 @@ the same way.
   imports accordingly.
 - MCP server binary renamed from `binance-usdm-mcp` to `binance-sdk-mcp` (`npx binance-sdk-mcp`);
   MCP server name changed from `binance-usdm-futures` to `binance-sdk`.
+- Full TypeScript rewrite of the original client, with Zod-validated responses and typed
+  WebSocket streams throughout.
 
 ### Added
 
+**Core REST + WebSocket parity**
+
+- Feature parity with `binance-client-js`: orders, batch orders, algo orders, order
+  modification, leverage, margin type, countdown-cancel-all, full market-data and user-data
+  streams, signed WS API (futures).
+- **LLM tool layer** (`src/tools/`): framework-agnostic tools across market data, account,
+  trading, WS, and paper trading, with OpenAI / Anthropic / MCP / JSON-schema adapters
+  (`createFuturesToolkit`, `toolkitToFormats`).
+- **Paper-trading engine** (`src/tools/paper.tools.ts`): in-memory simulated positions with
+  live pricing, no keys required.
+- **MCP server** (`src/mcp/`): `binance-sdk-mcp` binary, stdio + HTTP health transport,
+  auto-registers the full toolkit as MCP tools and resources.
+- **AI agent skills** under `skills/` for futures market data, trading, paper trading,
+  derivatives streams, algo trading, and portfolio margin.
+- `examples/quickstart.ts`, `examples/ws-streams.ts`, `examples/paper-trading.ts`,
+  `mcp-config/local-dev.json` for running the MCP server from source.
+
 **New product coverage**
 
+- **Full Spot support**: `client.spot.account` (account info, myTrades, myPreventedMatches,
+  commission, rate limits), `client.spot.trading` (orders + OCO order lists + cancelReplace),
+  `client.spot.userStream` / `wsUser` (spot user-data stream), and `client.spot.wsApi` — the
+  Spot WebSocket API (`order.place`/`cancel`/`status`, account, market data) with its own
+  method names, distinct from the futures WS API. Plus spot market REST (`uiKlines`,
+  rolling-window & trading-day tickers) and spot market WS (diff-depth, `avgPrice`,
+  rolling-window ticker + all-market variants). Spot LLM tools (`spot_*`) and the
+  `binance://spot/symbols` MCP resource.
 - **COIN-M Futures** (`client.coinm`): `market` (klines, funding-rate history, open interest
   and its history, premium index), `account` (balance, account info, position risk, income
   history, user trades, leverage brackets, commission rate, position mode), `trading` (order
@@ -37,17 +66,6 @@ the same way.
 - **Sub-account management** (`client.subaccount`): list/status, spot/futures/margin summaries,
   universal transfer (+ history), virtual sub-account creation, futures/margin enablement,
   deposit address/history.
-- **Full Spot support**: `client.spot.account` (account info, myTrades, myPreventedMatches,
-  commission, rate limits), `client.spot.trading` (orders + OCO order lists + cancelReplace),
-  `client.spot.userStream` / `wsUser` (spot user-data stream), and `client.spot.wsApi` — the
-  Spot WebSocket API (`order.place`/`cancel`/`status`, account, market data) with its own
-  method names, distinct from the futures WS API. Plus spot market REST (`uiKlines`,
-  rolling-window & trading-day tickers) and spot market WS (diff-depth, `avgPrice`,
-  rolling-window ticker + all-market variants).
-- **Spot LLM tools + MCP + skills**: `spotTools` group (`spot_*` — market data, account, trading,
-  OCO, user-data stream) wired into `createFuturesToolkit`; WS-API tools (`futures_ws_api_*`)
-  for order/account/position/user-data-stream over the signed WS API; `binance://spot/symbols`
-  MCP resource; and `binance-spot-trading` / `binance-spot-market-data` skills.
 - Order-book diff-depth market streams: `FuturesMarketWS.depthDiff` (`<symbol>@depth`) and
   `depthDiffSpeed` (`<symbol>@depth@100ms` / `@depth@500ms`); depth payloads now preserve `pu`/`T`.
 - All-market rolling-window ticker stream: `FuturesMarketWS.allRollingWindowTickers` (`!ticker_<w>@arr`).
@@ -79,8 +97,6 @@ the same way.
   `RateLimitError` captures `retryAfterMs` from the `Retry-After` header.
 - `HttpClient`'s query serialization supports array values as repeated keys (needed for the
   Wallet dust-conversion asset list).
-- `mcp-config/local-dev.json`, a host config that runs the MCP server from source
-  (`npx tsx src/mcp/index.ts`) for local development without publishing first.
 
 ### Fixed
 
@@ -92,30 +108,6 @@ the same way.
   with an Ed25519/RSA `privateKey` could sign REST requests but not WS trading requests. It now
   shares the same `Signer` as `HttpClient`.
 
-## [2.2.0] - 2026-08-04
-
-### Added
-
-- **LLM tool layer** (`src/tools/`): 80 framework-agnostic tools (31 market / 22 account / 22 trading / 7 ws / 7 paper),
-  with OpenAI / Anthropic / MCP / JSON-schema adapters (`createFuturesToolkit`, `toolkitToFormats`).
-- **Paper-trading engine** (`src/tools/paper.tools.ts`): in-memory simulated positions with live pricing, no keys required.
-- **MCP server** (`src/mcp/`): `binance-usdm-mcp` binary, stdio + HTTP health transport, auto-registers all 80 tools.
-- **AI agent skills**: 7 Binance Skills-Hub skills under `skills/` (`derivatives-trading-usds`,
-  `derivatives-trading-usds-streams`, `futures-algo-trading`, `futures-portfolio-margin`,
-  plus updated `binance-futures-market-data` / `binance-futures-trading` / `binance-futures-paper-trading`).
-- `examples/quickstart.ts`, `examples/ws-streams.ts`, `examples/paper-trading.ts`.
-- `.env.example`, `CHANGELOG.md`, GitHub Actions CI workflow.
-- Package `bin` entry `binance-usdm-mcp`.
-
 ### Dependencies
 
 - Added `@modelcontextprotocol/sdk` ^1.30.0.
-
-## [2.1.0]
-
-- Feature-parity with binance-client-js: orders, batch, algo, modify, leverage,
-  margin type, countdown-cancel, full market-data + user data streams, signed WS API.
-
-## [2.0.0]
-
-- TypeScript rewrite with zod-validated responses and typed WebSocket streams.
