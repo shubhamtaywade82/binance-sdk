@@ -24,6 +24,12 @@ export type {
   BracketOrderParams,
 } from './resources/FuturesOps.js';
 export { UserDataStream } from './resources/UserDataStream.js';
+export { CoinMMarket } from './resources/CoinMMarket.js';
+export { CoinMAccount } from './resources/CoinMAccount.js';
+export { CoinMTrading } from './resources/CoinMTrading.js';
+export { MarginAccount, MarginTrading } from './resources/Margin.js';
+export { Wallet } from './resources/Wallet.js';
+export { SubAccount } from './resources/SubAccount.js';
 
 export { PaperTradingEngine } from './paper/PaperTradingEngine.js';
 export type {
@@ -54,6 +60,10 @@ export * from './types/ws.types.js';
 export * from './types/account.types.js';
 export * from './types/trading.types.js';
 export * from './types/userdata.types.js';
+export * from './types/coinm.types.js';
+export * from './types/margin.types.js';
+export * from './types/wallet.types.js';
+export * from './types/subaccount.types.js';
 export * from './errors/index.js';
 
 export {

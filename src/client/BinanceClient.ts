@@ -9,6 +9,12 @@ import { FuturesAccount } from '../resources/FuturesAccount.js';
 import { FuturesTrading } from '../resources/FuturesTrading.js';
 import { FuturesOps } from '../resources/FuturesOps.js';
 import { UserDataStream } from '../resources/UserDataStream.js';
+import { CoinMMarket } from '../resources/CoinMMarket.js';
+import { CoinMAccount } from '../resources/CoinMAccount.js';
+import { CoinMTrading } from '../resources/CoinMTrading.js';
+import { MarginAccount, MarginTrading } from '../resources/Margin.js';
+import { Wallet } from '../resources/Wallet.js';
+import { SubAccount } from '../resources/SubAccount.js';
 import { FuturesMarketWS } from '../ws/FuturesMarketWS.js';
 import { SpotMarketWS } from '../ws/SpotMarketWS.js';
 import { SpotUserWS } from '../ws/SpotUserWS.js';
@@ -25,6 +31,7 @@ export interface BinanceClientOptions {
   wsBase?: string;
   wsUserBase?: string;
   wsApiBase?: string;
+  dapiBase?: string;
   timeoutMs?: number;
   maxRetries?: number;
   rateLimitTokensPerSecond?: number;
@@ -53,6 +60,17 @@ export class BinanceClient {
     wsUser: FuturesUserWS;
     wsApi: WsApi;
   };
+  readonly coinm: {
+    market: CoinMMarket;
+    account: CoinMAccount;
+    trading: CoinMTrading;
+  };
+  readonly margin: {
+    account: MarginAccount;
+    trading: MarginTrading;
+  };
+  readonly wallet: Wallet;
+  readonly subaccount: SubAccount;
 
   private readonly authHttp: HttpClient;
   private listenKeyValue: string | null = null;
@@ -139,6 +157,21 @@ export class BinanceClient {
         recvWindow: options.recvWindow,
       }),
     };
+
+    const dapiHttp = new HttpClient({ baseURL: endpoints.restDapiRoot, ...httpOptions });
+    this.coinm = {
+      market: new CoinMMarket(new HttpClient({ baseURL: endpoints.restDapi, ...httpOptions })),
+      account: new CoinMAccount(dapiHttp),
+      trading: new CoinMTrading(dapiHttp),
+    };
+
+    const sapiHttp = new HttpClient({ baseURL: endpoints.restApiRoot, ...httpOptions });
+    this.margin = {
+      account: new MarginAccount(sapiHttp),
+      trading: new MarginTrading(sapiHttp),
+    };
+    this.wallet = new Wallet(sapiHttp);
+    this.subaccount = new SubAccount(sapiHttp);
   }
 
   async startUserStream(): Promise<string> {

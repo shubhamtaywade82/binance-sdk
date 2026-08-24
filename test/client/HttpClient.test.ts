@@ -17,6 +17,20 @@ describe('HttpClient', () => {
     await expect(client.get<{ ok: boolean }>('/ping')).resolves.toEqual({ ok: true });
   });
 
+  it('serializes array params as repeated query keys', async () => {
+    let capturedUrl = '';
+    server.use(
+      http.get('https://api.example.com/dust', ({ request }) => {
+        capturedUrl = request.url;
+        return HttpResponse.json({ ok: true });
+      }),
+    );
+
+    const client = new HttpClient({ baseURL: 'https://api.example.com' });
+    await client.get('/dust', { asset: ['BTC', 'ETH'] });
+    expect(new URL(capturedUrl).searchParams.getAll('asset')).toEqual(['BTC', 'ETH']);
+  });
+
   it('throws BinanceApiError on 4xx with a {code,msg} body', async () => {
     server.use(
       http.get('https://api.example.com/bad', () =>

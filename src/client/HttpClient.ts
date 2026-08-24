@@ -149,7 +149,11 @@ export class HttpClient {
     if (!params) return '';
     return Object.entries(params)
       .filter(([, val]) => val !== undefined && val !== null)
-      .map(([key, val]) => `${key}=${encodeURIComponent(String(val))}`)
+      .flatMap(([key, val]) =>
+        Array.isArray(val)
+          ? val.map((item) => `${key}=${encodeURIComponent(String(item))}`)
+          : [`${key}=${encodeURIComponent(String(val))}`],
+      )
       .join('&');
   }
 
