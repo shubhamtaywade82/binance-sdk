@@ -3,6 +3,7 @@ import Bottleneck from 'bottleneck';
 import { BinanceApiError, BinanceAuthError, NetworkError, RateLimitError } from '../errors/index.js';
 import { RateLimitTracker, type RateLimitUsage } from './RateLimitTracker.js';
 import { Signer, type SignatureAlgorithm } from './Signer.js';
+import type { TradingPolicy } from './TradingPolicy.js';
 
 export type AuthMode = 'public' | 'apiKey' | 'signed';
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -35,6 +36,8 @@ export interface HttpClientOptions {
   httpsAgent?: AxiosRequestConfig['httpsAgent'];
   /** Axios proxy configuration. */
   proxy?: AxiosRequestConfig['proxy'];
+  /** Client-side guardrails evaluated before any mutating request is sent. */
+  policy?: TradingPolicy;
 }
 
 interface BinanceErrorBody {
@@ -62,6 +65,7 @@ export class HttpClient {
   private readonly limiter: Bottleneck;
   private readonly signer: Signer;
   private readonly rateLimitTracker: RateLimitTracker;
+  private readonly policy?: TradingPolicy;
   private readonly apiKey?: string;
   private readonly recvWindow: number;
   private readonly timeoutMs: number;
@@ -91,6 +95,7 @@ export class HttpClient {
       weightLimitPerMinute: options.rateLimitWeightPerMinute,
       safetyMargin: options.rateLimitSafetyMargin,
     });
+    this.policy = options.policy;
     this.axios = axios.create({
       baseURL: options.baseURL,
       timeout: this.timeoutMs,
@@ -174,6 +179,9 @@ export class HttpClient {
     params: Record<string, unknown> | undefined,
     mode: AuthMode,
   ): Promise<T> {
+    // Evaluated before signing and before the limiter, so a refused request costs no
+    // rate-limit budget and never has a signature generated for it.
+    this.policy?.check(method, path, params ?? {});
     const url = this.buildUrl(path, params, mode);
     const config: AxiosRequestConfig = { method, url, headers: this.buildHeaders(mode) };
     return this.limiter.schedule(async () => {

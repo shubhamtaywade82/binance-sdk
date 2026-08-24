@@ -10,6 +10,8 @@ export { Signer } from './client/Signer.js';
 export type { SignerOptions } from './client/Signer.js';
 export { RateLimitTracker } from './client/RateLimitTracker.js';
 export type { RateLimitUsage, RateLimitTrackerOptions } from './client/RateLimitTracker.js';
+export { TradingPolicy } from './client/TradingPolicy.js';
+export type { TradingPolicyOptions } from './client/TradingPolicy.js';
 
 export { MarketDataBase } from './resources/MarketDataBase.js';
 export { SpotMarket } from './resources/SpotMarket.js';

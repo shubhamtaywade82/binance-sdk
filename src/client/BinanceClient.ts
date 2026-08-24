@@ -1,5 +1,6 @@
 import type { AxiosRequestConfig } from 'axios';
 import { HttpClient, type SignatureAlgorithm } from './HttpClient.js';
+import { TradingPolicy, type TradingPolicyOptions } from './TradingPolicy.js';
 import { resolveEnvironment } from './endpoints.js';
 import { FuturesData } from '../resources/FuturesData.js';
 import { FuturesMarket } from '../resources/FuturesMarket.js';
@@ -53,6 +54,12 @@ export interface BinanceClientOptions {
   httpsAgent?: AxiosRequestConfig['httpsAgent'];
   /** Axios proxy configuration. */
   proxy?: AxiosRequestConfig['proxy'];
+  /**
+   * Client-side guardrails for autonomous/LLM-driven callers: dry run, read-only, symbol
+   * allowlist, per-order notional cap, withdrawal and transfer switches. Omit for no policy
+   * (all requests permitted). Opting in denies withdrawals unless explicitly allowed.
+   */
+  safety?: TradingPolicyOptions;
 }
 
 export class BinanceClient {
@@ -86,6 +93,8 @@ export class BinanceClient {
   };
   readonly wallet: Wallet;
   readonly subaccount: SubAccount;
+  /** The active guardrail policy, or undefined when no `safety` config was supplied. */
+  readonly policy?: TradingPolicy;
 
   private readonly authHttp: HttpClient;
   private readonly spotHttp: HttpClient;
@@ -119,7 +128,9 @@ export class BinanceClient {
 
   constructor(options: BinanceClientOptions = {}) {
     const { endpoints } = resolveEnvironment(options);
+    this.policy = options.safety ? new TradingPolicy(options.safety) : undefined;
     const httpOptions = {
+      policy: this.policy,
       apiKey: options.apiKey,
       apiSecret: options.apiSecret,
       privateKey: options.privateKey,
