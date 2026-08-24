@@ -50,7 +50,27 @@ describe('WsApi', () => {
 
   it('throws when credentials are missing', async () => {
     const api = new WsApi({ baseUrl: `ws://localhost:${port}` });
-    await expect(api.request('order.place', {})).rejects.toThrow('API key and secret required');
+    await expect(api.request('order.place', {})).rejects.toThrow('API key and secret (or privateKey) required');
+  });
+
+  it('signs with a provided Ed25519 privateKey instead of HMAC', async () => {
+    const { generateKeyPairSync } = await import('node:crypto');
+    const { privateKey } = generateKeyPairSync('ed25519');
+    const pem = privateKey.export({ type: 'pkcs8', format: 'pem' }).toString();
+
+    let received: { params: Record<string, unknown> } | undefined;
+    server.on('connection', (socket) => {
+      socket.on('message', (raw) => {
+        received = JSON.parse(raw.toString()) as { params: Record<string, unknown> };
+        socket.send(JSON.stringify({ id: 'x', status: 200, result: {} }));
+      });
+    });
+
+    const api = new WsApi({ baseUrl: `ws://localhost:${port}`, apiKey: 'k', privateKey: pem });
+    await api.placeOrder({ symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.01 });
+
+    expect(received?.params.apiKey).toBe('k');
+    expect(typeof received?.params.signature).toBe('string');
   });
 
   it('sends unsigned public market-data requests without credentials', async () => {
