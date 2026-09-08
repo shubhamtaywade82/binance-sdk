@@ -20,7 +20,8 @@ async function main(): Promise<void> {
 
     client.futures.ws.once('message', (stream: string, payload: unknown) => {
       clearTimeout(timeout);
-      console.log(`WS message on ${stream}:`, payload);
+      // Tainted `stream` must not flow into the format-string (first) argument.
+      console.log('WS message on %s:', stream, payload);
       resolve();
     });
     client.futures.ws.subscribe([client.futures.ws.markPrice('BTCUSDT', '1s')]);

@@ -30,6 +30,10 @@ import { CoinMUserWS } from '../ws/CoinMUserWS.js';
 import { WsApi } from '../ws/WsApi.js';
 import { SpotWsApi } from '../ws/SpotWsApi.js';
 import { ExecutionManager } from '../execution/ExecutionManager.js';
+import { SpotExecutionAdapter } from '../execution/adapter.js';
+import { PaperExecutionAdapter } from '../execution/paper.js';
+import { ExecutionGateway, type ExecutionBackend } from '../execution/Gateway.js';
+import { PaperTradingEngine, type PaperTradingOptions } from '../paper/PaperTradingEngine.js';
 
 import { OrderBookEngine } from '../state/OrderBookEngine.js';
 import type { OrderBook } from '../state/OrderBook.js';
@@ -89,6 +93,8 @@ export class BinanceClient {
     market: SpotMarket;
     account: SpotAccount;
     trading: SpotTrading;
+    /** Idempotent spot order placement with transport-failure reconciliation. */
+    execution: ExecutionManager;
     userStream: SpotUserDataStream;
     ws: SpotMarketWS;
     wsUser: SpotUserWS;
@@ -209,10 +215,15 @@ export class BinanceClient {
 
     this.spotHttp = new HttpClient({ baseURL: endpoints.restSpot, ...httpOptions });
     const spotHttp = this.spotHttp;
+    const spotTrading = new SpotTrading(spotHttp);
     this.spot = {
       market: new SpotMarket(spotHttp),
       account: new SpotAccount(spotHttp),
-      trading: new SpotTrading(spotHttp),
+      trading: spotTrading,
+      execution: new ExecutionManager(new SpotExecutionAdapter(spotTrading), {
+        events,
+        riskGateway,
+      }),
       userStream: new SpotUserDataStream(spotHttp),
       ws: new SpotMarketWS(endpoints.wsSpotMarket, { events }),
       wsUser: new SpotUserWS({
@@ -432,6 +443,49 @@ export class BinanceClient {
   async subscribeFuturesOrderBook(symbol: string, options?: { updateSpeed?: '100ms' | '500ms' }): Promise<OrderBook> {
     const engine = this.createFuturesOrderBookEngine(options);
     return engine.subscribe(symbol);
+  }
+
+  /**
+   * Paper trading as a first-class execution backend.
+   *
+   * Returns an {@link ExecutionManager} whose orders route through a local
+   * {@link PaperTradingEngine} simulator — the same `Execution` envelope, the
+   * same idempotency and reconciliation semantics as the live manager, zero
+   * exchange traffic.
+   *
+   * ```ts
+   * const paper = client.createPaperExecutionManager({ initialBalance: 50_000 });
+   * const execution = await paper.placeOrder({
+   *   symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.01,
+   * });
+   * ```
+   */
+  createPaperExecutionManager(options: PaperTradingOptions = {}): ExecutionManager {
+    return new ExecutionManager(new PaperExecutionAdapter(new PaperTradingEngine(options)), {
+      clientOrderIdPrefix: 'paper',
+      events: this.events,
+    });
+  }
+
+  /**
+   * Execution gateway: route orders to the live exchange or the paper
+   * simulator through one interface, with independent ledgers per backend.
+   *
+   * ```ts
+   * const gateway = client.createExecutionGateway({ defaultBackend: 'paper' });
+   * await gateway.placeOrder({ symbol: 'BTCUSDT', ... });            // paper
+   * await gateway.placeOrder({ ...order }, { backend: 'live' });      // live
+   * gateway.paperEngine.getAccountInfo();                              // simulation state
+   * ```
+   */
+  createExecutionGateway(
+    options: { paper?: PaperTradingOptions; defaultBackend?: ExecutionBackend } = {},
+  ): ExecutionGateway {
+    return new ExecutionGateway({
+      live: this.futures.execution,
+      paperEngine: new PaperTradingEngine(options.paper),
+      defaultBackend: options.defaultBackend,
+    });
   }
 
   /** Snapshot of the active risk gateway's state, when `safety` was configured. */

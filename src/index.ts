@@ -1,7 +1,9 @@
-export const VERSION = '2.0.0';
+export const VERSION = '2.2.0';
 
 export { BinanceClient } from './client/BinanceClient.js';
 export type { BinanceClientOptions } from './client/BinanceClient.js';
+export { createSpotClient, createUSDMClient, createCoinMClient } from './client/factories.js';
+export type { SpotClient, USDMClient, CoinMClient } from './client/factories.js';
 export { HttpClient } from './client/HttpClient.js';
 export type { HttpClientOptions, AuthMode, HttpMethod, SignatureAlgorithm, RetryPolicy } from './client/HttpClient.js';
 export { resolveEnvironment } from './client/endpoints.js';
@@ -27,6 +29,17 @@ export { ExecutionManager } from './execution/ExecutionManager.js';
 export type { ExecutionManagerOptions } from './execution/types.js';
 export type { Execution, ExecutionFill, ReconciliationState } from './execution/types.js';
 export { ExecutionUnknownError } from './execution/types.js';
+export { FuturesExecutionAdapter, SpotExecutionAdapter, isExecutionAdapter } from './execution/adapter.js';
+export type {
+  ExecutionAdapter,
+  ExecutionReportShape,
+  OrderShape,
+  OrderKey,
+  UserStreamLike,
+} from './execution/adapter.js';
+export { PaperExecutionAdapter } from './execution/paper.js';
+export { ExecutionGateway } from './execution/Gateway.js';
+export type { ExecutionBackend, ExecutionGatewayOptions } from './execution/Gateway.js';
 
 // ---- State: local L2 order books ----
 export { OrderBook } from './state/OrderBook.js';
@@ -48,6 +61,20 @@ export {
   endpointCounts,
 } from './registry/endpoints.js';
 export type { EndpointEntry, EndpointAuth, EndpointMethod, EndpointQuery } from './registry/endpoints.js';
+
+// ---- Contracts: security schemes, weights, canonical paths ----
+export {
+  canonicalPath,
+  contractFor,
+  describeContract,
+  findContract,
+  getContract,
+} from './contracts/index.js';
+export type {
+  EndpointContract,
+  EndpointSecurityScheme,
+  HttpContractMeta,
+} from './contracts/index.js';
 
 export { MarketDataBase } from './resources/MarketDataBase.js';
 export { SpotMarket } from './resources/SpotMarket.js';

@@ -189,6 +189,44 @@ describe('HttpClient retry policy (strict)', () => {
     expect(bus.history().length).toBeGreaterThanOrEqual(0);
   });
 
+  it('attaches contract metadata (product/operation/security/weight) to request events', async () => {
+    const bus = new EventBus();
+    const ends: Array<Record<string, unknown>> = [];
+    bus.on('http.request.end', (event) => ends.push(event.payload));
+
+    // Bare spot path on the spot base URL — the registry knows /api/v3/order.
+    server.use(
+      http.get('https://api.binance.com/api/v3/order', () => HttpResponse.json({})),
+    );
+    const client = new HttpClient({
+      baseURL: 'https://api.binance.com/api/v3',
+      apiKey: 'k',
+      apiSecret: 's',
+      minTimeMs: 0,
+      events: bus,
+    });
+    await client.get('/order', { symbol: 'BTCUSDT' }, 'signed');
+
+    expect(ends).toHaveLength(1);
+    expect(ends[0].product).toBe('spot');
+    expect(ends[0].operation).toBe('trading.getOrder');
+    expect(ends[0].security).toBe('signature');
+    expect(ends[0].declaredWeight).toBe(2);
+  });
+
+  it('events for unregistered paths carry no contract metadata', async () => {
+    const bus = new EventBus();
+    const ends: Array<Record<string, unknown>> = [];
+    bus.on('http.request.end', (event) => ends.push(event.payload));
+
+    server.use(http.get('https://api.example.com/unknown', () => HttpResponse.json({})));
+
+    const client = fastClient({ events: bus });
+    await client.get('/unknown');
+    expect(ends[0].product).toBeUndefined();
+    expect(ends[0].operation).toBeUndefined();
+  });
+
   it('retry events carry the reason and delay', async () => {
     const bus = new EventBus();
     const retries: Array<Record<string, unknown>> = [];

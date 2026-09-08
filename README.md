@@ -249,7 +249,9 @@ COIN-M surfaces; `client.products` gives the product-oriented view
 
 ### Execution (idempotent placement + reconciliation)
 
-`client.futures.execution` is the safe way to place orders:
+`client.futures.execution` and `client.spot.execution` are the safe way to place orders — one
+execution semantics across USDⓈ-M, spot and the paper simulator (see
+[Multi-backend execution](#multi-backend-execution-live--paper) below):
 
 ```typescript
 const execution = await client.futures.execution.placeOrder({
@@ -271,9 +273,41 @@ const execution = await client.futures.execution.placeOrder({
   `GET /fapi/v1/order?origClientOrderId=…`: found → the execution is recovered and returned;
   `-2013` (order does not exist) → one safe resubmission with the same clientOrderId; still
   ambiguous → `ExecutionUnknownError` carrying the intent for manual follow-up — never a guess.
-- With a user-data stream attached (`execution.setUserStream(wsUser)`), `ORDER_TRADE_UPDATE`
-  events stream live fills into the ledger.
+- With a user-data stream attached (`execution.setUserStream(wsUser)`), execution reports
+  (`ORDER_TRADE_UPDATE` on futures, `executionReport` on spot) stream live fills into the ledger.
 - `cancelOrder` reconciles the same way, and `execution.reconcile(intentId)` forces a refresh.
+
+### Multi-backend execution (live + paper)
+
+Product specifics live behind `ExecutionAdapter` implementations
+(`FuturesExecutionAdapter`, `SpotExecutionAdapter`, `PaperExecutionAdapter`), so paper trading
+is a first-class execution backend — the same envelope, idempotency and reconciliation
+semantics, zero exchange traffic:
+
+```typescript
+// Paper manager: identical API to client.futures.execution
+const paper = client.createPaperExecutionManager({ initialBalance: 50_000 });
+const fill = await paper.placeOrder({
+  symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.01, intentId: 'strategy-1',
+});
+// fill.status === 'FILLED', fill.fills[0].price — exact decimal strings
+
+// Gateway: route live/paper through one interface, independent ledgers
+const gateway = client.createExecutionGateway({ defaultBackend: 'paper' });
+await gateway.placeOrder({ ... });                        // paper (default)
+await gateway.placeOrder({ ...order }, { backend: 'live' }); // one live order
+gateway.paperEngine.getAccountInfo();                    // simulation state
+```
+
+Standalone single-product clients for focused integrations:
+
+```typescript
+import { createSpotClient, createUSDMClient } from '@nemesis-oss/binance-sdk';
+const spot = createSpotClient({ apiKey, apiSecret });
+await spot.syncTime();
+await spot.market.depth('BTCUSDT', 20);
+spot.close();
+```
 
 ### Local order books
 
@@ -373,6 +407,7 @@ client.events.on('execution.', (event) => console.log(event.scope, event.name, e
 client.events.on('risk.denied', (event) => audit(event.payload));
 client.events.on('ws.', (event) => console.log(event.name, event.payload));
 // http.request.start / http.request.end / http.request.retry / http.request.error
+//   — each carrying contract metadata: product, operation, security, declaredWeight
 // ws.connecting / ws.open / ws.state / ws.reconnecting / ws.rotated / ws.resynced / ws.stale
 // execution.submitted / execution.acked / execution.reconciled / execution.retry / risk.*
 // orderBook.synced / orderBook.desync
@@ -389,6 +424,10 @@ everything to a logger with `forwardEventsToLogger(bus, logger)`.
 - `docs/endpoint-map/*.md` — per-product tables of every implemented endpoint
   (operation → method → path → auth → SDK surface).
 - `ENDPOINT_REGISTRY` / `listEndpoints({ product, method, authentication })` in code.
+- **Contract layer**: `getContract(product, operation)` / `findContract(path, method)` /
+  `contractFor(baseURL, method, path)` — registry entries with normalized security schemes
+  (`none`/`apiKey`/`signature`) and declared request weights; `describeContract()` renders a
+  one-line description for logs and agents.
 - Regenerate everything from the registry with `npm run docs:generate` (the generator
   cross-checks the registry against the actual `http.<verb>()` calls in `src/resources`).
 

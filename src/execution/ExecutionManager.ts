@@ -2,9 +2,8 @@ import { randomUUID } from 'node:crypto';
 import type { EventBus } from '../core/events.js';
 import { Decimal } from '../core/decimal.js';
 import { BinanceApiError, NetworkError } from '../errors/index.js';
-import type { CreateOrderParams, Order } from '../types/trading.types.js';
+import type { CreateOrderParams } from '../types/trading.types.js';
 import type { FuturesTrading } from '../resources/FuturesTrading.js';
-import type { FuturesUserWS } from '../ws/FuturesUserWS.js';
 import type {
   Execution,
   ExecutionFill,
@@ -13,6 +12,14 @@ import type {
 } from './types.js';
 import { ExecutionUnknownError } from './types.js';
 import type { RiskGateway } from '../risk/RiskGateway.js';
+import {
+  FuturesExecutionAdapter,
+  isExecutionAdapter,
+  type ExecutionAdapter,
+  type ExecutionReportShape,
+  type OrderShape,
+  type UserStreamLike,
+} from './adapter.js';
 
 interface PlaceOrderIntent extends CreateOrderParams {
   /** Idempotency key; reused across retries of the same intent. */
@@ -46,11 +53,17 @@ const CLIENT_ORDER_ID_MAX = 36;
  *               never a silent guess;
  *  - duplicate submissions of the same intent return the original execution.
  *
- * When a user-data stream is attached (`setUserStream`), ORDER_TRADE_UPDATE
- * events stream live state (fills, average price, status) into the ledger.
+ * Product specifics (field names, user-stream shapes, error semantics) live in
+ * an {@link ExecutionAdapter}: USDⓈ-M and Spot route through live adapters,
+ * and the paper simulator through `PaperExecutionAdapter` — one execution
+ * envelope, one reconciliation matrix, three backends. Constructing with a raw
+ * `FuturesTrading` (the pre-2.2 form) auto-wraps it in the USDⓈ-M adapter.
+ *
+ * When a user-data stream is attached (`setUserStream`), execution reports
+ * stream live state (fills, average price, status) into the ledger.
  */
 export class ExecutionManager {
-  private readonly trading: FuturesTrading;
+  private readonly adapter: ExecutionAdapter;
   private readonly options: Required<Pick<ExecutionManagerOptions, 'clientOrderIdPrefix' | 'reconcileMaxAttempts' | 'reconcilePollDelayMs' | 'maxLedgerSize'>>;
   private readonly events?: EventBus;
   private readonly riskGateway?: RiskGateway;
@@ -65,10 +78,15 @@ export class ExecutionManager {
   private readonly byClientOrderId = new Map<string, string>();
   /** clientOrderId → in-flight placement promise (dedup). */
   private readonly inFlight = new Map<string, Promise<Execution>>();
-  private userStream: FuturesUserWS | null = null;
 
-  constructor(trading: FuturesTrading, options: ExecutionManagerOptions = {}) {
-    this.trading = trading;
+  constructor(
+    tradingOrAdapter: FuturesTrading | ExecutionAdapter,
+    options: ExecutionManagerOptions = {},
+  ) {
+    this.adapter = isExecutionAdapter(tradingOrAdapter)
+      ? tradingOrAdapter
+      : new FuturesExecutionAdapter(tradingOrAdapter);
+    this.adapter.onReport(this.onExecutionReport);
     this.options = {
       clientOrderIdPrefix: options.clientOrderIdPrefix ?? 'nbsdk',
       reconcileMaxAttempts: options.reconcileMaxAttempts ?? 3,
@@ -79,14 +97,19 @@ export class ExecutionManager {
     this.riskGateway = options.riskGateway;
   }
 
+  /** Product this manager executes against (from its adapter). */
+  get product(): string {
+    return this.adapter.product;
+  }
+
   /**
-   * Feed ORDER_TRADE_UPDATE events into the ledger so executions track live
-   * fill state without extra REST polling.
+   * Feed execution reports into the ledger so executions track live fill
+   * state without extra REST polling. Accepts the product's user-data stream
+   * (futures `ORDER_TRADE_UPDATE`, spot `executionReport`); the adapter
+   * normalizes the shape.
    */
-  setUserStream(ws: FuturesUserWS | null): void {
-    this.userStream?.off('userData', this.onUserDataEvent);
-    this.userStream = ws;
-    ws?.on('userData', this.onUserDataEvent);
+  setUserStream(ws: UserStreamLike | null): void {
+    this.adapter.setUserStream(ws);
   }
 
   /**
@@ -129,17 +152,15 @@ export class ExecutionManager {
 
     this.emit('execution.cancel.submitted', { intentId, symbol, ...options });
     try {
-      const order = await this.trading.cancelOrder(
-        symbol,
-        options.orderId !== undefined
-          ? { orderId: options.orderId }
-          : { origClientOrderId: options.origClientOrderId },
-      );
-      const execution = this.recordFromOrder(order, intentId, 'acked', {
+      const raw = await this.adapter.cancelOrder(symbol, {
+        orderId: options.orderId,
+        origClientOrderId: options.origClientOrderId,
+      });
+      const execution = this.recordFromOrder(raw, intentId, 'acked', {
         requestedQuantity: null,
         requestedPrice: null,
       });
-      this.emit('execution.cancel.acked', { intentId, status: order.status });
+      this.emit('execution.cancel.acked', { intentId, status: execution.status });
       return execution;
     } catch (err) {
       if (err instanceof BinanceApiError && (err.code === -2011 || err.code === -2013)) {
@@ -170,18 +191,19 @@ export class ExecutionManager {
       if (!(err instanceof NetworkError)) throw err;
       // Ambiguous: did the cancel land? Ask the book.
       try {
-        const order = await this.trading.getOrder(symbol, {
+        const raw = await this.adapter.fetchOrder(symbol, {
           origClientOrderId: options.origClientOrderId,
           orderId: options.orderId,
         });
-        const canceled = isTerminalCanceled(order.status);
+        const shape = this.adapter.toOrderShape(raw);
+        const canceled = isTerminalCanceled(shape.status);
         const execution = this.recordFromOrder(
-          order,
+          raw,
           intentId,
           canceled ? 'reconciled' : 'unknown',
           { requestedQuantity: null, requestedPrice: null },
         );
-        this.emit('execution.cancel.reconciled', { intentId, status: order.status });
+        this.emit('execution.cancel.reconciled', { intentId, status: shape.status });
         return execution;
       } catch {
         throw err;
@@ -196,10 +218,10 @@ export class ExecutionManager {
   async reconcile(intentId: string): Promise<Execution> {
     const execution = this.ledger.get(intentId);
     if (!execution) throw new Error(`No execution recorded for intent ${intentId}`);
-    const order = await this.trading.getOrder(execution.symbol, {
+    const raw = await this.adapter.fetchOrder(execution.symbol, {
       origClientOrderId: execution.clientOrderId,
     });
-    return this.recordFromOrder(order, intentId, 'reconciled', {
+    return this.recordFromOrder(raw, intentId, 'reconciled', {
       requestedQuantity: execution.requestedQuantity,
       requestedPrice: execution.requestedPrice,
     });
@@ -245,9 +267,9 @@ export class ExecutionManager {
     // Up to two submissions: the second only happens when reconciliation
     // proved the first never reached the engine (-2013), so it cannot double.
     for (let submissionIndex = 0; submissionIndex < 2; submissionIndex += 1) {
-      let response: NewOrderResponseLike;
+      let response: Record<string, unknown>;
       try {
-        response = await this.trading.createOrder(submission) as NewOrderResponseLike;
+        response = await this.adapter.createOrder(submission);
       } catch (err) {
         if (err instanceof BinanceApiError) {
           // Definitive exchange rejection.
@@ -348,9 +370,9 @@ export class ExecutionManager {
       await this.delay(this.options.reconcilePollDelayMs * attempt);
       this.emit('execution.reconcile.attempt', { intentId, attempt });
       try {
-        const order = await this.trading.getOrder(symbol, { origClientOrderId: clientOrderId });
+        const raw = await this.adapter.fetchOrder(symbol, { origClientOrderId: clientOrderId });
         const execution = this.recordFromOrder(
-          order,
+          raw,
           intentId,
           'reconciled',
           {
@@ -409,62 +431,64 @@ export class ExecutionManager {
   }
 
   private executionFromResponse(
-    response: NewOrderResponseLike,
+    response: Record<string, unknown>,
     submission: CreateOrderParams,
     intentId: string,
     submittedAt: number,
     state: ReconciliationState,
   ): Execution {
-    const executedQty = Decimal.from(response.executedQty ?? '0');
-    const cumQuote = Decimal.from(response.cumQuote ?? '0');
+    const shape = this.adapter.toOrderShape(response);
+    const executedQty = Decimal.from(shape.executedQty);
+    const cumQuote = Decimal.from(shape.cumQuote);
     return {
       intentId,
-      clientOrderId: response.clientOrderId ?? (submission.newClientOrderId as string),
-      exchangeOrderId: response.orderId,
-      symbol: response.symbol,
-      side: response.side,
-      type: response.type,
-      status: response.status,
+      clientOrderId: shape.clientOrderId || (submission.newClientOrderId as string),
+      exchangeOrderId: shape.orderId,
+      symbol: shape.symbol,
+      side: shape.side,
+      type: shape.type,
+      status: shape.status,
       requestedQuantity: decimalOrNull(submission.quantity),
       requestedPrice: decimalOrNull(submission.price),
-      executedQuantity: (response.executedQty ?? '0').toString(),
-      cumulativeQuoteQuantity: (response.cumQuote ?? '0').toString(),
-      averagePrice: averagePrice(executedQty, cumQuote, response.avgPrice),
-      fills: fillsFromResponse(response),
+      executedQuantity: shape.executedQty,
+      cumulativeQuoteQuantity: shape.cumQuote,
+      averagePrice: averagePrice(executedQty, cumQuote, shape.avgPrice),
+      fills: shape.fills,
       reconciliationState: state,
       submittedAt,
-      updatedAt: response.updateTime ?? Date.now(),
-      raw: response as unknown as Record<string, unknown>,
+      updatedAt: shape.updateTime,
+      raw: response,
     };
   }
 
   private recordFromOrder(
-    order: Order,
+    raw: Record<string, unknown>,
     intentId: string,
     state: ReconciliationState,
     requested: { requestedQuantity: string | null; requestedPrice: string | null },
     submittedAt = Date.now(),
   ): Execution {
-    const executedQty = Decimal.from(String(order.executedQty));
-    const cumQuote = Decimal.from(String(order.cumQuote));
+    const shape = this.adapter.toOrderShape(raw);
+    const executedQty = Decimal.from(shape.executedQty);
+    const cumQuote = Decimal.from(shape.cumQuote);
     const execution: Execution = {
       intentId,
-      clientOrderId: order.clientOrderId,
-      exchangeOrderId: order.orderId,
-      symbol: order.symbol,
-      side: order.side,
-      type: order.type,
-      status: order.status,
+      clientOrderId: shape.clientOrderId,
+      exchangeOrderId: shape.orderId,
+      symbol: shape.symbol,
+      side: shape.side,
+      type: shape.type,
+      status: shape.status,
       requestedQuantity: requested.requestedQuantity,
       requestedPrice: requested.requestedPrice,
-      executedQuantity: order.executedQty.toString(),
-      cumulativeQuoteQuantity: order.cumQuote.toString(),
-      averagePrice: averagePrice(executedQty, cumQuote, String(order.avgPrice)),
-      fills: [],
+      executedQuantity: shape.executedQty,
+      cumulativeQuoteQuantity: shape.cumQuote,
+      averagePrice: averagePrice(executedQty, cumQuote, shape.avgPrice),
+      fills: shape.fills,
       reconciliationState: state,
       submittedAt,
-      updatedAt: order.updateTime,
-      raw: order as unknown as Record<string, unknown>,
+      updatedAt: shape.updateTime,
+      raw,
     };
     this.record(execution);
     return execution;
@@ -504,46 +528,43 @@ export class ExecutionManager {
     }
   }
 
-  private readonly onUserDataEvent = (event: unknown): void => {
-    if (
-      event === null ||
-      typeof event !== 'object' ||
-      (event as { e?: string }).e !== 'ORDER_TRADE_UPDATE'
-    ) {
-      return;
-    }
-    const report = (event as { o: Record<string, unknown> }).o;
-    const clientOrderId = String(report.c ?? '');
+  /** Normalized execution reports (from the adapter) update the ledger live. */
+  private readonly onExecutionReport = (report: ExecutionReportShape): void => {
+    const clientOrderId = report.clientOrderId;
     if (!clientOrderId) return;
     const intentId = this.byClientOrderId.get(clientOrderId);
     if (!intentId) return;
     const execution = this.ledger.get(intentId);
     if (!execution) return;
 
-    const lastPrice = String(report.L ?? '0');
-    const lastQty = String(report.l ?? '0');
-    const commission = String(report.n ?? '0');
-    const commissionAsset = String(report.N ?? '');
-
-    execution.status = String(report.X ?? execution.status);
-    if (execution.exchangeOrderId === undefined && report.i !== undefined) {
-      execution.exchangeOrderId = Number(report.i);
+    if (report.status) execution.status = report.status;
+    if (execution.exchangeOrderId === undefined && report.orderId !== undefined) {
+      execution.exchangeOrderId = report.orderId;
     }
-    if (lastQty !== '0' && commission !== '0') {
+
+    const lastQty = report.lastQty;
+    if (lastQty !== undefined && lastQty !== '0' && lastQty !== '') {
       execution.fills.push({
-        price: lastPrice,
+        price: report.lastPrice ?? '0',
         quantity: lastQty,
-        commission: commission === '0' ? undefined : commission,
-        commissionAsset: commissionAsset || undefined,
-        tradeId: report.t !== undefined ? Number(report.t) : undefined,
+        commission:
+          report.commission !== undefined && report.commission !== '0'
+            ? report.commission
+            : undefined,
+        commissionAsset: report.commissionAsset || undefined,
+        tradeId: report.tradeId,
       });
     }
-    const executedQty = Decimal.from(String(report.z ?? execution.executedQuantity));
-    const cumQuote = Decimal.from(String(report.z ?? '0')).mul(String(report.ap ?? '0'));
+
+    const executedQty = Decimal.from(report.executedQty ?? execution.executedQuantity);
+    const cumQuote =
+      report.cumQuote !== undefined
+        ? Decimal.from(report.cumQuote)
+        : executedQty.mul(report.avgPrice ?? '0');
     execution.executedQuantity = executedQty.toString();
     if (!execution.fills.length) {
       execution.averagePrice =
-        averagePrice(executedQty, cumQuote, String(report.ap ?? '0')) ?? execution.averagePrice;
+        averagePrice(executedQty, cumQuote, report.avgPrice ?? '0') ?? execution.averagePrice;
     } else {
       execution.averagePrice = weightedAverage(execution.fills);
     }
@@ -569,23 +590,6 @@ export class ExecutionManager {
 // Helpers
 // ---------------------------------------------------------------------------
 
-interface NewOrderResponseLike {
-  orderId?: number;
-  symbol: string;
-  status: string;
-  clientOrderId?: string;
-  price?: string | number;
-  avgPrice?: string | number;
-  origQty?: string | number;
-  executedQty?: string | number;
-  cumQuote?: string | number;
-  type: string;
-  side: string;
-  time?: number;
-  updateTime?: number;
-  fills?: Array<{ price?: string | number; qty?: string | number; commission?: string | number; commissionAsset?: string }>;
-}
-
 function decimalOrNull(value: string | number | undefined): string | null {
   if (value === undefined) return null;
   return Decimal.from(value).toString();
@@ -603,18 +607,6 @@ function averagePrice(
   if (fallback === undefined || fallback === '') return null;
   const parsed = Decimal.from(fallback);
   return parsed.isZero() ? null : parsed.toString();
-}
-
-function fillsFromResponse(response: NewOrderResponseLike): ExecutionFill[] {
-  if (!Array.isArray(response.fills)) return [];
-  return response.fills
-    .filter((fill) => fill.price !== undefined && fill.qty !== undefined)
-    .map((fill) => ({
-      price: Decimal.from(fill.price as string | number).toString(),
-      quantity: Decimal.from(fill.qty as string | number).toString(),
-      commission: fill.commission !== undefined ? Decimal.from(fill.commission).toString() : undefined,
-      commissionAsset: fill.commissionAsset,
-    }));
 }
 
 function weightedAverage(fills: ExecutionFill[]): string | null {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BinanceClient } from '../../src/client/BinanceClient.js';
+import { createSpotClient, createUSDMClient, createCoinMClient } from '../../src/client/factories.js';
 import { RiskGateway } from '../../src/risk/RiskGateway.js';
 import { ExecutionManager } from '../../src/execution/ExecutionManager.js';
 
@@ -58,5 +59,47 @@ describe('BinanceClient wiring', () => {
     expect(client.futures.userStream).toBeDefined();
     expect(client.spot.wsApi).toBeDefined();
     expect(client.coinm.wsUser).toBeDefined();
+  });
+
+  it('exposes the spot execution manager backed by the spot adapter', () => {
+    const client = new BinanceClient();
+    expect(client.spot.execution).toBeInstanceOf(ExecutionManager);
+    expect(client.spot.execution.product).toBe('spot');
+    // Same reconciliation semantics, spot-shaped order pipeline.
+    expect(client.futures.execution.product).toBe('usdm');
+  });
+
+  it('createPaperExecutionManager returns a paper-backed execution manager', () => {
+    const client = new BinanceClient();
+    const paper = client.createPaperExecutionManager();
+    expect(paper).toBeInstanceOf(ExecutionManager);
+    expect(paper.product).toBe('paper');
+  });
+
+  it('createExecutionGateway routes live/paper with independent ledgers', async () => {
+    const client = new BinanceClient();
+    const gateway = client.createExecutionGateway({ defaultBackend: 'paper' });
+    expect(gateway.backend).toBe('paper');
+    expect(gateway.use('live')).toBe(client.futures.execution);
+    expect(gateway.paperEngine).toBeDefined();
+    expect(gateway.paperEngine.getAccountInfo().balance).toBe(10_000);
+  });
+
+  it('standalone product client factories return full product surfaces + lifecycle', () => {
+    const spot = createSpotClient();
+    const usdm = createUSDMClient();
+    const coinm = createCoinMClient();
+
+    expect(spot.market).toBeInstanceOf(Object);
+    expect(spot.execution).toBeInstanceOf(ExecutionManager);
+    expect(typeof spot.syncTime).toBe('function');
+    expect(typeof spot.close).toBe('function');
+
+    expect(usdm.execution).toBeInstanceOf(ExecutionManager);
+    expect(usdm.data).toBeDefined();
+    expect(typeof usdm.close).toBe('function');
+
+    expect(coinm.market).toBeDefined();
+    expect(typeof coinm.close).toBe('function');
   });
 });

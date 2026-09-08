@@ -2,6 +2,7 @@ import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import Bottleneck from 'bottleneck';
 import { BinanceApiError, BinanceAuthError, NetworkError, RateLimitError } from '../errors/index.js';
 import type { EventBus } from '../core/events.js';
+import { contractFor, type HttpContractMeta } from '../contracts/index.js';
 import { RateLimitTracker, type RateLimitUsage } from './RateLimitTracker.js';
 import { Signer, type SignatureAlgorithm } from './Signer.js';
 import type { TradingPolicy } from './TradingPolicy.js';
@@ -92,6 +93,7 @@ function normalizeHeaders(headers: unknown): Record<string, string> {
 
 export class HttpClient {
   private readonly axios: AxiosInstance;
+  private readonly baseURL: string;
   private readonly limiter: Bottleneck;
   private readonly signer: Signer;
   private readonly rateLimitTracker: RateLimitTracker;
@@ -113,6 +115,7 @@ export class HttpClient {
   private requestCounter = 0;
 
   constructor(options: HttpClientOptions) {
+    this.baseURL = options.baseURL;
     this.apiKey = options.apiKey;
     this.recvWindow = options.recvWindow ?? 5000;
     this.timeoutMs = options.timeoutMs ?? 15_000;
@@ -236,11 +239,21 @@ export class HttpClient {
     this.policy?.check(method, path, params ?? {});
     const requestId = ++this.requestCounter;
     const startedAt = Date.now();
-    this.emitEvent('http.request.start', { requestId, method, path, mode });
+    // Contract metadata (product/operation/security/declared weight) resolved
+    // once per request and attached to every http.request.* event.
+    const contract = contractFor(this.baseURL, method, path);
+    this.emitEvent('http.request.start', {
+      requestId,
+      method,
+      path,
+      mode,
+      product: contract?.product,
+      operation: contract?.operation,
+    });
     return this.limiter.schedule(async () => {
       const throttleMs = this.rateLimitTracker.getThrottleDelayMs();
       if (throttleMs > 0) await sleep(throttleMs);
-      return this.requestWithRetry<T>(method, path, params, mode, 0, requestId, startedAt);
+      return this.requestWithRetry<T>(method, path, params, mode, 0, requestId, startedAt, contract);
     });
   }
 
@@ -332,6 +345,7 @@ export class HttpClient {
     attempt: number,
     requestId: number,
     startedAt: number,
+    contract?: HttpContractMeta,
   ): Promise<T> {
     // Rebuilt per attempt: a retried SIGNED request must carry a fresh
     // timestamp+signature, otherwise the retry itself fails with -1021 once
@@ -353,6 +367,10 @@ export class HttpClient {
         status: res.status,
         latencyMs: Date.now() - startedAt,
         attempt,
+        product: contract?.product,
+        operation: contract?.operation,
+        security: contract?.security,
+        declaredWeight: contract?.declaredWeight,
       });
       return res.data;
     } catch (err) {
@@ -362,6 +380,8 @@ export class HttpClient {
           method,
           path,
           message: 'unexpected non-axios error',
+          product: contract?.product,
+          operation: contract?.operation,
         });
         throw new NetworkError('Unexpected error calling Binance API', err);
       }
@@ -382,9 +402,20 @@ export class HttpClient {
           delayMs: delay,
           status: status ?? null,
           reason: status !== undefined ? `http ${status}` : 'network error',
+          product: contract?.product,
+          operation: contract?.operation,
         });
         await sleep(delay);
-        return this.requestWithRetry<T>(method, path, params, mode, attempt + 1, requestId, startedAt);
+        return this.requestWithRetry<T>(
+          method,
+          path,
+          params,
+          mode,
+          attempt + 1,
+          requestId,
+          startedAt,
+          contract,
+        );
       }
 
       const context = { endpoint: path, method, headers, requestId };
@@ -396,6 +427,9 @@ export class HttpClient {
         code: body?.code ?? null,
         message: body?.msg ?? err.message,
         attempts: attempt + 1,
+        product: contract?.product,
+        operation: contract?.operation,
+        security: contract?.security,
         retryableButUnsafe:
           status !== undefined && RETRYABLE_STATUS.has(status) && !this.canRetry(method, path, err)
             ? true

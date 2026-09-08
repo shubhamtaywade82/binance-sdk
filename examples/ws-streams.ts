@@ -4,7 +4,8 @@ async function main(): Promise<void> {
   const client = new BinanceClient();
 
   client.futures.ws.on('message', (stream: string, payload: unknown) => {
-    console.log(`[${new Date().toISOString()}] ${stream}:`, JSON.stringify(payload));
+    // Tainted `stream` must not flow into the format-string (first) argument.
+    console.log('[%s] %s:', new Date().toISOString(), stream, JSON.stringify(payload));
   });
   client.futures.ws.subscribe(['btcusdt@aggTrade', 'btcusdt@markPrice@1s', 'btcusdt@depth20']);
 

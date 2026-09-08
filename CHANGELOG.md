@@ -5,6 +5,60 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-09-08
+
+Architecture release: the contract layer, multi-backend execution (spot + paper), and
+product-modularity surfaces of the v2 roadmap. No breaking changes — `new ExecutionManager(futuresTrading)`
+still works, all v2.1 behaviour is preserved, and every addition is a new opt-in surface.
+
+### Fixed
+
+- **CI: fire-and-forget subscribe crash**: `ws.subscribe()`/`ws.unsubscribe()` return Promises
+  (v2.1), but legacy callers ignore them; when such a promise rejected (connection closed
+  mid-subscribe, ack timeout) it became an *unhandled* rejection, which terminates Node by
+  default — CI itself crashed on this. The returned promise is now internally guarded: awaiting
+  callers still observe the rejection, while ignored rejections surface as
+  `ws.subscribe.rejected` / `ws.unsubscribe.rejected` events on the observability bus instead
+  of a crashed process.
+- **CodeQL `js/polynomial-redos`**: `stepDecimals()`'s trailing-zero regex was quadratic on
+  adversarial filter strings; replaced with a bounded linear scan.
+- **CodeQL `js/tainted-format-string`**: exchange-supplied stream names no longer interpolate
+  into format-string argument positions (`scripts/smoke-test.ts`, `examples/ws-streams.ts`).
+
+### Added
+
+- **Contract layer (`src/contracts/`)** — machine-readable view of every implemented REST
+  endpoint: normalized security schemes (`none`/`apiKey`/`signature`), declared request weights
+  where Binance documents param-independent ones, path canonicalization (bare resource paths
+  resolve against each host's base URL), and a single query API (`getContract`,
+  `findContract`, `contractFor`, `describeContract`). Shaped so a generated (OpenAPI-spec)
+  implementation can replace the hand-curated backing store without changing consumers.
+- **Contract-aware observability**: every `http.request.*` event now carries
+  `product`, `operation`, `security` and `declaredWeight` resolved from the contract layer —
+  per-request records match the target architecture (requestId, product, endpoint, method,
+  latency, status, weight).
+- **Execution adapters (one execution semantics, three backends)**: product specifics moved
+  behind `ExecutionAdapter` — `FuturesExecutionAdapter` (USDⓈ-M field names +
+  `ORDER_TRADE_UPDATE`), `SpotExecutionAdapter` (`cummulativeQuoteQty`, computed average price,
+  `executionReport` user-stream shape), `PaperExecutionAdapter` (simulator). The
+  `ExecutionManager` (idempotency, in-flight dedup, reconciliation matrix, ledger, risk
+  feed-through) is shared verbatim.
+- **`client.spot.execution`** — the full idempotent placement + reconciliation matrix for spot
+  orders, streaming fills from the spot user-data stream.
+- **Paper trading as an execution backend** — `client.createPaperExecutionManager(options)`:
+  orders route through the local `PaperTradingEngine` simulator and return the identical
+  `Execution` envelope; unknown-order fetches fail with the exchange-identical `-2013`,
+  cancels reconcile through `-2011`, and fills stream in as execution reports just like a
+  live user stream. Strategy code can switch paper → live by changing one configuration value.
+- **ExecutionGateway (`client.createExecutionGateway()`)** — routes orders to the live
+  exchange or the paper simulator through one interface with independent ledgers:
+  `gateway.placeOrder(params, { backend: 'live' | 'paper' })`, `gateway.paperEngine` for
+  simulation state, `gateway.use(backend)` for a scoped manager.
+- **Standalone product clients**: `createSpotClient()`, `createUSDMClient()`,
+  `createCoinMClient()` — single-product surfaces (plus `syncTime`/`close`/
+  `getRateLimitUsage`) built on the same underlying client, for callers that only need one
+  product without the multi-client facade.
+
 ## [2.1.0] - 2026-09-08
 
 Correctness and architecture release, addressing the top findings of the v2.0 code review:

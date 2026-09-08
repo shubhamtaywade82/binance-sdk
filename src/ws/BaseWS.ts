@@ -77,7 +77,16 @@ export class BaseWS extends WsConnection {
    * connection itself). Legacy callers that ignore the return value keep
    * working unchanged.
    */
-  async subscribe(streams: string[]): Promise<void> {
+  subscribe(streams: string[]): Promise<void> {
+    // Fire-and-forget guard: legacy callers ignore this promise, so a rejection
+    // here must never become an unhandled process crash (Node terminates on
+    // unhandled rejections by default). The guard marks the promise handled;
+    // awaiting callers still observe the rejection, and the failure surfaces as
+    // a `ws.subscribe.rejected` event instead of a crashed process.
+    return this.guardFireAndForget(this.subscribeConfirmed(streams), 'ws.subscribe.rejected');
+  }
+
+  private async subscribeConfirmed(streams: string[]): Promise<void> {
     if (!streams.length) return;
     const wanted = streams.filter((stream) => !this.desired.has(stream));
     for (const stream of streams) this.desired.add(stream);
@@ -125,7 +134,11 @@ export class BaseWS extends WsConnection {
    * connected; when not connected the streams are simply dropped from the
    * desired state, so they will not be re-established on the next reconnect.
    */
-  async unsubscribe(streams: string[]): Promise<void> {
+  unsubscribe(streams: string[]): Promise<void> {
+    return this.guardFireAndForget(this.unsubscribeConfirmed(streams), 'ws.unsubscribe.rejected');
+  }
+
+  private async unsubscribeConfirmed(streams: string[]): Promise<void> {
     if (!streams.length) return;
     for (const stream of streams) {
       this.desired.delete(stream);
@@ -234,6 +247,19 @@ export class BaseWS extends WsConnection {
   private removeWaiter(waiter: ConfirmationWaiter): void {
     const index = this.confirmationWaiters.indexOf(waiter);
     if (index >= 0) this.confirmationWaiters.splice(index, 1);
+  }
+
+  /**
+   * Attach an internal no-op catch to the promise so a rejection can never be
+   * *unhandled* (which terminates the process), then return the original
+   * promise: awaiting callers still see the rejection. The failure is
+   * republished as an observability event so it is not silently lost.
+   */
+  private guardFireAndForget(promise: Promise<void>, eventName: string): Promise<void> {
+    void promise.catch((err: Error) => {
+      this.emitEvent(eventName, { connection: this.label, message: err.message });
+    });
+    return promise;
   }
 
   private buildStreamUrl(): string | null {
