@@ -199,7 +199,11 @@ export class Decimal {
       .padStart(Number(SCALE) + 1, '0');
     const intPart = digits.slice(0, digits.length - Number(SCALE));
     let fracPart = digits.slice(digits.length - Number(SCALE));
-    fracPart = fracPart.replace(/0+$/, '');
+    // Linear trailing-zero scan (bounded by SCALE) — a `/0+$/` regex is the
+    // polynomial-redos pattern on tainted inputs (CodeQL flags it).
+    let fracEnd = fracPart.length;
+    while (fracEnd > 0 && fracPart.charCodeAt(fracEnd - 1) === 48) fracEnd--;
+    fracPart = fracPart.slice(0, fracEnd);
     const body = fracPart ? `${intPart}.${fracPart}` : intPart;
     return negative ? `-${body}` : body;
   }
