@@ -1,12 +1,12 @@
-import { BaseWS } from './BaseWS.js';
+import { BaseWS, type BaseWSOptions } from './BaseWS.js';
 import type { KlineInterval } from '../types/market.types.js';
 
 export type ContractType = 'perpetual' | 'current_quarter' | 'next_quarter';
 export type MarkPriceSpeed = '1s' | '3s';
 
 export class FuturesMarketWS extends BaseWS {
-  constructor(baseStreamUrl = 'wss://fstream.binance.com/stream') {
-    super({ baseStreamUrl });
+  constructor(baseStreamUrl = 'wss://fstream.binance.com/stream', options?: Omit<BaseWSOptions, 'baseStreamUrl'>) {
+    super({ baseStreamUrl, ...options, name: options?.name ?? 'futuresMarket' });
   }
 
   kline(symbol: string, interval: KlineInterval): string {

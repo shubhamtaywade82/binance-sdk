@@ -5,6 +5,89 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-09-08
+
+Correctness and architecture release, addressing the top findings of the v2.0 code review:
+execution idempotency, WebSocket lifecycle, decimal-safe money math, observability, risk
+layering, local market state and agent-native documentation. No breaking changes — every new
+behaviour is either additive or the safe-by-default position of a new option.
+
+### Fixed
+
+- **Double-submit protection (P0)**: the HTTP layer no longer blindly retries `POST`/`PUT` on
+  `5xx`/network errors — a timed-out order placement may already be live on the exchange.
+  Retries are now endpoint-aware (`retryPolicy: 'strict'` by default, `'legacy'` escape hatch):
+  `429`/`418` (rejected before processing) retry on any method; `5xx`/network errors only retry
+  idempotent methods and whitelisted paths (`order/test`, …, extend via `idempotentPaths`).
+- **Stale-signature retries**: every retry of a SIGNED request is rebuilt with a fresh
+  `timestamp` + signature, so a retry can no longer fail with `-1021` because it reused the
+  original timestamp.
+- **WebSocket reconnect race (P0)**: `reconnect()`/`subscribe()`-during-connect could create
+  duplicate concurrent connections (the old socket's `close` handler scheduled a second
+  reconnect). Sockets are now generation-guarded: events from retired sockets are ignored, and
+  exactly one authoritative connection exists at any time.
+- **24-hour stream rotation (P0)**: Binance terminates stream connections at 24h; the SDK now
+  opens a replacement at T-23h and swaps traffic with zero data gap, instead of waiting for the
+  server to drop the connection and stall every stream for a reconnect cycle.
+- **`createOrder` response parsing**: USDⓈ-M `newOrderRespType: 'RESULT'` responses are now
+  parsed with the full order schema instead of being force-fit into the ACK schema.
+
+### Added
+
+- **ExecutionManager (`client.futures.execution`)** — idempotent order placement with automatic
+  reconciliation: deterministic `newClientOrderId` derived from the caller's `intentId`
+  (duplicate intents return the original execution), transport-failure recovery by polling
+  `GET /fapi/v1/order?origClientOrderId=…`, exactly-one safe resubmission when reconciliation
+  proves the order never landed (`-2013`), `ExecutionUnknownError` (never a silent guess) when
+  the outcome cannot be determined, reconciling `cancelOrder`, live fill streaming from
+  `ORDER_TRADE_UPDATE` when a user-data stream is attached, and a typed `Execution` envelope
+  whose quantities/prices are exact decimal strings (`averagePrice` from `cumQuote/executedQty`).
+- **WebSocket lifecycle state machine** (`src/ws/WsConnection.ts`): `IDLE/CONNECTING/OPEN/
+  RECONNECTING/CLOSING/CLOSED` with `getState()`, `state` events, `waitForOpen()`,
+  liveness watchdog (`staleMs` — protocol pings count as activity), and observability events
+  for every transition. All market and user stream classes were rebuilt on it.
+- **Subscription acknowledgement & self-healing**: `await ws.subscribe(...)` resolves only on
+  the server's ack; after every (re)connect the live subscription set is verified with
+  `LIST_SUBSCRIPTIONS` and repaired (`resynchronize()`); `ws.on('raw', …)` exposes every frame
+  losslessly parsed, including stream types without a typed schema yet.
+- **Decimal-safe financial math (`src/core/decimal.ts`)**: dependency-free BigInt fixed-point
+  `Decimal` (18-digit scale, banker's rounding) used by the execution, risk, order-book and
+  paper-fee layers; `vwap()`/`sum()` helpers.
+- **Large-integer preservation (`src/core/json.ts`)**: WS frames are parsed with
+  `parseJsonLossless`, so identifiers above 2^53 surface as decimal strings instead of
+  silently-corrupted floats.
+- **Structured observability (`src/core/events.ts`)**: `client.events` bus publishes
+  JSON-serializable `http.*`, `ws.*`, `execution.*`, `risk.*`, `orderBook.*` events with
+  exact/prefix/wildcard subscriptions, scoped child buses, optional history ring, and
+  `forwardEventsToLogger()`.
+- **RiskGateway (`src/risk/RiskGateway.ts`)**: `safety` now builds a `TradingPolicy` superset
+  with `maxLeverage`, `maxOpenNotional` (fed by the execution manager), `maxDailyLoss`
+  (UTC-day kill switch), `maxConsecutiveFailures` (circuit breaker), `riskStatus()` /
+  `getRiskStatus()` / `resetBreaker()`.
+- **Local L2 order books (`src/state/`)**: `OrderBook` (snapshot + diff-depth with `pu`/sequence
+  gap detection, binary-search level maintenance) and `OrderBookEngine`
+  (`client.createFuturesOrderBookEngine()`) with best bid/ask, mid, spread/bps, microprice,
+  imbalance, depth-within-pct and VWAP — all decimal-exact, self-healing on desync.
+- **Layered paper execution (`src/paper/models.ts`)**: pluggable `ExecutionModel`s
+  (InstantFill default, Slippage, PartialFill, OrderBook-VWAP, Latency, Composite) and
+  `FeeModel`s (`TakerMakerFeeModel`, `BinanceUsdmFeeModel`), wired into `PaperTradingEngine`
+  with legacy-preserving defaults; `PaperOrder` gains `PARTIALLY_FILLED` and `commission`.
+- **Endpoint registry & agent-native docs (`src/registry/`, `llms.txt`, `docs/endpoint-map/`)**:
+  machine-readable registry of all 220 implemented endpoints with query API
+  (`listEndpoints`/`findEndpoint`/`endpointCounts`), generated per-product endpoint maps,
+  `llms.txt`/`llms-full.txt`, and `npm run docs:generate` which cross-checks the registry
+  against the live `http.<verb>()` calls in the source.
+- **Product aliases**: `client.futures.usdm` / `client.futures.coinm` / `client.products`.
+
+### Tests
+
+87 new tests (318 total): decimal exactness, lossless JSON (including the 17-digit odd-integer
+edge case), event bus, WS state machine + reconnect-race + rotation + ack semantics (real
+`ws` server), endpoint-aware retry policy (msw, including double-submit and re-signing
+regressions), ExecutionManager idempotency/reconciliation paths, RiskGateway limits and
+circuit breakers, order-book diff/metrics, paper models, registry consistency, and client
+wiring.
+
 ## [2.0.0] - 2026-08-24
 
 The only version ever published to npm before this release is `1.0.0`. Everything below —

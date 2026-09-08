@@ -1,9 +1,9 @@
-import { BaseWS } from './BaseWS.js';
+import { BaseWS, type BaseWSOptions } from './BaseWS.js';
 import type { KlineInterval } from '../types/market.types.js';
 
 export class SpotMarketWS extends BaseWS {
-  constructor(baseStreamUrl = 'wss://stream.binance.com:9443/stream') {
-    super({ baseStreamUrl });
+  constructor(baseStreamUrl = 'wss://stream.binance.com:9443/stream', options?: Omit<BaseWSOptions, 'baseStreamUrl'>) {
+    super({ baseStreamUrl, ...options, name: options?.name ?? 'spotMarket' });
   }
 
   kline(symbol: string, interval: KlineInterval): string {
