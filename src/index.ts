@@ -166,6 +166,7 @@ export {
   createFuturesToolkit,
   toolkitToFormats,
   type FuturesToolkit,
+  type FuturesToolkitOptions,
 } from './tools/index.js';
 export type {
   ToolDefinition,
@@ -183,6 +184,7 @@ export {
   marketDataTools,
   accountTools,
   tradingTools,
+  executionTools,
   spotTools,
   derivedTools,
   wsTools,

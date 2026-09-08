@@ -5,6 +5,36 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-09-08
+
+Agent-native execution surface: the toolkit's order tools now route through the
+`ExecutionGateway`, so MCP/LLM callers get paper/live routing, idempotency and
+reconciliation for free. No breaking changes — `createFuturesToolkit(client)` keeps its
+exact v2.2 behaviour; everything below is additive.
+
+### Added
+
+- **Execution tool group (`execution.tools`)** — six gateway-routed tools:
+  `execution_place_order` (idempotent via `intentId`, `backend: 'live' | 'paper'` per call),
+  `execution_cancel_order` (terminal CANCELED on already-gone orders, never a thrown -2011),
+  `execution_get_order` (searches both ledgers when the backend is unspecified),
+  `execution_list_orders` (per-backend ledger), `execution_reconcile_order` (forced
+  reconciliation for ambiguous intents) and `execution_status` (default backend,
+  risk-gateway snapshot, paper account state). All return the same `Execution`
+  envelope with exact decimal strings on both backends.
+- **`FuturesToolkitOptions`** — `createFuturesToolkit(client, { executionBackend: 'paper',
+  paper: { initialBalance: 50_000 } })` runs the whole toolkit against the simulator;
+  `tk.gateway` exposes the underlying `ExecutionGateway` for code that wants direct access.
+- **Paper-mode MCP servers** — `createBinanceMcpServer(client, { executionBackend: 'paper' })`
+  registers every tool (including the execution group) against the simulator: safe to
+  expose to any host without API-key trading risk. The MCP tool catalog picks up the
+  execution group automatically.
+- Exports: `executionTools`, `FuturesToolkitOptions` from the package root.
+
+### Fixed
+
+- None — additive release.
+
 ## [2.2.0] - 2026-09-08
 
 Architecture release: the contract layer, multi-backend execution (spot + paper), and

@@ -443,11 +443,31 @@ const { openai, anthropic, mcp } = toolkitToFormats(tk); // tool schemas per for
 ```
 
 - **Tool groups**: `market`, `account`, `trading` (USD-M futures), `spot` (Spot), `ws`
-  (streams + WS API), `derived` (composites like size/close/bracket), `paper`.
+  (streams + WS API), `derived` (composites like size/close/bracket), `paper`, and
+  `execution` (v2.3).
+- **Execution tools (v2.3)** — order tools routed through the `ExecutionGateway`, so agents
+  get idempotency, reconciliation and backend routing for free:
+
+```ts
+// Run the whole toolkit against the simulator — no API-key trading risk
+const tk = createFuturesToolkit(client, { executionBackend: 'paper', paper: { initialBalance: 50_000 } });
+
+// Same schema, one extra param per call: backend: 'live' | 'paper' (optional)
+const fill = await call('execution_place_order', {
+  symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.01,
+  intentId: 'strategy-1',            // idempotency: retries return the original execution
+});
+// execution_get_order finds intents across both ledgers; execution_status returns
+// default backend + risk-gateway state + paper account; execution_cancel_order
+// resolves already-gone orders to a terminal CANCELED execution (never a thrown -2011).
+```
+
 - **MCP server**: `npx binance-sdk-mcp` (stdio) auto-registers every tool plus reference
   resources (`binance://futures/symbols`, `binance://futures/premium-index`, `binance://spot/symbols`).
   For local development against source instead of the published package, point your MCP host at
   `mcp-config/local-dev.json` (runs `npx tsx src/mcp/index.ts` directly).
+  `createBinanceMcpServer(client, { executionBackend: 'paper' })` builds a paper-mode server —
+  every order tool routes through the simulator, safe to expose to untrusted hosts.
 - **Agent skills**: Markdown skills under `skills/` — futures trading / market-data / algo /
   portfolio-margin, plus spot trading / market-data — for Skills-Hub-style agents.
 
