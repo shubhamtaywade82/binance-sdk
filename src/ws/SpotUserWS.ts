@@ -1,68 +1,23 @@
-import { EventEmitter } from 'node:events';
-import WebSocket, { type RawData } from 'ws';
 import { parseSpotUserDataEvent, type SpotUserDataEvent } from '../types/spot.types.js';
+import { UserWSBase, type UserWSBaseOptions } from './UserWSBase.js';
 
-export interface SpotUserWSOptions {
-  baseUserUrl: string;
-  getListenKey: () => string | null;
-  reconnectDelayMs?: number;
-  maxReconnectDelayMs?: number;
-}
+export type { UserWSBaseOptions };
 
-export class SpotUserWS extends EventEmitter {
-  private ws: WebSocket | null = null;
-  private reconnectAttempt = 0;
-  private closedByUser = false;
+export interface SpotUserWSOptions extends UserWSBaseOptions {}
 
-  constructor(private readonly options: SpotUserWSOptions) {
-    super();
+/**
+ * Spot listenKey user-data stream.
+ *
+ * Lifecycle is owned by {@link UserWSBase}: one authoritative socket, detached
+ * retired sockets (no reconnect races), exponential backoff, listenKey re-read
+ * on every reconnect.
+ */
+export class SpotUserWS extends UserWSBase {
+  constructor(options: SpotUserWSOptions) {
+    super({ missingListenKeyMessage: 'No spot listenKey available for user data stream', ...options });
   }
 
-  connect(): void {
-    const listenKey = this.options.getListenKey();
-    if (!listenKey) {
-      this.emit('error', new Error('No spot listenKey available for user data stream'));
-      return;
-    }
-    this.closedByUser = false;
-    const url = `${this.options.baseUserUrl}/${listenKey}`;
-    this.ws = new WebSocket(url);
-
-    this.ws.on('open', () => {
-      this.reconnectAttempt = 0;
-      this.emit('open');
-    });
-
-    this.ws.on('message', (raw: RawData) => {
-      this.handleMessage(raw.toString());
-    });
-
-    this.ws.on('close', () => {
-      this.emit('close');
-      if (!this.closedByUser) this.scheduleReconnect();
-    });
-
-    this.ws.on('error', (err: Error) => {
-      this.emit('error', err);
-    });
-  }
-
-  close(): void {
-    this.closedByUser = true;
-    this.ws?.close();
-  }
-
-  reconnect(): void {
-    if (this.ws?.readyState === WebSocket.OPEN) this.ws.close();
-    this.reconnectAttempt = 0;
-    if (!this.closedByUser) this.connect();
-  }
-
-  resetReconnectAttempts(): void {
-    this.reconnectAttempt = 0;
-  }
-
-  private handleMessage(raw: string): void {
+  protected handlePayload(raw: string): void {
     let parsed: unknown;
     try {
       parsed = JSON.parse(raw);
@@ -76,15 +31,5 @@ export class SpotUserWS extends EventEmitter {
     } catch (err) {
       this.emit('error', err);
     }
-  }
-
-  private scheduleReconnect(): void {
-    const base = this.options.reconnectDelayMs ?? 1000;
-    const max = this.options.maxReconnectDelayMs ?? 30_000;
-    const delay = Math.min(base * 2 ** this.reconnectAttempt, max);
-    this.reconnectAttempt += 1;
-    setTimeout(() => {
-      if (!this.closedByUser) this.connect();
-    }, delay);
   }
 }

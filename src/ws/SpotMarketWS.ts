@@ -1,9 +1,17 @@
-import { BaseWS } from './BaseWS.js';
+import { BaseWS, type BaseWSOptions } from './BaseWS.js';
+import type { SdkLogger } from '../util/logger.js';
 import type { KlineInterval } from '../types/market.types.js';
 
 export class SpotMarketWS extends BaseWS {
-  constructor(baseStreamUrl = 'wss://stream.binance.com:9443/stream') {
-    super({ baseStreamUrl });
+  constructor(
+    baseStreamUrl: string | BaseWSOptions = 'wss://stream.binance.com:9443/stream',
+    logger?: SdkLogger,
+  ) {
+    super(
+      typeof baseStreamUrl === 'string'
+        ? { baseStreamUrl, logger }
+        : { logger, ...baseStreamUrl },
+    );
   }
 
   kline(symbol: string, interval: KlineInterval): string {
@@ -26,7 +34,7 @@ export class SpotMarketWS extends BaseWS {
     return `${symbol.toLowerCase()}@depth`;
   }
 
-  depthDiffSpeed(symbol: string, updateSpeed: '100ms'): string {
+  depthDiffSpeed(symbol: string, updateSpeed: '100ms' | '1000ms'): string {
     return `${symbol.toLowerCase()}@depth@${updateSpeed}`;
   }
 

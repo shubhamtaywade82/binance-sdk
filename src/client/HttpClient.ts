@@ -1,9 +1,17 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import Bottleneck from 'bottleneck';
-import { BinanceApiError, BinanceAuthError, NetworkError, RateLimitError } from '../errors/index.js';
+import {
+  AmbiguousExecutionError,
+  BinanceApiError,
+  BinanceAuthError,
+  NetworkError,
+  RateLimitError,
+} from '../errors/index.js';
 import { RateLimitTracker, type RateLimitUsage } from './RateLimitTracker.js';
 import { Signer, type SignatureAlgorithm } from './Signer.js';
 import type { TradingPolicy } from './TradingPolicy.js';
+import type { SdkLogger } from '../util/logger.js';
+import { silentLogger } from '../util/logger.js';
 
 export type AuthMode = 'public' | 'apiKey' | 'signed';
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -38,6 +46,22 @@ export interface HttpClientOptions {
   proxy?: AxiosRequestConfig['proxy'];
   /** Client-side guardrails evaluated before any mutating request is sent. */
   policy?: TradingPolicy;
+  /** Structured logger for request/retry/ambiguity telemetry. Default: silent. */
+  logger?: SdkLogger;
+  /** Per-request options applied on top of the client defaults. */
+  requestDefaults?: HttpClientRequestOptions;
+}
+
+export interface HttpClientRequestOptions {
+  /**
+   * Whether a failed mutation may be retried automatically. Defaults to
+   * 'never' for POST/PUT/DELETE: a 5xx or network failure on a mutating
+   * request is ambiguous (the exchange may have executed it before the
+   * response was lost), so the client raises {@link AmbiguousExecutionError}
+   * instead of silently duplicating the request. Set 'always' only for
+   * endpoints known to be idempotent (e.g. listenKey keep-alive).
+   */
+  retryMutation?: 'never' | 'always';
 }
 
 interface BinanceErrorBody {
@@ -76,6 +100,8 @@ export class HttpClient {
   private retryFactor: number;
   private pendingRequests = 0;
   private timeOffsetMs = 0;
+  private readonly retryMutation: 'never' | 'always';
+  private readonly logger: SdkLogger;
 
   constructor(options: HttpClientOptions) {
     this.apiKey = options.apiKey;
@@ -96,6 +122,8 @@ export class HttpClient {
       safetyMargin: options.rateLimitSafetyMargin,
     });
     this.policy = options.policy;
+    this.retryMutation = options.requestDefaults?.retryMutation ?? 'never';
+    this.logger = options.logger ?? silentLogger;
     this.axios = axios.create({
       baseURL: options.baseURL,
       timeout: this.timeoutMs,
@@ -105,20 +133,20 @@ export class HttpClient {
     this.limiter = new Bottleneck({ minTime: this.minTimeMs });
   }
 
-  async get<T>(path: string, params?: Record<string, unknown>, mode: AuthMode = 'public'): Promise<T> {
-    return this.request<T>('GET', path, params, mode);
+  async get<T>(path: string, params?: Record<string, unknown>, mode: AuthMode = 'public', options?: HttpClientRequestOptions): Promise<T> {
+    return this.request<T>('GET', path, params, mode, options);
   }
 
-  async post<T>(path: string, params?: Record<string, unknown>, mode: AuthMode = 'public'): Promise<T> {
-    return this.request<T>('POST', path, params, mode);
+  async post<T>(path: string, params?: Record<string, unknown>, mode: AuthMode = 'public', options?: HttpClientRequestOptions): Promise<T> {
+    return this.request<T>('POST', path, params, mode, options);
   }
 
-  async put<T>(path: string, params?: Record<string, unknown>, mode: AuthMode = 'public'): Promise<T> {
-    return this.request<T>('PUT', path, params, mode);
+  async put<T>(path: string, params?: Record<string, unknown>, mode: AuthMode = 'public', options?: HttpClientRequestOptions): Promise<T> {
+    return this.request<T>('PUT', path, params, mode, options);
   }
 
-  async delete<T>(path: string, params?: Record<string, unknown>, mode: AuthMode = 'public'): Promise<T> {
-    return this.request<T>('DELETE', path, params, mode);
+  async delete<T>(path: string, params?: Record<string, unknown>, mode: AuthMode = 'public', options?: HttpClientRequestOptions): Promise<T> {
+    return this.request<T>('DELETE', path, params, mode, options);
   }
 
   getRateLimiterStatus(): { minTimeMs: number; queueLength: number } {
@@ -178,16 +206,31 @@ export class HttpClient {
     path: string,
     params: Record<string, unknown> | undefined,
     mode: AuthMode,
+    options?: HttpClientRequestOptions,
   ): Promise<T> {
     // Evaluated before signing and before the limiter, so a refused request costs no
     // rate-limit budget and never has a signature generated for it.
     this.policy?.check(method, path, params ?? {});
     const url = this.buildUrl(path, params, mode);
     const config: AxiosRequestConfig = { method, url, headers: this.buildHeaders(mode) };
+    const retryMutation = options?.retryMutation ?? this.retryMutation;
+    const started = Date.now();
     return this.limiter.schedule(async () => {
       const throttleMs = this.rateLimitTracker.getThrottleDelayMs();
       if (throttleMs > 0) await sleep(throttleMs);
-      return this.requestWithRetry<T>(config, 0, method, path);
+      try {
+        const result = await this.requestWithRetry<T>(config, 0, method, path, params ?? {}, retryMutation);
+        this.logger.debug('request-ok', { method, path, ms: Date.now() - started });
+        return result;
+      } catch (err) {
+        this.logger.warn('request-failed', {
+          method,
+          path,
+          ms: Date.now() - started,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        throw err;
+      }
     });
   }
 
@@ -246,6 +289,8 @@ export class HttpClient {
     attempt: number,
     method: HttpMethod,
     endpoint: string,
+    params: Record<string, unknown>,
+    retryMutation: 'never' | 'always',
   ): Promise<T> {
     this.pendingRequests += 1;
     try {
@@ -261,9 +306,32 @@ export class HttpClient {
       const headers = normalizeHeaders(err.response?.headers);
       this.rateLimitTracker.update(headers);
 
-      if (attempt < this.maxRetries && this.shouldRetry(err)) {
+      // Endpoint-aware retry semantics for a trading SDK:
+      // - 429/418 are definitive rejections (the request was never executed) → always safe to retry.
+      // - 5xx and network failures are only retried for reads, or for mutations the caller has
+      //   explicitly marked idempotent. Ambiguous mutations raise AmbiguousExecutionError so a
+      //   reconciliation layer can query the exchange instead of blindly duplicating the request.
+      const isMutation = method !== 'GET';
+      const ambiguousMutation = isMutation && retryMutation !== 'always';
+      const mutationRetrySafe = !ambiguousMutation;
+
+      if (attempt < this.maxRetries && this.shouldRetry(err, method, mutationRetrySafe)) {
+        this.logger.info('request-retry', { method, endpoint, attempt: attempt + 1, status });
         await sleep(this.calculateDelay(attempt));
-        return this.requestWithRetry<T>(config, attempt + 1, method, endpoint);
+        return this.requestWithRetry<T>(config, attempt + 1, method, endpoint, params, retryMutation);
+      }
+
+      if (ambiguousMutation && (status === undefined || (status >= 500 && status < 600))) {
+        this.logger.warn('request-ambiguous', { method, endpoint, status: status ?? 'network' });
+        throw new AmbiguousExecutionError(
+          status === undefined
+            ? 'Request failed at the network layer; the exchange may or may not have processed it'
+            : `Binance returned ${status}; the request may have been executed before the response was lost`,
+          method,
+          endpoint,
+          params,
+          err,
+        );
       }
 
       const context = { endpoint, method, headers };
@@ -292,9 +360,22 @@ export class HttpClient {
     return Number.isFinite(seconds) ? seconds * 1000 : undefined;
   }
 
-  private shouldRetry(err: { response?: { status?: number } }): boolean {
-    if (err.response?.status !== undefined) return RETRYABLE_STATUS.has(err.response.status);
-    return true;
+  /**
+   * Retry policy:
+   * - 429/418 (rate limits): the request was rejected before execution — always retried.
+   * - Other retryable statuses (5xx): retried for GETs and explicitly-safe mutations only.
+   * - Network-level failures (no response): retried for reads; mutations are ambiguous.
+   */
+  private shouldRetry(
+    err: { response?: { status?: number } },
+    method: HttpMethod,
+    mutationRetrySafe: boolean,
+  ): boolean {
+    const status = err.response?.status;
+    if (status === 429 || status === 418) return true;
+    if (status === undefined) return method === 'GET' || mutationRetrySafe;
+    if (RETRYABLE_STATUS.has(status)) return method === 'GET' || mutationRetrySafe;
+    return false;
   }
 
   private calculateDelay(attempt: number): number {

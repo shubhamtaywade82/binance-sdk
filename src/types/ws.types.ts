@@ -50,8 +50,12 @@ export const WsTradePayloadSchema = z.object({
 export type WsTradePayload = z.infer<typeof WsTradePayloadSchema>;
 
 export const WsDepthUpdatePayloadSchema = z.object({
-  e: z.literal('depthUpdate'),
-  E: z.number(),
+  /**
+   * Event type. Futures diff streams send `e: 'depthUpdate'`; spot diff
+   * streams send no event field at all, so this is optional.
+   */
+  e: z.literal('depthUpdate').optional(),
+  E: z.number().optional(),
   s: z.string(),
   U: z.number(),
   u: z.number(),

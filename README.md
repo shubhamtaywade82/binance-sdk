@@ -124,6 +124,133 @@ const subAccounts = await client.subaccount.list();
 await client.syncTime();
 ```
 
+## Execution Correctness (v2.1)
+
+### Idempotent order submission
+
+`POST /fapi/v1/order` can be accepted by Binance while the response is lost (timeout, connection
+reset, 5xx). A generic retry then creates a *duplicate order*. The HTTP layer refuses to
+blind-retry ambiguous mutations (it raises `AmbiguousExecutionError` instead), and
+`client.futures.execution` / `client.spot.execution` close the loop:
+
+```typescript
+const result = await client.futures.execution.submitOrder({
+  symbol: 'BTCUSDT',
+  side: 'BUY',
+  type: 'MARKET',
+  quantity: '0.001',
+  newClientOrderId: 'strategy-abc-123', // generated when omitted
+});
+// result.outcome: 'created' | 'reconciled-existing' | 'retried'
+// 'reconciled-existing' => the exchange HAD the order (response was lost) —
+// no duplicate was submitted, the existing order is returned instead.
+```
+
+On ambiguity the reconciler queries by `clientOrderId`: found → return the existing order;
+`-2013` not found → retry once (provably safe); reconciliation itself ambiguous →
+`OrderUnconfirmedError` for manual follow-up. Concurrent submissions with the same
+`clientOrderId` are deduped.
+
+Retry semantics are endpoint-aware everywhere: 429/418 (definitive rejections) are always
+retried; 5xx and network failures are retried only for reads, or for mutations explicitly
+marked idempotent (`{ retryMutation: 'always' }` — the SDK already marks listenKey keep-alive).
+
+### WebSocket lifecycle
+
+All stream connections run a state machine (`IDLE → CONNECTING → OPEN → RECONNECTING →
+CLOSING/CLOSED`) with a single authoritative socket. Superseded sockets are retired with their
+listeners detached, which eliminates the reconnect race where an old socket's close event
+schedules a duplicate connection. `await ws.subscribe([...])` now resolves only on the
+exchange's ack frame (`{"result":null,"id":n}`) — or the completed handshake for URL-embedded
+streams — and `LIST_SUBSCRIPTIONS` is exposed. Derivatives market connections proactively
+rotate before Binance's 24h validity window: the replacement dials first and the old socket
+keeps dispatching until the handoff, so rotation is gapless.
+
+```typescript
+const ws = client.futures.ws;
+await ws.subscribe(['btcusdt@depth@100ms', 'btcusdt@kline_1m']);
+console.log(ws.getState());            // 'open'
+console.log(await ws.listSubscriptions());
+```
+
+### Local order book
+
+```typescript
+const feed = await client.watchFuturesOrderBook('BTCUSDT'); // or client.watchSpotOrderBook
+feed.book.bestBid();     // { price: '60000.1', quantity: '2' } — exact decimal strings
+feed.book.spread();      // best ask - best bid
+feed.book.microprice();  // size-weighted mid
+feed.book.imbalance(5);  // bid share of top-5 depth
+feed.book.vwap('bids', 5);
+feed.book.depth(10);     // top levels, bids desc / asks asc
+feed.book.on('desync', () => { /* automatic re-snapshot handles this */ });
+await feed.close();
+```
+
+The book follows Binance's documented sync procedure per product (spot `U/u` semantics, futures
+`pu` chaining), buffers diffs that arrive before the snapshot, detects sequence gaps, and
+re-snapshots automatically. Levels are keyed by *canonical exact decimals* — a snapshot level
+`60000.1` and a diff level `60000.10` are the same price, never two entries.
+
+### Risk gateway
+
+`TradingPolicy`'s static rules (dryRun, readOnly, symbol allowlist, per-order notional,
+withdrawal/transfer switches) are extended with stateful, account-aware limits:
+
+```typescript
+const client = new BinanceClient({
+  apiKey, apiSecret,
+  safety: {
+    allowedSymbols: ['BTCUSDT', 'ETHUSDT'],
+    maxNotionalPerOrder: 5000,
+    maxOrdersPerMinute: 30,      // sliding window, client-side
+    maxOpenOrders: 10,
+    maxLeverage: 20,
+    maxSymbolNotional: { BTCUSDT: 50_000 },
+    maxTotalNotional: 100_000,
+    maxDailyLoss: 2_000,         // kill switch: trips the circuit breaker
+  },
+});
+
+client.risk?.recordRealizedPnl(-150);      // feed from user-stream events
+client.risk?.status();                     // exposure, order count, breaker state
+```
+
+Once the daily-loss kill switch trips, every mutating request is refused until
+`client.risk.reset()` — a misbehaving strategy cannot retry its way past it. Orders accepted
+through `execution` are counted automatically.
+
+### Decimal-safe financial math
+
+Tick/step quantization and risk sizing use exact BigInt-scaled decimal arithmetic
+(`src/util/decimal.ts`), never IEEE-754 floats: `floorToStepExact('0.0037', '0.001') ===
+'0.003'`, `0.1 + 0.2 === 0.3` exactly. `FuturesOps.quantize()` and `sizePosition()` emit
+strings that are exactly what Binance will accept.
+
+### Paper trading execution models
+
+```typescript
+import { PaperTradingEngine, SlippageExecutionModel, TakerMakerFeeModel } from '@nemesis-oss/binance-sdk';
+
+const engine = new PaperTradingEngine({
+  executionModel: new SlippageExecutionModel({ marketSlippageBps: 5 }),
+  feeModel: new TakerMakerFeeModel({ takerFeeBps: 4.5, makerFeeBps: 2 }),
+});
+```
+
+The default remains the legacy instant-fill, no-fee simulator (existing behavior unchanged);
+opting into models adds adverse slippage, taker/maker fees and fee accounting for
+execution-quality research.
+
+### Product architecture & observability
+
+`client.products` is the capability-oriented registry over the same resource instances
+(`products.spot === client.spot`, `products.futures.usdm === client.futures`), with
+`client.futures.usdm` / `client.futures.coinm` ergonomic aliases — the seam future products
+(options, portfolio margin, ...) will slot into. Pass `logger: createConsoleLogger('debug')`
+to get single-line JSON telemetry for HTTP retries, ambiguity events, WS lifecycle, rotation
+and order reconciliation.
+
 ## API Surface
 
 ### Spot (`client.spot`)

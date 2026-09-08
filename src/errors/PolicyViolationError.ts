@@ -7,7 +7,13 @@ export type PolicyRule =
   | 'notionalUndeterminable'
   | 'withdrawalsBlocked'
   | 'transfersBlocked'
-  | 'blockedPath';
+  | 'blockedPath'
+  | 'circuitBreaker'
+  | 'maxOpenOrders'
+  | 'maxOrderRate'
+  | 'maxLeverage'
+  | 'maxPositionNotional'
+  | 'maxDailyLoss';
 
 /**
  * Thrown when a request is refused by the client's own {@link TradingPolicy} — before it

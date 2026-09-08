@@ -5,6 +5,87 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-09-08
+
+Core hardening: correctness and architecture over endpoint count. No breaking changes —
+every addition is opt-in; defaults preserve 2.0.0 behavior exactly.
+
+### Added — execution correctness
+
+- **OrderExecution** (`client.futures.execution` / `client.spot.execution`): idempotent order
+  submission with reconcile-by-`clientOrderId`. On an ambiguous outcome the reconciler queries
+  the exchange: found → the existing order is returned (no duplicate submission); `-2013` not
+  found → one provably-safe retry; unresolvable → `OrderUnconfirmedError`. Concurrent
+  submissions sharing a `clientOrderId` are deduped; a `newClientOrderId` is generated when
+  omitted.
+- **Endpoint-aware HTTP retry**: 429/418 (definitive rejections) are always retried; 5xx and
+  network failures are retried only for reads or mutations explicitly marked idempotent
+  (`{ retryMutation: 'always' }`). Ambiguous mutations raise the new
+  `AmbiguousExecutionError` (carrying method/endpoint/params/clientOrderId) instead of being
+  silently duplicated. ListenKey keep-alive PUTs are marked idempotent.
+- **AmbiguousExecutionError / OrderUnconfirmedError** error types.
+
+### Added — WebSocket lifecycle
+
+- **State machine** (`WsState`: IDLE/CONNECTING/OPEN/RECONNECTING/CLOSING/CLOSED) for every
+  stream connection, with a single authoritative socket. Superseded sockets are retired with
+  listeners detached, eliminating the reconnect race (old socket's close scheduling a
+  duplicate reconnect). `getState()` is exposed.
+- **Subscription acknowledgement**: `await ws.subscribe([...])` resolves on the exchange's
+  ack frame on live connections (and on the handshake for URL-embedded streams); failed
+  subscriptions are rolled back out of the reconnect set. `listSubscriptions()`
+  (LIST_SUBSCRIPTIONS) added.
+- **Proactive 24h connection rotation**: derivatives market connections dial a replacement
+  before Binance's 24-hour validity expires; the old socket keeps dispatching until the
+  replacement is OPEN (gapless), and a failed rotation attempt falls back to the live
+  connection with retry. Configurable via `connectionLifetimeMs` (default 23h).
+- User-stream connections (futures/spot/COIN-M) share a `UserWSBase` with the same
+  guarantees; the listenKey is re-read on every reconnect so rotated keys are picked up.
+
+### Added — market state
+
+- **LocalOrderBook**: maintained L2 state from a depth snapshot plus diff stream, with exact
+  decimal-string levels, per-product sequence semantics (spot `U/u`, futures `pu` chaining),
+  pre-snapshot diff buffering, desync detection and events. Analytics: best bid/ask, spread,
+  mid, microprice, top-N imbalance, per-side VWAP, depth.
+- **watchOrderBook()** / `client.watchFuturesOrderBook()` / `client.watchSpotOrderBook()`:
+  subscribe + snapshot + auto-resync wiring over the existing market WS connections.
+
+### Added — risk & safety
+
+- **RiskGateway** (extends TradingPolicy, constructible via the same `safety` option):
+  stateful `maxOpenOrders`, `maxOrdersPerMinute` (sliding window), `maxLeverage`,
+  `maxSymbolNotional`, `maxTotalNotional`, `maxDailyLoss` kill switch with a sticky circuit
+  breaker (tripped → all mutations refused until `reset()`), and a `status()` snapshot.
+  `client.risk` exposes the instance; orders accepted via `execution` are tracked
+  automatically.
+
+### Added — numerics, simulation, architecture
+
+- **Exact decimal arithmetic** (`src/util/decimal.ts`, exported): BigInt-scaled
+  add/sub/mul/div/compare, `floorToStepExact`/`roundToStepExact`/`formatExact`. `FuturesOps`
+  quantization and risk sizing now compute exactly — no IEEE-754 round-trip on the wire
+  values.
+- **Paper execution models**: pluggable `ExecutionModel` (default `InstantFillModel`,
+  opt-in `SlippageExecutionModel`) and `FeeModel` (default `NoFeeModel`, opt-in
+  `TakerMakerFeeModel`); fee accounting on `PaperAccount.totalFees` and `PaperOrder.fee`.
+- **Product registry**: `client.products.{spot, futures.usdm, futures.coinm, margin, wallet,
+  subaccount}` with capability metadata; ergonomic aliases `client.futures.usdm` /
+  `client.futures.coinm`.
+- **Structured logging**: `logger: createConsoleLogger(level)` on `BinanceClient` emits
+  single-line JSON telemetry (HTTP requests/retries/ambiguity, WS lifecycle/rotation,
+  order reconciliation). Silent by default.
+
+### Fixed
+
+- Spot depth diff streams: the depth payload schema no longer requires `e: 'depthUpdate'`
+  (spot diffs carry no event field), and `E` is optional.
+- Order-book levels arriving under different formatting (`'60000.10'` vs `'60000.1'`) can no
+  longer exist as two separate levels — prices/quantities are canonicalized on entry.
+- `BaseWS`/user-stream `reconnect()` could schedule duplicate reconnects via the retired
+  socket's close event (race described in review); fixed by the state machine.
+- Futures depth diff stream speeds now include `250ms`; spot includes `1000ms`.
+
 ## [2.0.0] - 2026-08-24
 
 The only version ever published to npm before this release is `1.0.0`. Everything below —

@@ -1,9 +1,15 @@
-export const VERSION = '2.0.0';
+export const VERSION = '2.1.0';
 
 export { BinanceClient } from './client/BinanceClient.js';
 export type { BinanceClientOptions } from './client/BinanceClient.js';
 export { HttpClient } from './client/HttpClient.js';
-export type { HttpClientOptions, AuthMode, HttpMethod, SignatureAlgorithm } from './client/HttpClient.js';
+export type {
+  HttpClientOptions,
+  HttpClientRequestOptions,
+  AuthMode,
+  HttpMethod,
+  SignatureAlgorithm,
+} from './client/HttpClient.js';
 export { resolveEnvironment } from './client/endpoints.js';
 export type { Environment, Endpoints } from './client/endpoints.js';
 export { Signer } from './client/Signer.js';
@@ -12,6 +18,27 @@ export { RateLimitTracker } from './client/RateLimitTracker.js';
 export type { RateLimitUsage, RateLimitTrackerOptions } from './client/RateLimitTracker.js';
 export { TradingPolicy } from './client/TradingPolicy.js';
 export type { TradingPolicyOptions } from './client/TradingPolicy.js';
+export { RiskGateway } from './client/RiskGateway.js';
+export type { RiskGatewayOptions, RiskGatewayStatus } from './client/RiskGateway.js';
+export { OrderExecution } from './client/OrderExecution.js';
+export type {
+  OrderTradingResource,
+  ReconcilableOrder,
+  OrderExecutionOptions,
+  SubmitOrderResult,
+  SubmitOutcome,
+} from './client/OrderExecution.js';
+export type {
+  Capability,
+  Products,
+  SpotProduct,
+  FuturesUsdmProduct,
+  CoinMProduct,
+  MarginProduct,
+  WalletProduct,
+  SubAccountProduct,
+  SpotOrderParams,
+} from './client/products.js';
 
 export { MarketDataBase } from './resources/MarketDataBase.js';
 export { SpotMarket } from './resources/SpotMarket.js';
@@ -46,9 +73,25 @@ export type {
   PaperPositionSide,
   PaperTradingOptions,
 } from './paper/PaperTradingEngine.js';
+export {
+  InstantFillModel,
+  SlippageExecutionModel,
+  NoFeeModel,
+  TakerMakerFeeModel,
+} from './paper/execution.js';
+export type {
+  ExecutionModel,
+  FeeModel,
+  PaperFill,
+  PaperOrderRequest,
+  SlippageExecutionModelOptions,
+  TakerMakerFeeModelOptions,
+} from './paper/execution.js';
 
-export { BaseWS } from './ws/BaseWS.js';
+export { BaseWS, WsState } from './ws/BaseWS.js';
 export type { BaseWSOptions } from './ws/BaseWS.js';
+export { UserWSBase } from './ws/UserWSBase.js';
+export type { UserWSBaseOptions } from './ws/UserWSBase.js';
 export { SpotMarketWS } from './ws/SpotMarketWS.js';
 export { SpotUserWS } from './ws/SpotUserWS.js';
 export type { SpotUserWSOptions } from './ws/SpotUserWS.js';
@@ -64,6 +107,26 @@ export { WsApi } from './ws/WsApi.js';
 export type { WsApiOptions } from './ws/WsApi.js';
 export { SpotWsApi } from './ws/SpotWsApi.js';
 export type { SpotWsApiOptions } from './ws/SpotWsApi.js';
+
+export { LocalOrderBook } from './marketstate/LocalOrderBook.js';
+export type {
+  BookLevel,
+  BookTop,
+  LocalOrderBookOptions,
+  OrderBookDiff,
+  OrderBookSnapshot,
+  OrderBookSide,
+} from './marketstate/LocalOrderBook.js';
+export { watchOrderBook } from './marketstate/OrderBookFeed.js';
+export type { OrderBookFeed, OrderBookFeedOptions } from './marketstate/OrderBookFeed.js';
+
+export * from './util/decimal.js';
+export {
+  createConsoleLogger,
+  createTestLogger,
+  silentLogger,
+} from './util/logger.js';
+export type { LogLevel, SdkLogger, ConsoleLoggerOptions } from './util/logger.js';
 
 export * from './types/market.types.js';
 export * from './types/filters.types.js';

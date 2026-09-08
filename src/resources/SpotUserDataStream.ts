@@ -9,7 +9,7 @@ export class SpotUserDataStream {
   }
 
   async keepAliveListenKey(): Promise<Record<string, unknown>> {
-    return this.http.put('/userDataStream', undefined, 'apiKey');
+    return this.http.put('/userDataStream', undefined, 'apiKey', { retryMutation: 'always' });
   }
 
   async closeListenKey(): Promise<Record<string, unknown>> {

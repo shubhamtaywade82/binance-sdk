@@ -10,6 +10,17 @@ import {
   symbolRulesFrom,
   type SymbolRules,
 } from '../types/filters.types.js';
+import {
+  absExact,
+  divExact,
+  floorToStepExact,
+  formatExact,
+  mulExact,
+  parseExact,
+  roundToStepExact,
+  subExact,
+  toNumber,
+} from '../util/decimal.js';
 
 export interface SizePositionParams {
   symbol: string;
@@ -94,7 +105,13 @@ export class FuturesOps {
     return rules;
   }
 
-  /** Round a price to the symbol's tick and a quantity to its step, ready to send. */
+  /**
+   * Round a price to the symbol's tick and a quantity to its step, ready to send.
+   *
+   * Quantization is computed with exact decimal arithmetic (BigInt-scaled),
+   * never through IEEE-754 floats: the string returned is exactly the value
+   * Binance will accept, with no accumulated representation error.
+   */
   async quantize(
     symbol: string,
     values: { price?: number; quantity?: number; marketOrder?: boolean },
@@ -106,11 +123,11 @@ export class FuturesOps {
       price:
         values.price === undefined
           ? undefined
-          : formatToDecimals(roundToStep(values.price, rules.tickSize, rules.tickDecimals), rules.tickDecimals),
+          : formatExact(roundToStepExact(values.price, rules.tickSize), rules.tickDecimals),
       quantity:
         values.quantity === undefined
           ? undefined
-          : formatToDecimals(floorToStep(values.quantity, step, stepDp), stepDp),
+          : formatExact(floorToStepExact(values.quantity, step), stepDp),
       rules,
     };
   }
@@ -119,6 +136,11 @@ export class FuturesOps {
    * Risk-based position sizing. Converts "risk N quote units between entry and stop"
    * into a quantity that satisfies the symbol's step size, lot bounds and min notional,
    * and reports every constraint it could not satisfy instead of silently adjusting risk.
+   *
+   * The risk arithmetic (risk-per-unit, raw quantity, notional, required
+   * margin) is computed with exact decimal arithmetic and converted to number
+   * only for the report fields; `quantityStr` is the exact quantized string
+   * to hand straight to createOrder.
    */
   async sizePosition(params: SizePositionParams): Promise<PositionSizing> {
     const symbol = params.symbol.toUpperCase();
@@ -139,7 +161,9 @@ export class FuturesOps {
       riskAmount = availableBalance * (params.riskPct / 100);
     }
 
-    const riskPerUnit = Math.abs(entryPrice - params.stopPrice);
+    // Exact risk-per-unit: |entry - stop| with no float cancellation noise.
+    const riskPerUnitExact = subExact(parseExact(entryPrice), parseExact(params.stopPrice));
+    const riskPerUnit = Math.abs(toNumber(riskPerUnitExact));
     const stopOnCorrectSide =
       params.side === 'BUY' ? params.stopPrice < entryPrice : params.stopPrice > entryPrice;
     if (!stopOnCorrectSide) {
@@ -154,18 +178,26 @@ export class FuturesOps {
     const minQty = params.marketOrder ? rules.marketMinQty : rules.minQty;
     const maxQty = params.marketOrder ? rules.marketMaxQty : rules.maxQty;
 
-    const rawQuantity = riskPerUnit > 0 ? riskAmount / riskPerUnit : 0;
-    let quantity = floorToStep(rawQuantity, step, stepDp);
+    // Exact: risk / riskPerUnit, then quantize down onto the step.
+    const rawQuantityExact =
+      riskPerUnit > 0
+        ? divExact(parseExact(riskAmount), absExact(riskPerUnitExact))
+        : parseExact(0);
+    const rawQuantity = toNumber(rawQuantityExact);
+    let quantityExact = parseExact(floorToStepExact(rawQuantityExact, step));
+    let quantity = toNumber(quantityExact);
 
     if (quantity > maxQty) {
       reasons.push(`quantity ${quantity} exceeds maxQty ${maxQty}, clamped`);
-      quantity = floorToStep(maxQty, step, stepDp);
+      quantityExact = parseExact(floorToStepExact(maxQty, step));
+      quantity = toNumber(quantityExact);
     }
     if (quantity < minQty) {
       reasons.push(`quantity ${quantity} is below minQty ${minQty} for this symbol`);
     }
 
-    const notional = quantity * entryPrice;
+    const notionalExact = mulExact(quantityExact, parseExact(entryPrice));
+    const notional = toNumber(notionalExact);
     if (rules.minNotional > 0 && notional < rules.minNotional) {
       reasons.push(
         `notional ${notional.toFixed(2)} is below the ${rules.minNotional} minimum; ` +
@@ -175,7 +207,7 @@ export class FuturesOps {
     if (rules.status !== 'TRADING') reasons.push(`symbol status is ${rules.status}, not TRADING`);
 
     const leverage = params.leverage ?? 1;
-    const requiredMargin = notional / leverage;
+    const requiredMargin = toNumber(divExact(notionalExact, parseExact(leverage)));
     if (availableBalance !== undefined && requiredMargin > availableBalance) {
       reasons.push(
         `required margin ${requiredMargin.toFixed(2)} exceeds available balance ${availableBalance.toFixed(2)}`,
@@ -193,7 +225,7 @@ export class FuturesOps {
       riskAmount,
       rawQuantity,
       quantity,
-      quantityStr: formatToDecimals(quantity, stepDp),
+      quantityStr: formatExact(quantityExact, stepDp),
       notional,
       minNotional: rules.minNotional,
       leverage,

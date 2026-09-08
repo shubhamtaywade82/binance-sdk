@@ -9,7 +9,7 @@ export class UserDataStream {
   }
 
   async keepAliveListenKey(): Promise<Record<string, unknown>> {
-    return this.http.put('/fapi/v1/listenKey', undefined, 'apiKey');
+    return this.http.put('/fapi/v1/listenKey', undefined, 'apiKey', { retryMutation: 'always' });
   }
 
   async closeListenKey(): Promise<Record<string, unknown>> {

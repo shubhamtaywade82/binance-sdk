@@ -1,7 +1,7 @@
 import type { AxiosRequestConfig } from 'axios';
 import { HttpClient, type SignatureAlgorithm } from './HttpClient.js';
 import type { RateLimitUsage } from './RateLimitTracker.js';
-import { TradingPolicy, type TradingPolicyOptions } from './TradingPolicy.js';
+import { RiskGateway, type RiskGatewayOptions } from './RiskGateway.js';
 import { resolveEnvironment } from './endpoints.js';
 import { FuturesData } from '../resources/FuturesData.js';
 import { FuturesMarket } from '../resources/FuturesMarket.js';
@@ -27,6 +27,33 @@ import { CoinMMarketWS } from '../ws/CoinMMarketWS.js';
 import { CoinMUserWS } from '../ws/CoinMUserWS.js';
 import { WsApi } from '../ws/WsApi.js';
 import { SpotWsApi } from '../ws/SpotWsApi.js';
+import { OrderExecution } from './OrderExecution.js';
+import { watchOrderBook, type OrderBookFeed, type OrderBookFeedOptions } from '../marketstate/OrderBookFeed.js';
+import type {
+  CoinMProduct,
+  FuturesUsdmProduct,
+  MarginProduct,
+  Products,
+  SpotOrderParams,
+  SpotProduct,
+  SubAccountProduct,
+  WalletProduct,
+} from './products.js';
+import {
+  FUTURES_COINM_CAPABILITIES,
+  FUTURES_USDM_CAPABILITIES,
+  MARGIN_CAPABILITIES,
+  SPOT_CAPABILITIES,
+  SUBACCOUNT_CAPABILITIES,
+  WALLET_CAPABILITIES,
+} from './products.js';
+import type { SdkLogger } from '../util/logger.js';
+import { silentLogger } from '../util/logger.js';
+import type { CreateOrderParams, NewOrderAck, Order } from '../types/trading.types.js';
+import type { SpotOrder } from '../types/spot.types.js';
+
+export { RiskGateway } from './RiskGateway.js';
+export type { RiskGatewayOptions, RiskGatewayStatus } from './RiskGateway.js';
 
 export interface BinanceClientOptions {
   apiKey?: string;
@@ -63,54 +90,39 @@ export interface BinanceClientOptions {
   proxy?: AxiosRequestConfig['proxy'];
   /**
    * Client-side guardrails for autonomous/LLM-driven callers: dry run, read-only, symbol
-   * allowlist, per-order notional cap, withdrawal and transfer switches. Omit for no policy
-   * (all requests permitted). Opting in denies withdrawals unless explicitly allowed.
+   * allowlist, per-order notional cap, withdrawal and transfer switches — plus the
+   * stateful RiskGateway rules (maxOpenOrders, maxOrdersPerMinute, maxLeverage,
+   * maxSymbolNotional, maxTotalNotional, maxDailyLoss, circuit breaker). Omit for no
+   * policy (all requests permitted). Opting in denies withdrawals unless explicitly allowed.
    */
-  safety?: TradingPolicyOptions;
+  safety?: RiskGatewayOptions;
+  /** Structured JSON-lines logger for SDK internals (HTTP retries, WS lifecycle, reconciliation). Default: silent. */
+  logger?: SdkLogger;
 }
 
 export class BinanceClient {
-  readonly spot: {
-    market: SpotMarket;
-    account: SpotAccount;
-    trading: SpotTrading;
-    userStream: SpotUserDataStream;
-    ws: SpotMarketWS;
-    wsUser: SpotUserWS;
-    wsApi: SpotWsApi;
-  };
-  readonly futures: {
-    market: FuturesMarket;
-    data: FuturesData;
-    account: FuturesAccount;
-    trading: FuturesTrading;
-    ops: FuturesOps;
-    userStream: UserDataStream;
-    ws: FuturesMarketWS;
-    wsUser: FuturesUserWS;
-    wsApi: WsApi;
-  };
-  readonly coinm: {
-    market: CoinMMarket;
-    account: CoinMAccount;
-    trading: CoinMTrading;
-    userStream: CoinMUserDataStream;
-    ws: CoinMMarketWS;
-    wsUser: CoinMUserWS;
-  };
-  readonly margin: {
-    account: MarginAccount;
-    trading: MarginTrading;
-  };
-  readonly wallet: Wallet;
-  readonly subaccount: SubAccount;
+  readonly spot: SpotProduct;
+  readonly futures: FuturesUsdmProduct;
+  readonly coinm: CoinMProduct;
+  readonly margin: MarginProduct;
+  readonly wallet: WalletProduct;
+  readonly subaccount: SubAccountProduct;
+  /**
+   * The product registry: the capability-oriented view of the same resource
+   * instances (Core → Product → Capability → Endpoint). `client.products.spot
+   * === client.spot`, `client.products.futures.usdm === client.futures`.
+   */
+  readonly products: Products;
   /** The active guardrail policy, or undefined when no `safety` config was supplied. */
-  readonly policy?: TradingPolicy;
+  readonly policy?: RiskGateway;
+  /** The RiskGateway instance behind `policy` (same object), or undefined. */
+  readonly risk?: RiskGateway;
 
   private readonly authHttp: HttpClient;
   private readonly spotHttp: HttpClient;
   private readonly dapiHttp: HttpClient;
   private readonly sapiHttp: HttpClient;
+  private readonly logger: SdkLogger;
   private listenKeyValue: string | null = null;
   private keepAliveInterval: NodeJS.Timeout | null = null;
   private spotListenKeyValue: string | null = null;
@@ -141,9 +153,13 @@ export class BinanceClient {
 
   constructor(options: BinanceClientOptions = {}) {
     const { endpoints } = resolveEnvironment(options);
-    this.policy = options.safety ? new TradingPolicy(options.safety) : undefined;
+    this.logger = options.logger ?? silentLogger;
+    const risk = options.safety ? new RiskGateway(options.safety) : undefined;
+    this.policy = risk;
+    this.risk = risk;
     const httpOptions = {
-      policy: this.policy,
+      policy: risk,
+      logger: this.logger.child('http'),
       apiKey: options.apiKey,
       apiSecret: options.apiSecret,
       privateKey: options.privateKey,
@@ -163,15 +179,20 @@ export class BinanceClient {
 
     this.spotHttp = new HttpClient({ baseURL: endpoints.restSpot, ...httpOptions });
     const spotHttp = this.spotHttp;
+    const spotMarket = new SpotMarket(spotHttp);
+    const spotTrading = new SpotTrading(spotHttp);
     this.spot = {
-      market: new SpotMarket(spotHttp),
+      id: 'spot',
+      capabilities: SPOT_CAPABILITIES,
+      market: spotMarket,
       account: new SpotAccount(spotHttp),
-      trading: new SpotTrading(spotHttp),
+      trading: spotTrading,
       userStream: new SpotUserDataStream(spotHttp),
-      ws: new SpotMarketWS(endpoints.wsSpotMarket),
+      ws: new SpotMarketWS(endpoints.wsSpotMarket, this.logger.child('spot-ws')),
       wsUser: new SpotUserWS({
         baseUserUrl: endpoints.wsSpotUser,
         getListenKey: () => this.spotListenKeyValue,
+        logger: this.logger.child('spot-user-ws'),
       }),
       wsApi: new SpotWsApi({
         baseUrl: endpoints.wsSpotApi,
@@ -181,6 +202,25 @@ export class BinanceClient {
         signatureAlgorithm: options.signatureAlgorithm,
         recvWindow: options.recvWindow,
       }),
+      execution: new OrderExecution<SpotOrderParams, SpotOrder>({
+        trading: spotTrading,
+        logger: this.logger.child('spot-execution'),
+        onOrderAccepted: (order) =>
+          risk?.recordOrderPlaced({
+            clientOrderId: order.clientOrderId,
+            orderId: order.orderId,
+            symbol: order.symbol,
+          }),
+      }),
+      watchOrderBook: (symbol: string, feedOptions?: Partial<OrderBookFeedOptions>) =>
+        watchOrderBook({
+          symbol,
+          variant: 'spot',
+          ws: this.spot.ws,
+          market: spotMarket,
+          streamName: this.spot.ws.depthDiffSpeed(symbol.toLowerCase(), '100ms'),
+          ...feedOptions,
+        }),
     };
 
     const futuresMarket = new FuturesMarket(
@@ -196,16 +236,19 @@ export class BinanceClient {
     const futuresTrading = new FuturesTrading(this.authHttp);
 
     this.futures = {
+      id: 'futures.usdm',
+      capabilities: FUTURES_USDM_CAPABILITIES,
       market: futuresMarket,
       data: futuresData,
       account: futuresAccount,
       trading: futuresTrading,
       ops: new FuturesOps(futuresMarket, futuresData, futuresAccount, futuresTrading),
       userStream: new UserDataStream(this.authHttp),
-      ws: new FuturesMarketWS(endpoints.wsMarket),
+      ws: new FuturesMarketWS(endpoints.wsMarket, this.logger.child('futures-ws')),
       wsUser: new FuturesUserWS({
         baseUserUrl: endpoints.wsUser,
         getListenKey: () => this.listenKeyValue,
+        logger: this.logger.child('futures-user-ws'),
       }),
       wsApi: new WsApi({
         baseUrl: endpoints.wsApi,
@@ -215,28 +258,72 @@ export class BinanceClient {
         signatureAlgorithm: options.signatureAlgorithm,
         recvWindow: options.recvWindow,
       }),
+      execution: new OrderExecution<CreateOrderParams, NewOrderAck | Order>({
+        trading: futuresTrading,
+        logger: this.logger.child('futures-execution'),
+        onOrderAccepted: (order) =>
+          risk?.recordOrderPlaced({
+            clientOrderId: order.clientOrderId,
+            orderId: order.orderId,
+            symbol: order.symbol,
+          }),
+      }),
+      watchOrderBook: (symbol: string, feedOptions?: Partial<OrderBookFeedOptions>) =>
+        watchOrderBook({
+          symbol,
+          variant: 'futures',
+          ws: this.futures.ws,
+          market: futuresMarket,
+          streamName: this.futures.ws.depthDiffSpeed(symbol.toLowerCase(), '100ms'),
+          ...feedOptions,
+        }),
+      // Ergonomic aliases are assigned after the surfaces exist (below).
+      usdm: undefined as unknown as FuturesUsdmProduct,
+      coinm: undefined as unknown as CoinMProduct,
     };
 
     this.dapiHttp = new HttpClient({ baseURL: endpoints.restDapiRoot, ...httpOptions });
+    const coinmMarket = new CoinMMarket(new HttpClient({ baseURL: endpoints.restDapi, ...httpOptions }));
     this.coinm = {
-      market: new CoinMMarket(new HttpClient({ baseURL: endpoints.restDapi, ...httpOptions })),
+      id: 'futures.coinm',
+      capabilities: FUTURES_COINM_CAPABILITIES,
+      market: coinmMarket,
       account: new CoinMAccount(this.dapiHttp),
       trading: new CoinMTrading(this.dapiHttp),
       userStream: new CoinMUserDataStream(this.dapiHttp),
-      ws: new CoinMMarketWS(endpoints.wsDapiMarket),
+      ws: new CoinMMarketWS(endpoints.wsDapiMarket, this.logger.child('coinm-ws')),
       wsUser: new CoinMUserWS({
         baseUserUrl: endpoints.wsDapiUser,
         getListenKey: () => this.coinmListenKeyValue,
+        logger: this.logger.child('coinm-user-ws'),
       }),
     };
+    this.futures.usdm = this.futures;
+    this.futures.coinm = this.coinm;
 
     this.sapiHttp = new HttpClient({ baseURL: endpoints.restApiRoot, ...httpOptions });
     this.margin = {
+      id: 'margin',
+      capabilities: MARGIN_CAPABILITIES,
       account: new MarginAccount(this.sapiHttp),
       trading: new MarginTrading(this.sapiHttp),
     };
-    this.wallet = new Wallet(this.sapiHttp);
-    this.subaccount = new SubAccount(this.sapiHttp);
+    this.wallet = Object.assign(new Wallet(this.sapiHttp), {
+      id: 'wallet',
+      capabilities: WALLET_CAPABILITIES,
+    });
+    this.subaccount = Object.assign(new SubAccount(this.sapiHttp), {
+      id: 'subaccount',
+      capabilities: SUBACCOUNT_CAPABILITIES,
+    });
+
+    this.products = {
+      spot: this.spot,
+      futures: { usdm: this.futures, coinm: this.coinm },
+      margin: this.margin,
+      wallet: this.wallet,
+      subaccount: this.subaccount,
+    };
   }
 
   /**
@@ -269,6 +356,20 @@ export class BinanceClient {
       coinm: this.dapiHttp.getRateLimitUsage(),
       sapi: this.sapiHttp.getRateLimitUsage(),
     };
+  }
+
+  /**
+   * Live-maintained L2 order book for a USD-M futures symbol: subscribes the
+   * diff stream, snapshots REST depth, and re-snapshots automatically on any
+   * sequence gap. Returns the book plus a close() to stop the feed.
+   */
+  watchFuturesOrderBook(symbol: string, options?: Partial<OrderBookFeedOptions>): Promise<OrderBookFeed> {
+    return this.futures.watchOrderBook(symbol, options);
+  }
+
+  /** Live-maintained L2 order book for a spot symbol. */
+  watchSpotOrderBook(symbol: string, options?: Partial<OrderBookFeedOptions>): Promise<OrderBookFeed> {
+    return this.spot.watchOrderBook(symbol, options);
   }
 
   async startUserStream(): Promise<string> {

@@ -83,4 +83,55 @@ describe('FuturesUserWS', () => {
     expect(err.message).toContain('listenKey');
     client.close();
   });
+
+  it('reconnect() retires the old socket without a duplicate reconnect storm', async () => {
+    let connections = 0;
+    server.on('connection', (socket) => {
+      connections += 1;
+    });
+
+    const client = new FuturesUserWS({
+      baseUserUrl: `ws://localhost:${port}`,
+      getListenKey: () => 'lk',
+      reconnectDelayMs: 30,
+      maxReconnectDelayMs: 30,
+    });
+    client.on('error', () => undefined);
+    client.connect();
+    await new Promise<void>((resolve) => client.once('open', resolve));
+    expect(connections).toBe(1);
+
+    client.reconnect();
+    await new Promise<void>((resolve) => client.once('open', resolve));
+
+    // Any rogue scheduled reconnect gets time to fire — none should.
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    expect(connections).toBe(2);
+    client.close();
+  });
+
+  it('re-reads a rotated listenKey on reconnect', async () => {
+    let listenKey = 'key-1';
+    const requestedKeys: string[] = [];
+    server.on('connection', (socket, req) => {
+      requestedKeys.push((req.url ?? '').split('/').pop() ?? '');
+    });
+
+    const client = new FuturesUserWS({
+      baseUserUrl: `ws://localhost:${port}`,
+      getListenKey: () => listenKey,
+      reconnectDelayMs: 20,
+      maxReconnectDelayMs: 20,
+    });
+    client.on('error', () => undefined);
+    client.connect();
+    await new Promise<void>((resolve) => client.once('open', resolve));
+
+    listenKey = 'key-2';
+    client.reconnect();
+    await new Promise<void>((resolve) => client.once('open', resolve));
+
+    expect(requestedKeys).toEqual(['key-1', 'key-2']);
+    client.close();
+  });
 });

@@ -1,6 +1,22 @@
 import { FuturesMarket } from '../resources/FuturesMarket.js';
+import {
+  InstantFillModel,
+  NoFeeModel,
+  type ExecutionModel,
+  type FeeModel,
+} from './execution.js';
 
 export type PaperPositionSide = 'LONG' | 'SHORT' | 'NONE';
+
+export { InstantFillModel, SlippageExecutionModel, NoFeeModel, TakerMakerFeeModel } from './execution.js';
+export type {
+  ExecutionModel,
+  FeeModel,
+  PaperFill,
+  PaperOrderRequest,
+  SlippageExecutionModelOptions,
+  TakerMakerFeeModelOptions,
+} from './execution.js';
 
 export interface PaperPosition {
   symbol: string;
@@ -26,11 +42,15 @@ export interface PaperOrder {
   avgFillPrice: number;
   /** Realized PnL booked by this order, if it reduced or closed a position. */
   realizedPnl: number;
+  /** Quote-unit fee booked by the fee model (0 with the default NoFeeModel). */
+  fee?: number;
+  /** Execution model that produced the fill (audit trail). */
+  executionModel?: string;
   createdAt: number;
 }
 
 export interface PaperAccount {
-  /** Wallet balance: starts at initialBalance and moves only with realized PnL. */
+  /** Wallet balance: starts at initialBalance and moves with realized PnL. */
   balance: number;
   /** Wallet balance minus margin currently locked in open positions. */
   availableBalance: number;
@@ -38,6 +58,8 @@ export interface PaperAccount {
   totalWalletBalance: number;
   realizedPnl: number;
   unrealizedPnl: number;
+  /** Cumulative quote-unit fees booked by the fee model. */
+  totalFees: number;
   positions: Record<string, PaperPosition>;
   orders: PaperOrder[];
 }
@@ -46,6 +68,10 @@ export interface PaperTradingOptions {
   initialBalance?: number;
   /** Injectable so tests and offline callers can supply their own price source. */
   market?: FuturesMarket;
+  /** Execution semantics. Default: {@link InstantFillModel} (legacy behavior). */
+  executionModel?: ExecutionModel;
+  /** Fee schedule. Default: {@link NoFeeModel} (legacy behavior). */
+  feeModel?: FeeModel;
 }
 
 function emptyPosition(symbol: string): PaperPosition {
@@ -65,19 +91,27 @@ function emptyPosition(symbol: string): PaperPosition {
  * In-memory simulator for USD-M futures fills. Prices come from the live public
  * market endpoints; nothing is ever sent to the exchange.
  *
- * Accounting model: `balance` moves only on realized PnL. Opening a position locks
- * `notional / leverage` of margin out of `availableBalance`; reducing it releases
- * that margin pro-rata and books the realized PnL. Orders fill instantly at the
- * current mark for MARKET, or at the stated limit price for LIMIT — there is no
- * order book simulation, slippage or funding.
+ * Accounting model: `balance` moves only on realized PnL and fees. Opening a
+ * position locks `notional / leverage` of margin out of `availableBalance`;
+ * reducing it releases that margin pro-rata and books the realized PnL.
+ *
+ * Execution semantics are pluggable: the default is the legacy instant-fill
+ * (MARKET at the current mark, LIMIT at the stated price, no fees), while
+ * {@link SlippageExecutionModel} and {@link TakerMakerFeeModel} add adverse
+ * execution noise and fee accounting for execution-quality research. There is
+ * still no order book, queue-position or funding simulation.
  */
 export class PaperTradingEngine {
   private readonly account: PaperAccount;
   private readonly market: FuturesMarket;
+  private readonly executionModel: ExecutionModel;
+  private readonly feeModel: FeeModel;
   private orderIdCounter = 1_000_000;
 
   constructor(options: PaperTradingOptions = {}) {
     this.market = options.market ?? new FuturesMarket();
+    this.executionModel = options.executionModel ?? new InstantFillModel();
+    this.feeModel = options.feeModel ?? new NoFeeModel();
     const initialBalance = options.initialBalance ?? 10_000;
     this.account = {
       balance: initialBalance,
@@ -85,6 +119,7 @@ export class PaperTradingEngine {
       totalWalletBalance: initialBalance,
       realizedPnl: 0,
       unrealizedPnl: 0,
+      totalFees: 0,
       positions: {},
       orders: [],
     };
@@ -121,7 +156,21 @@ export class PaperTradingEngine {
     if (type === 'LIMIT' && !(params.price! > 0)) throw new Error('Price required for LIMIT orders');
 
     const marketPrice = await this.getMarketPrice(symbol);
-    const fillPrice = type === 'MARKET' ? marketPrice : (params.price as number);
+
+    // Execution and fee models decide the fill; the legacy default is
+    // instant-fill at the mark/limit with no fee, byte-for-byte identical to
+    // the pre-model engine.
+    const request = {
+      symbol,
+      side,
+      type,
+      quantity,
+      limitPrice: params.price,
+      leverage,
+    };
+    const rawFill = this.executionModel.fill(request, { marketPrice });
+    const fee = this.feeModel.computeFee(rawFill, request);
+    const fillPrice = rawFill.avgPrice;
 
     const position = this.positionFor(symbol);
     const opposing =
@@ -129,7 +178,7 @@ export class PaperTradingEngine {
 
     // Only the quantity that opens or extends exposure consumes new margin.
     const openingQty = opposing ? Math.max(0, quantity - position.quantity) : quantity;
-    const requiredMargin = (openingQty * fillPrice) / leverage;
+    const requiredMargin = (openingQty * fillPrice) / leverage + fee;
     if (requiredMargin > this.account.availableBalance + 1e-9) {
       throw new Error(
         `Insufficient balance. Required: ${requiredMargin.toFixed(2)}, ` +
@@ -138,6 +187,11 @@ export class PaperTradingEngine {
     }
 
     const realizedPnl = this.applyFill(position, side, quantity, fillPrice, leverage);
+    if (fee > 0) {
+      this.account.balance -= fee;
+      this.account.availableBalance -= fee;
+      this.account.totalFees += fee;
+    }
     this.markToMarket(symbol, marketPrice);
     this.recomputeTotals();
 
@@ -152,6 +206,8 @@ export class PaperTradingEngine {
       filledQuantity: quantity,
       avgFillPrice: fillPrice,
       realizedPnl,
+      fee,
+      executionModel: rawFill.model,
       createdAt: Date.now(),
     };
     this.account.orders.push(order);

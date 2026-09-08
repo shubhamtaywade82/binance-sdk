@@ -9,7 +9,7 @@ export class CoinMUserDataStream {
   }
 
   async keepAliveListenKey(): Promise<Record<string, unknown>> {
-    return this.http.put('/dapi/v1/listenKey', undefined, 'apiKey');
+    return this.http.put('/dapi/v1/listenKey', undefined, 'apiKey', { retryMutation: 'always' });
   }
 
   async closeListenKey(): Promise<Record<string, unknown>> {
