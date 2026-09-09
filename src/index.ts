@@ -159,6 +159,36 @@ export type { WsApiOptions } from './ws/WsApi.js';
 export { SpotWsApi } from './ws/SpotWsApi.js';
 export type { SpotWsApiOptions } from './ws/SpotWsApi.js';
 
+// v3 WebSocket platform
+export { WsPlatform, createWsPlatform, familyLimits } from './ws/platform/WsPlatform.js';
+export type { WsPlatformOptions, WsFamilyStreams, WsApiSurface } from './ws/platform/WsPlatform.js';
+export { Subscription } from './ws/platform/Subscription.js';
+export type { SubscriptionState } from './ws/platform/types.js';
+export { FamilyConnectionPool } from './ws/platform/ConnectionPool.js';
+export type { FamilyConnectionPoolOptions, PooledConnection } from './ws/platform/ConnectionPool.js';
+export { FamilySubscriptionRegistry } from './ws/platform/SubscriptionRegistry.js';
+export { WsHeartbeat } from './ws/platform/Heartbeat.js';
+export type { WsHeartbeatOptions } from './ws/platform/Heartbeat.js';
+export { RenewalController } from './ws/platform/RenewalController.js';
+export type { RenewalControllerOptions, RenewableConnection } from './ws/platform/RenewalController.js';
+export { exponentialBackoff, fixedBackoff, linearBackoff } from './ws/platform/ReconnectPolicy.js';
+export type { ExponentialBackoffOptions } from './ws/platform/ReconnectPolicy.js';
+export { WsApiClient } from './ws/platform/WsApiClient.js';
+export type { WsApiClientOptions, WsApiClientState, WsRequestOptions } from './ws/platform/WsApiClient.js';
+export { FuturesWsApiClient, SpotWsApiClient } from './ws/platform/ProductWsApi.js';
+export {
+  WS_FAMILY_LIMITS,
+  WS_PLATFORM_DEFAULTS,
+} from './ws/platform/types.js';
+export type {
+  WsFamily,
+  WsFamilyLimits,
+  WsConnectionStats,
+  WsPlatformStats,
+  SubscribeOptions,
+  ReconnectPolicy,
+} from './ws/platform/types.js';
+
 export * from './types/market.types.js';
 export * from './types/filters.types.js';
 export * from './types/futures.types.js';

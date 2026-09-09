@@ -1,0 +1,81 @@
+{
+  "catalogVersion": 1,
+  "generatedAt": "2026-09-09T03:27:17.394Z",
+  "description": "WebSocket platform contract: stream families with documented Binance connection limits, endpoints per environment, and the SDK renewal/liveness policy. Derived from src/ws/platform/types.ts (WS_FAMILY_LIMITS / WS_PLATFORM_DEFAULTS) and src/client/endpoints.ts.",
+  "connectionLimits": {
+    "lifetimeHours": 24,
+    "serverPingIntervalMinutes": 3,
+    "pongWindowMinutes": 10
+  },
+  "listenKeyKeepaliveMinutes": 30,
+  "families": {
+    "usdm": {
+      "limits": {
+        "maxStreamsPerConnection": 200,
+        "defaultMaxConnections": 10
+      },
+      "endpoints": {
+        "live": {
+          "market": "wss://fstream.binance.com/stream",
+          "wsApi": "wss://ws-fapi.binance.com/ws-fapi/v1"
+        },
+        "testnet": {
+          "market": "wss://fstream.binancefuture.com/stream",
+          "wsApi": "wss://ws-fapi.binance.com/ws-fapi/v1"
+        },
+        "demo": {
+          "market": "wss://demo-fstream.binance.com/stream",
+          "wsApi": "wss://demo-fapi.binance.com/ws-fapi/v1"
+        }
+      }
+    },
+    "spot": {
+      "limits": {
+        "maxStreamsPerConnection": 1024,
+        "defaultMaxConnections": 4
+      },
+      "endpoints": {
+        "live": {
+          "market": "wss://stream.binance.com:9443/stream",
+          "wsApi": "wss://ws-api.binance.com:443/ws-api/v3"
+        },
+        "testnet": {
+          "market": "wss://testnet.binance.vision/stream",
+          "wsApi": "wss://testnet.binance.vision/ws-api/v3"
+        },
+        "demo": {
+          "market": "wss://stream.binance.com:9443/stream",
+          "wsApi": "wss://ws-api.binance.com:443/ws-api/v3"
+        }
+      }
+    },
+    "coinm": {
+      "limits": {
+        "maxStreamsPerConnection": 200,
+        "defaultMaxConnections": 10
+      },
+      "endpoints": {
+        "live": {
+          "market": "wss://dstream.binance.com/stream"
+        },
+        "testnet": {
+          "market": "wss://dstream.binancefuture.com/stream"
+        },
+        "demo": {
+          "market": "wss://dstream.binancefuture.com/stream"
+        }
+      }
+    }
+  },
+  "platform": {
+    "rotationMs": 82800000,
+    "rotationHours": 23,
+    "renewalJitterMs": 600000,
+    "staleMs": 600000,
+    "heartbeatIntervalMs": 30000,
+    "maxConcurrentRenewals": 1,
+    "requestTimeoutMs": 10000,
+    "reconnectBaseDelayMs": 1000,
+    "reconnectMaxDelayMs": 30000
+  }
+}

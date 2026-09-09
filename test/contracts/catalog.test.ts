@@ -2,6 +2,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ENDPOINT_REGISTRY, endpointCounts } from '../../src/registry/endpoints.js';
+import {
+  WS_FAMILY_LIMITS,
+  WS_PLATFORM_DEFAULTS,
+} from '../../src/ws/platform/types.js';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 const CONTRACTS = join(ROOT, 'contracts');
@@ -68,6 +72,61 @@ describe('contracts catalog (v3 inventory layer)', () => {
     expect(index.totalEndpoints).toBe(ENDPOINT_REGISTRY.length);
     expect(index.files).toContain('endpoint-catalog.json');
     expect(index.files).toContain('security-catalog.json');
+    expect(index.files).toContain('websocket-catalog.json');
     expect(index.products.sort()).toEqual(Object.keys(endpointCounts()).sort());
+  });
+});
+
+describe('websocket-catalog (v3 ws platform inventory layer)', () => {
+  interface WsCatalogFamily {
+    limits: { maxStreamsPerConnection: number; defaultMaxConnections: number };
+    endpoints: Record<string, { market: string; wsApi?: string }>;
+  }
+
+  function loadWsCatalog(): {
+    connectionLimits: Record<string, number>;
+    listenKeyKeepaliveMinutes: number;
+    families: Record<string, WsCatalogFamily>;
+    platform: Record<string, number>;
+  } {
+    return JSON.parse(readFileSync(join(CONTRACTS, 'websocket-catalog.json'), 'utf8'));
+  }
+
+  it('matches the platform family limits exactly (no drift)', () => {
+    const catalog = loadWsCatalog();
+    expect(Object.keys(catalog.families).sort()).toEqual(['coinm', 'spot', 'usdm']);
+    for (const [family, entry] of Object.entries(catalog.families)) {
+      expect(entry.limits).toEqual(WS_FAMILY_LIMITS[family as keyof typeof WS_FAMILY_LIMITS]);
+    }
+  });
+
+  it('matches the platform policy constants exactly (no drift)', () => {
+    const { platform } = loadWsCatalog();
+    expect(platform.rotationMs).toBe(WS_PLATFORM_DEFAULTS.rotationMs);
+    expect(platform.renewalJitterMs).toBe(WS_PLATFORM_DEFAULTS.renewalJitterMs);
+    expect(platform.staleMs).toBe(WS_PLATFORM_DEFAULTS.staleMs);
+    expect(platform.heartbeatIntervalMs).toBe(WS_PLATFORM_DEFAULTS.heartbeatIntervalMs);
+    expect(platform.maxConcurrentRenewals).toBe(WS_PLATFORM_DEFAULTS.maxConcurrentRenewals);
+    expect(platform.requestTimeoutMs).toBe(WS_PLATFORM_DEFAULTS.requestTimeoutMs);
+  });
+
+  it('encodes Binance-documented connection semantics', () => {
+    const catalog = loadWsCatalog();
+    // 24h stream lifetime, renewed at 23h with jitter, pings every 3 min.
+    expect(catalog.connectionLimits.lifetimeHours).toBe(24);
+    expect(catalog.platform.rotationHours).toBe(23);
+    expect(catalog.connectionLimits.serverPingIntervalMinutes).toBe(3);
+    expect(catalog.listenKeyKeepaliveMinutes).toBe(30);
+    // 10 minutes of total silence (with 3-minute pings) means a dead path.
+    expect(catalog.platform.staleMs).toBe(10 * 60 * 1000);
+  });
+
+  it('lists live market endpoints for every family', () => {
+    const { families } = loadWsCatalog();
+    expect(families.usdm.endpoints.live.market).toContain('fstream.binance.com');
+    expect(families.spot.endpoints.live.market).toContain('stream.binance.com');
+    expect(families.coinm.endpoints.live.market).toContain('dstream.binance.com');
+    expect(families.usdm.endpoints.live.wsApi).toContain('ws-fapi');
+    expect(families.spot.endpoints.live.wsApi).toContain('ws-api');
   });
 });

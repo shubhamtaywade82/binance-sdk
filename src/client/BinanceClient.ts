@@ -5,6 +5,7 @@ import { TradingPolicy, type TradingPolicyOptions } from './TradingPolicy.js';
 import { RiskGateway, type RiskGatewayOptions } from '../risk/RiskGateway.js';
 import { EventBus } from '../core/events.js';
 import { CoreContext } from '../core/context.js';
+import type { WsPlatform, WsPlatformOptions } from '../ws/platform/WsPlatform.js';
 import { resolveEnvironment } from './endpoints.js';
 import { MarginAccount, MarginTrading } from '../resources/Margin.js';
 import { Wallet } from '../resources/Wallet.js';
@@ -72,6 +73,12 @@ export interface BinanceClientOptions {
    * created and exposed as `client.events`.
    */
   events?: EventBus;
+  /**
+   * v3 WebSocket platform tuning: per-family connection caps, renewal and
+   * heartbeat windows, reconnect policy. The platform itself is lazily built
+   * on first `client.ws` access.
+   */
+  wsPlatform?: WsPlatformOptions;
 }
 
 export interface MarginNamespace {
@@ -120,6 +127,22 @@ export class BinanceClient {
 
   get subaccount(): SubAccount {
     return this.cached('subaccount', () => new SubAccount(this.core.http('apiRoot')));
+  }
+
+  /**
+   * The v3 WebSocket platform: pooled connections per product family with
+   * refcounted `Subscription` objects, central liveness/renewal, and
+   * persistent multiplexed WS API clients — all sharing the core's
+   * credentials and observability bus.
+   *
+   * ```ts
+   * const sub = await client.ws.usdm.subscribe('btcusdt@aggTrade');
+   * sub.on('message', (tick) => console.log(tick.p));
+   * await client.ws.api.usdm.accountStatus(); // one persistent socket
+   * ```
+   */
+  get ws(): WsPlatform {
+    return this.core.ws;
   }
 
   /** The active guardrail policy, or undefined when no `safety` config was supplied. */
@@ -183,7 +206,6 @@ export class BinanceClient {
   constructor(options: BinanceClientOptions = {}) {
     this.core = new CoreContext(options);
   }
-
   /** Build-once cache for lazy product namespaces. */
   private cached<T>(key: string, build: () => T): T {
     let value = this.namespaces.get(key) as T | undefined;
@@ -389,6 +411,7 @@ export class BinanceClient {
   }
 
   closeAllWebSockets(): void {
+    this.core.closeWebSockets(); // platform pools/WS API (no-op when never built)
     this.futures.ws.close();
     this.futures.wsUser.close();
     this.spot.ws.close();

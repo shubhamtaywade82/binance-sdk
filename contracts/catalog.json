@@ -2,8 +2,8 @@
   "$schema": "./catalog.schema.json",
   "catalogVersion": 1,
   "sdkVersion": "3.0.0-next",
-  "generatedAt": "2026-09-09T01:54:19.496Z",
-  "description": "Machine-readable inventory of the SDK REST surface, derived from src/registry. WebSocket and schema catalogs land with the v3 WS platform milestone.",
+  "generatedAt": "2026-09-09T03:27:17.394Z",
+  "description": "Machine-readable inventory of the SDK REST + WebSocket surface, derived from src/registry and the v3 WS platform. Schema catalogs land with the coverage compiler milestone.",
   "products": [
     "coinm",
     "margin",
@@ -13,9 +13,15 @@
     "wallet"
   ],
   "totalEndpoints": 220,
+  "wsFamilies": [
+    "coinm",
+    "spot",
+    "usdm"
+  ],
   "files": [
     "catalog.json",
     "endpoint-catalog.json",
-    "security-catalog.json"
+    "security-catalog.json",
+    "websocket-catalog.json"
   ]
 }

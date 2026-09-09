@@ -55,7 +55,9 @@ wiring between facade and standalone entry points.
 
 ## Next milestones
 
-2. **WebSocket platform** — connection manager, subscription objects, heartbeat/renewal controllers, WS API pools; websocket-catalog.json lands here.
+2. **WebSocket platform** — ✅ shipped in `3.0.0-next.2` (`sdk-v3-websocket`):
+   connection pools, subscription objects, heartbeat/renewal controllers, WS
+   API pools; `websocket-catalog.json` landed. See `v3-websocket.md`.
 3. **Execution platform** — already strong (idempotency, reconciliation, adapters, gateway); formalize OrderState/PositionState feeds.
 4. **State + paper** — MarketState separation from ExecutionSimulator; funding/liquidation models.
 5. **Product expansion** — Options, PM, Convert, Algo… driven by the official Binance product catalog.
