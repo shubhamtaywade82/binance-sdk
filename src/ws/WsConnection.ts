@@ -76,6 +76,12 @@ export interface WsConnectionOptions {
   name?: string;
   /** Injectable WebSocket factory for tests. */
   socketFactory?: (url: string) => WebSocket;
+  /**
+   * v3 platform hook: replaces the built-in `min(base * 2^attempt, max)`
+   * backoff formula with a caller-supplied policy (e.g. jittered
+   * exponential). Purely additive — omit for the v2 default behavior.
+   */
+  computeReconnectDelay?: (attempt: number) => number;
 }
 
 interface AckHandler {
@@ -129,6 +135,11 @@ export class WsConnection extends EventEmitter {
     return this.state;
   }
 
+  /** Public connection label (for pools, registries and stats snapshots). */
+  get name(): string {
+    return this.label;
+  }
+
   isOpen(): boolean {
     return this.state === 'OPEN' && this.activeSocket?.readyState === WebSocket.OPEN;
   }
@@ -169,6 +180,20 @@ export class WsConnection extends EventEmitter {
   /** Subclass hook: user-initiated teardown completed. */
   protected onClosedByUser(): void {
     /* default: no-op */
+  }
+
+  /**
+   * v3 platform hook: trigger a zero-gap rotation now (the same path the
+   * internal 23h timer uses). Returns true when a rotation was started,
+   * false when it is not applicable — not OPEN, or a replacement is already
+   * in flight. Centralized renewal schedulers (RenewalController) call this
+   * so rotation timing is observable and staggered pool-wide.
+   */
+  rotateNow(): boolean {
+    if (this.state !== 'OPEN' || this.closedByUser) return false;
+    if (this.pendingSocket) return false; // already rotating
+    this.rotate();
+    return true;
   }
 
   /**
@@ -365,6 +390,7 @@ export class WsConnection extends EventEmitter {
         this.pendingToken = 0;
         this.pendingSocket = null;
         this.emitEvent('ws.rotation.failed', { code, reason: reason.toString() });
+        this.emit('rotationFailed', { code, reason: reason.toString() });
         this.startRotationTimer();
         return;
       }
@@ -431,9 +457,15 @@ export class WsConnection extends EventEmitter {
     if (this.reconnectTimer) return; // already scheduled
 
     this.clearTimers();
-    const base = this.wsOptions.reconnectDelayMs ?? DEFAULTS.reconnectDelayMs;
-    const max = this.wsOptions.maxReconnectDelayMs ?? DEFAULTS.maxReconnectDelayMs;
-    const delay = Math.min(base * 2 ** this.reconnectAttempt, max);
+    const computeDelay = this.wsOptions.computeReconnectDelay;
+    let delay: number;
+    if (computeDelay) {
+      delay = Math.max(0, computeDelay(this.reconnectAttempt));
+    } else {
+      const base = this.wsOptions.reconnectDelayMs ?? DEFAULTS.reconnectDelayMs;
+      const max = this.wsOptions.maxReconnectDelayMs ?? DEFAULTS.maxReconnectDelayMs;
+      delay = Math.min(base * 2 ** this.reconnectAttempt, max);
+    }
     this.reconnectAttempt += 1;
     this.transition('RECONNECTING');
     this.emit('reconnecting', this.reconnectAttempt, delay);

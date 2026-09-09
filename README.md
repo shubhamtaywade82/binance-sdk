@@ -430,7 +430,9 @@ everything to a logger with `forwardEventsToLogger(bus, logger)`.
   (operation → method → path → auth → SDK surface).
 - **`contracts/` (v3)** — machine-readable inventory of the SDK surface:
   `endpoint-catalog.json` (every REST operation: product, method, path, security, weight,
-  implementer), `security-catalog.json` (auth matrix per product), `catalog.json` (index).
+  implementer), `security-catalog.json` (auth matrix per product),
+  `websocket-catalog.json` (WS families, stream ceilings, renewal/liveness policy),
+  `catalog.json` (index).
   Generated with `npm run contracts:generate` and CI-validated against the registry —
   the input layer for generated bindings, tool metadata and coverage accounting.
 - `ENDPOINT_REGISTRY` / `listEndpoints({ product, method, authentication })` in code.
@@ -442,11 +444,13 @@ everything to a logger with `forwardEventsToLogger(bus, logger)`.
   cross-checks the registry against the actual `http.<verb>()` calls in `src/resources`)
   and `npm run contracts:generate`.
 - `docs/architecture/v3-foundation.md` — the v3 platform architecture and migration plan.
+- `docs/architecture/v3-websocket.md` — the v3 WebSocket platform design (milestone 2).
 
 ## v3 Platform (prerelease)
 
 `3.0.0-next.x` introduces the platform rewrite foundation (see
-`docs/architecture/v3-foundation.md`); every v2.x surface keeps working unchanged.
+`docs/architecture/v3-foundation.md`) and the WebSocket platform (see
+`docs/architecture/v3-websocket.md`); every v2.x surface keeps working unchanged.
 
 ```typescript
 import { BinanceClient, CoreContext, USDMClient, Credentials } from '@nemesis-oss/binance-sdk';
@@ -468,6 +472,14 @@ const other = new USDMClient(core);        // same weight budget, same events
 const client = new BinanceClient({ apiKey, apiSecret });
 client.core.credentials.describe();        // 'hmac key ****xxxx'
 client.futures.execution === client.futures.execution;  // true — cached
+
+// --- WebSocket platform (milestone 2): client.ws ---
+const sub = await client.ws.usdm.subscribe('btcusdt@aggTrade');
+sub.on('message', (tick) => console.log(tick.p));   // parsed payload
+await sub.waitForReady();
+client.ws.stats();                          // pools, renewal deadlines, WS API state
+await client.ws.api.usdm.accountStatus();  // persistent multiplexed WS API
+sub.close();                               // refcounted UNSUBSCRIBE
 ```
 
 ## LLM Tools & MCP

@@ -6,6 +6,7 @@ import type { BinanceClientOptions } from '../client/BinanceClient.js';
 import { EventBus } from './events.js';
 import { RiskGateway } from '../risk/RiskGateway.js';
 import { Credentials } from './credentials.js';
+import { createWsPlatform, type WsPlatform, type WsPlatformOptions } from '../ws/platform/WsPlatform.js';
 
 /**
  * The REST hosts a {@link CoreContext} can serve. Each host gets exactly one
@@ -73,26 +74,59 @@ export class CoreContext {
   readonly transport: CoreTransportOptions;
 
   private readonly httpClients = new Map<RestHost, HttpClient>();
+  private wsPlatformValue: WsPlatform | undefined;
+  private readonly wsPlatformOptions?: WsPlatformOptions;
 
-  constructor(options: BinanceClientOptions = {}) {
-    const { env, endpoints } = resolveEnvironment(options);
+  constructor(options: BinanceClientOptions & { wsPlatform?: WsPlatformOptions } = {}) {
+    const { wsPlatform, ...clientOptions } = options;
+    this.wsPlatformOptions = wsPlatform;
+    const { env, endpoints } = resolveEnvironment(clientOptions);
     this.env = env;
     this.endpoints = endpoints;
-    this.events = (options.events as EventBus) ?? new EventBus();
-    this.credentials = Credentials.fromOptions(options);
-    const riskGateway = options.safety ? new RiskGateway(options.safety, this.events) : undefined;
-    this.policy = riskGateway ?? (options.safety ? new TradingPolicy(options.safety) : undefined);
+    this.events = (clientOptions.events as EventBus) ?? new EventBus();
+    this.credentials = Credentials.fromOptions(clientOptions);
+    const riskGateway = clientOptions.safety ? new RiskGateway(clientOptions.safety, this.events) : undefined;
+    this.policy = riskGateway ?? (clientOptions.safety ? new TradingPolicy(clientOptions.safety) : undefined);
     this.transport = {
-      recvWindow: options.recvWindow ?? 5000,
-      timeoutMs: options.timeoutMs ?? 15_000,
-      maxRetries: options.maxRetries ?? 3,
-      retryBaseDelayMs: options.retryBaseDelayMs,
-      retryMaxDelayMs: options.retryMaxDelayMs,
-      rateLimitWeightPerMinute: options.rateLimitWeightPerMinute,
-      rateLimitSafetyMargin: options.rateLimitSafetyMargin,
-      httpsAgent: options.httpsAgent,
-      proxy: options.proxy,
+      recvWindow: clientOptions.recvWindow ?? 5000,
+      timeoutMs: clientOptions.timeoutMs ?? 15_000,
+      maxRetries: clientOptions.maxRetries ?? 3,
+      retryBaseDelayMs: clientOptions.retryBaseDelayMs,
+      retryMaxDelayMs: clientOptions.retryMaxDelayMs,
+      rateLimitWeightPerMinute: clientOptions.rateLimitWeightPerMinute,
+      rateLimitSafetyMargin: clientOptions.rateLimitSafetyMargin,
+      httpsAgent: clientOptions.httpsAgent,
+      proxy: clientOptions.proxy,
     };
+  }
+
+  /**
+   * The v3 WebSocket platform: pooled market-stream connections with
+   * subscription objects, central liveness/renewal, and persistent WS API
+   * clients. Lazily built on first access — a REST-only caller never pays
+   * for it. One platform per context: every product client and the facade
+   * share the same connection pools.
+   *
+   * ```ts
+   * const sub = await core.ws.usdm.subscribe('btcusdt@aggTrade');
+   * sub.on('message', (payload) => …);
+   * ```
+   */
+  get ws(): WsPlatform {
+    if (!this.wsPlatformValue) {
+      this.wsPlatformValue = createWsPlatform(this, this.wsPlatformOptions);
+    }
+    return this.wsPlatformValue;
+  }
+
+  /** True when the WS platform has been constructed (cheap, no I/O). */
+  hasWs(): boolean {
+    return this.wsPlatformValue !== undefined;
+  }
+
+  /** Close the WS platform (subscriptions, pools, WS API clients). No-op when never built. */
+  closeWebSockets(): void {
+    this.wsPlatformValue?.close();
   }
 
   /**
