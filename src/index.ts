@@ -1,4 +1,4 @@
-export const VERSION = '3.0.0-next.3';
+export const VERSION = '3.0.0-next.4';
 
 export { BinanceClient } from './client/BinanceClient.js';
 export type { BinanceClientOptions, MarginNamespace } from './client/BinanceClient.js';
@@ -63,6 +63,17 @@ export type {
 } from './state/OrderBook.js';
 export { OrderBookEngine } from './state/OrderBookEngine.js';
 export type { OrderBookEngineOptions } from './state/OrderBookEngine.js';
+
+// v3 state platform: managed local L2 books
+export { ManagedBook } from './state/platform/ManagedBook.js';
+export type {
+  ManagedBookOptions,
+  ManagedBookState,
+  BookUpdateEvent,
+  BookSyncEvent,
+} from './state/platform/ManagedBook.js';
+export { BookEngine } from './state/platform/BookEngine.js';
+export type { BookEngineOptions } from './state/platform/BookEngine.js';
 
 // ---- Registry: endpoint maps ----
 export {
@@ -216,6 +227,22 @@ export type {
 } from './execution/platform/types.js';
 export { createUserEventParser } from './execution/platform/normalize.js';
 export type { UserEventParser } from './execution/platform/normalize.js';
+export { createPaperExecutionPlatform } from './execution/platform/PaperBackend.js';
+export type {
+  PaperExecutionPlatformOptions,
+  PaperExecutionPlatform,
+} from './execution/platform/PaperBackend.js';
+export { PaperSession, paperOrderTradeUpdateFrame, paperAccountUpdateFrame, decimalString } from './execution/platform/PaperSession.js';
+export type { PaperSessionOptions } from './execution/platform/PaperSession.js';
+export {
+  orderShapeFromUsdmOpenOrder,
+  orderShapeFromSpotOpenOrder,
+  positionUpdatesFromPositionRisk,
+  reconcileExecutionPlatform,
+} from './execution/platform/Reconciler.js';
+export type { ReconcileOptions, ReconcileTarget } from './execution/platform/Reconciler.js';
+export type { PaperBackendOptions, PlatformUserSession } from './execution/platform/ExecutionPlatform.js';
+export type { ReconciliationSummary } from './execution/platform/types.js';
 
 export * from './types/market.types.js';
 export * from './types/filters.types.js';

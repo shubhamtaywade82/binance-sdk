@@ -1,5 +1,6 @@
 import type { CoreContext } from '../../core/context.js';
 import { ExecutionPlatform } from '../../execution/platform/ExecutionPlatform.js';
+import { BookEngine } from '../../state/platform/BookEngine.js';
 import type { ProductClient } from '../types.js';
 import { buildUsdmSurface, type UsdmSurface } from './namespace.js';
 
@@ -33,6 +34,7 @@ export class USDMClient implements ProductClient {
   private listenKeyValue: string | null = null;
   private keepAliveInterval: ReturnType<typeof setInterval> | null = null;
   private executionPlatformValue: ExecutionPlatform | undefined;
+  private bookEngineValue: BookEngine | undefined;
   private closed = false;
 
   constructor(core: CoreContext) {
@@ -104,6 +106,25 @@ export class USDMClient implements ProductClient {
   }
 
   /**
+   * The v3 state platform for USDⓈ-M: managed local L2 books over the pooled
+   * WS platform + shared REST snapshot transports. Lazily built — a
+   * stream-only or REST-only caller never pays for it.
+   *
+   * ```ts
+   * const book = await usdm.books.watch('BTCUSDT');  // resolves once synced
+   * book.bestBid;                                     // exact decimal strings
+   * book.metrics();                                   // spread, imbalance, …
+   * await usdm.books.unwatch('BTCUSDT');
+   * ```
+   */
+  get books(): BookEngine {
+    if (!this.bookEngineValue) {
+      this.bookEngineValue = new BookEngine({ product: 'usdm', core: this.core });
+    }
+    return this.bookEngineValue;
+  }
+
+  /**
    * Start the listen-key user-data stream: creates the key, schedules the
    * 30-minute keep-alive, and opens the user WS. Scoped to this product —
    * unlike the multi-product facade, no other product's sockets are touched.
@@ -136,6 +157,7 @@ export class USDMClient implements ProductClient {
     if (this.closed) return;
     this.closed = true;
     this.executionPlatformValue?.close();
+    this.bookEngineValue?.close();
     this.closeUserStream();
     this.surface.ws.close();
     this.surface.wsUser.close();

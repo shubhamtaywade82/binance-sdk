@@ -446,13 +446,16 @@ everything to a logger with `forwardEventsToLogger(bus, logger)`.
 - `docs/architecture/v3-foundation.md` — the v3 platform architecture and migration plan.
 - `docs/architecture/v3-websocket.md` — the v3 WebSocket platform design (milestone 2).
 - `docs/architecture/v3-execution.md` — the v3 execution platform design (milestone 3).
+- `docs/architecture/v3-state.md` — the v3 state engine + paper backend design (milestone 4).
 
 ## v3 Platform (prerelease)
 
 `3.0.0-next.x` introduces the platform rewrite foundation (see
 `docs/architecture/v3-foundation.md`), the WebSocket platform (see
-`docs/architecture/v3-websocket.md`), and the execution platform (see
-`docs/architecture/v3-execution.md`); every v2.x surface keeps working unchanged.
+`docs/architecture/v3-websocket.md`), the execution platform (see
+`docs/architecture/v3-execution.md`), and the state engine + paper execution
+backend (see `docs/architecture/v3-state.md`); every v2.x surface keeps
+working unchanged.
 
 ```typescript
 import { BinanceClient, CoreContext, USDMClient, Credentials } from '@nemesis-oss/binance-sdk';
@@ -497,6 +500,21 @@ await usdm.executionPlatform.orders.waitForTerminal(execution.clientOrderId);
 usdm.executionPlatform.positions.get('BTCUSDT');   // from ACCOUNT_UPDATE
 usdm.executionPlatform.classify(err).safety;
 // → 'safe' | 'idempotent' | 'reconciliation-required' | 'never-retry'
+
+// --- State engine + paper backend (milestone 4) ---
+const book = await usdm.books.watch('BTCUSDT');  // local L2 book, synced
+book.bestBid;                                    // exact decimal strings
+book.metrics();                                  // spread, microprice, imbalance
+await usdm.executionPlatform.reconcile();        // REST fold: startup gap-fill
+
+import { createPaperExecutionPlatform } from '@nemesis-oss/binance-sdk';
+const paper = createPaperExecutionPlatform(client.core, { initialBalance: 25_000 });
+await paper.platform.startUserSession();          // local session, zero network
+const fill = await paper.execution.placeOrder({
+  symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: '0.01',
+});
+paper.platform.orders.get(fill.clientOrderId);   // same OrderRecord as live
+paper.platform.positions.get('BTCUSDT');         // same PositionRecord as live
 ```
 
 ## LLM Tools & MCP

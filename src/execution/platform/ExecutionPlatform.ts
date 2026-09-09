@@ -1,12 +1,16 @@
 import type { HttpClient } from '../../client/HttpClient.js';
 import type { CoreContext } from '../../core/context.js';
 import type { ExecutionManager } from '../ExecutionManager.js';
+import type { PaperExecutionAdapter } from '../paper.js';
+import type { PaperTradingEngine } from '../../paper/PaperTradingEngine.js';
 import { classifyRetrySafety } from './RetrySafety.js';
+import { reconcileExecutionPlatform, type ReconcileOptions } from './Reconciler.js';
 import { createUserEventParser } from './normalize.js';
 import { OrderTracker } from './OrderTracker.js';
 import { PositionTracker } from './PositionTracker.js';
 import { UserStreamSession, type UserStreamSessionOptions } from './UserStreamSession.js';
-import type { ListenKeyApi, RetryClassification } from './types.js';
+import { PaperSession } from './PaperSession.js';
+import type { ListenKeyApi, ReconciliationSummary, RetryClassification } from './types.js';
 
 /** Session tuning accepted by {@link ExecutionPlatform.startUserSession}. */
 export type UserSessionTuning = Pick<
@@ -17,6 +21,17 @@ export type UserSessionTuning = Pick<
   | 'connection'
   | 'socketFactory'
 >;
+
+/** Paper backend wiring: which simulator sits in the "server" seat. */
+export interface PaperBackendOptions {
+  /** The simulator whose fills the session replays as user-data frames. */
+  engine: PaperTradingEngine;
+  /** Report source — the adapter orders flow through. */
+  adapter: PaperExecutionAdapter;
+}
+
+/** Either session flavor a platform can hold: live (listen key) or paper. */
+export type PlatformUserSession = UserStreamSession | PaperSession;
 
 /** Options for {@link ExecutionPlatform}. */
 export interface ExecutionPlatformOptions {
@@ -36,6 +51,14 @@ export interface ExecutionPlatformOptions {
   executionManager?: ExecutionManager;
   /** Order-record retention; default 5000. */
   maxTrackedOrders?: number;
+  /**
+   * Paper backend wiring. When set, the platform runs in paper mode:
+   * `startUserSession()` opens a {@link PaperSession} (no listen key, no
+   * socket) that replays simulator fills as user-data frames, and
+   * `reconcile()` folds the simulator's own state. See
+   * {@link createPaperExecutionPlatform} for the assembled runtime.
+   */
+  paper?: PaperBackendOptions;
 }
 
 /**
@@ -59,6 +82,14 @@ export interface ExecutionPlatformOptions {
  * usdm.executionPlatform.classify(err).safety;       // 'reconciliation-required'
  * ```
  *
+ * Milestone 4 adds two capabilities on the same boundary:
+ *  - **`reconcile()`** — a REST snapshot (open orders + position risk) folded
+ *    into the trackers: the startup gap-fill for orders that existed before
+ *    the stream went live, and the recovery pass after a disconnect.
+ *  - **paper mode** — with the `paper` option (see
+ *    {@link createPaperExecutionPlatform}) the session, trackers and
+ *    reconcile semantics run against the local simulator instead.
+ *
  * Standalone use (any product wiring, custom listen-key backends for tests):
  *
  * ```ts
@@ -72,19 +103,34 @@ export class ExecutionPlatform {
 
   private readonly core: ExecutionPlatformOptions['core'];
   private readonly executionManager?: ExecutionManager;
-  private sessionValue: UserStreamSession | null = null;
+  private readonly paperBackend?: PaperBackendOptions;
+  private sessionValue: PlatformUserSession | null = null;
 
   constructor(options: ExecutionPlatformOptions) {
     this.product = options.product;
     this.core = options.core;
     this.executionManager = options.executionManager;
+    this.paperBackend = options.paper;
     this.orders = new OrderTracker({ events: options.core.events, maxRecords: options.maxTrackedOrders });
     this.positions = new PositionTracker({ events: options.core.events });
   }
 
   /** The live user-data stream session, or null before `startUserSession`. */
-  get userSession(): UserStreamSession | null {
+  get userSession(): PlatformUserSession | null {
     return this.sessionValue;
+  }
+
+  /**
+   * The live session when it is a listen-key session (REST-wired products).
+   * Null in paper mode — the paper session carries no listen key.
+   */
+  get liveUserSession(): UserStreamSession | null {
+    return this.sessionValue instanceof UserStreamSession ? this.sessionValue : null;
+  }
+
+  /** True when the platform runs against the paper simulator. */
+  get isPaper(): boolean {
+    return this.paperBackend !== undefined;
   }
 
   /** True once a session has been started (cheap, no I/O). */
@@ -97,9 +143,26 @@ export class ExecutionPlatform {
    * the 30-minute keep-alive, rotate on failure. The platform's order and
    * position feeds go live immediately, and the attached execution manager
    * (when one was provided) begins tracking live fills.
+   *
+   * In paper mode there is nothing to connect: the returned
+   * {@link PaperSession} replays simulator fills as user-data frames through
+   * the exact same `userData` contract — the trackers go live identically.
    */
-  async startUserSession(tuning?: UserSessionTuning): Promise<UserStreamSession> {
+  async startUserSession(tuning?: UserSessionTuning): Promise<PlatformUserSession> {
     if (this.sessionValue) return this.sessionValue;
+    if (this.paperBackend) {
+      const session = new PaperSession({
+        engine: this.paperBackend.engine,
+        adapter: this.paperBackend.adapter,
+        events: this.core.events,
+        onClose: () => {
+          this.executionManager?.setUserStream(null);
+        },
+      });
+      this.attachSession(session);
+      await session.start();
+      return session;
+    }
     const session = new UserStreamSession({
       product: this.product,
       listenKeyApi: createListenKeyApi(this.product, this.core),
@@ -116,14 +179,9 @@ export class ExecutionPlatform {
         this.executionManager?.setUserStream(null);
       },
     });
-    session.on('userData', (event: unknown) => {
-      this.orders.applyUserEvent(event);
-      this.positions.applyUserEvent(event);
-    });
-    this.sessionValue = session;
+    this.attachSession(session);
     try {
       await session.start();
-      this.executionManager?.setUserStream(session);
     } catch (err) {
       session.close();
       this.sessionValue = null;
@@ -137,10 +195,52 @@ export class ExecutionPlatform {
     return classifyRetrySafety(error);
   }
 
+  /**
+   * Fold a REST snapshot of the account into the trackers — the gap-fill the
+   * user stream cannot provide: orders that existed *before* the session went
+   * live, and the authoritative position state after any disconnect.
+   *
+   * Live mode pulls `GET /fapi/v1/openOrders` (or per-symbol Spot
+   * `openOrders`) and `GET /fapi/v2/positionRisk` over the shared core
+   * transports; paper mode folds the simulator's own book. Returns how many
+   * views were folded; every fold emits the same `order.updated` /
+   * `position.updated` events stream folds do.
+   *
+   * ```ts
+   * await platform.startUserSession();
+   * const summary = await platform.reconcile();   // startup gap-fill
+   * summary.orders; summary.positions;
+   * ```
+   */
+  async reconcile(options?: ReconcileOptions): Promise<ReconciliationSummary> {
+    return reconcileExecutionPlatform(
+      {
+        product: this.product,
+        core: this.core,
+        paper: this.paperBackend,
+        orders: this.orders,
+        positions: this.positions,
+      },
+      options,
+    );
+  }
+
   /** Close the session (stop keep-alive, disconnect, delete the key). Trackers keep their records. */
   close(): void {
     this.sessionValue?.close();
     this.sessionValue = null;
+  }
+
+  // -------------------------------------------------------------------------
+
+  /** Shared wiring for both session flavors: feed the trackers, remember it. */
+  private attachSession(session: PlatformUserSession): void {
+    session.on('userData', (event: unknown) => {
+      this.orders.applyUserEvent(event);
+      this.positions.applyUserEvent(event);
+    });
+    this.sessionValue = session;
+    this.executionManager?.setUserStream(session);
   }
 }
 
