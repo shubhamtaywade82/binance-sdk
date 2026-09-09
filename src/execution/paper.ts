@@ -27,7 +27,13 @@ export class PaperExecutionAdapter implements ExecutionAdapter {
   readonly product = 'paper';
   /** clientOrderId → raw order record, the simulator's "matching engine" view. */
   private readonly orders = new Map<string, Record<string, unknown>>();
-  private reportHandler: ((report: ExecutionReportShape) => void) | null = null;
+  /**
+   * Report listeners. Paper backends routinely have several consumers — the
+   * execution manager's ledger *and* (v3) the platform's paper session that
+   * translates fills into user-stream frames — so `onReport` fans out to
+   * every registered listener instead of replacing the previous one.
+   */
+  private readonly reportHandlers = new Set<(report: ExecutionReportShape) => void>();
 
   constructor(
     private readonly engine: PaperTradingEngine,
@@ -111,8 +117,10 @@ export class PaperExecutionAdapter implements ExecutionAdapter {
 
     // Deliver the fill as an execution report — the same shape a live
     // user-data stream would emit, so streaming consumers see fills without
-    // knowing which backend produced them.
-    this.reportHandler?.({
+    // knowing which backend produced them. Every registered listener sees it.
+    // The order context fields (symbol/side/type/qty) let the v3 paper session
+    // translate the report into a faithful user-stream frame.
+    const report: ExecutionReportShape = {
       clientOrderId,
       orderId: paperOrder.orderId,
       status: paperOrder.status,
@@ -123,7 +131,12 @@ export class PaperExecutionAdapter implements ExecutionAdapter {
       executedQty: String(filledQty),
       cumQuote: String(cumQuote),
       avgPrice: String(avgPrice),
-    });
+      symbol: paperOrder.symbol,
+      side: String(submission.side).toUpperCase(),
+      orderType: type,
+      originalQty: String(quantity),
+    };
+    for (const handler of this.reportHandlers) handler(report);
 
     return raw;
   }
@@ -136,6 +149,15 @@ export class PaperExecutionAdapter implements ExecutionAdapter {
       throw new BinanceApiError('Order does not exist', -2013, 400, {});
     }
     return { ...raw };
+  }
+
+  /**
+   * Every order record the simulator holds, client-order-id keyed — the
+   * authoritative "REST view" a paper-mode reconciliation pass folds into the
+   * v3 platform's order tracker (live reconciliation reads `/openOrders`).
+   */
+  listOrderRecords(): Record<string, unknown>[] {
+    return [...this.orders.values()].map((raw) => ({ ...raw }));
   }
 
   async cancelOrder(symbol: string, key: OrderKey): Promise<Record<string, unknown>> {
@@ -178,8 +200,9 @@ export class PaperExecutionAdapter implements ExecutionAdapter {
     /* no user stream in the simulator */
   }
 
+  /** Register a report listener; every listener fires for every fill (additive). */
   onReport(handler: (report: ExecutionReportShape) => void): void {
-    this.reportHandler = handler;
+    this.reportHandlers.add(handler);
   }
 }
 

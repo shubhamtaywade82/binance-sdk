@@ -5,6 +5,73 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.0.0-next.4] - 2026-09-09
+
+**v3 Milestone 4 — State Engine & Paper Execution Backend** (prerelease
+channel). Zero breaking changes: all 498 milestone-3 tests pass unchanged
+(530 total with the new suites); every v2.x / M1–M3 surface keeps working
+exactly as before.
+
+### Added
+
+- **`BookEngine` / `ManagedBook` (`usdm.books`, `src/state/platform/`)** —
+  the v3 state engine: managed local L2 books over the pooled WS platform and
+  the shared REST transports. `watch(symbol)` resolves once synced; the pure
+  `OrderBook` L2 algorithm is unchanged, the lifecycle around it is new:
+  diffs **buffer while the REST snapshot is in flight** and the overlapping
+  tail applies on top of it (the canonical Binance sync algorithm — no blind
+  window, no resubscribe dance), sequence gaps desync with a reason, an
+  interrupted subscription marks the book desynced at once and a *clean*
+  next diff proves continuity without a resnapshot, desyncs self-heal via
+  delayed re-snapshot over `core.http('fapi')` / `core.http('spot')`.
+  `waitForSync()` mirrors the tracker promise API; books ride pooled
+  connections (refcounted UNSUBSCRIBE on `unwatch`). Lazy on `USDMClient`,
+  closed by `close()`.
+- **`ExecutionPlatform.reconcile()`** — the REST fold the user stream cannot
+  provide: `GET /fapi/v1/openOrders` + `GET /fapi/v2/positionRisk`
+  (USDⓈ-M, one call each, over the shared transports) folded into the M3
+  order/position trackers; per-symbol Spot `openOrders` (`{ symbols }`
+  required — the account-wide form is gone); paper mode folds the
+  simulator's book instead, zero network. Returns a
+  `ReconciliationSummary`; every fold emits the same `order.updated` /
+  `position.updated` events a stream fold emits, plus `execution.reconciled`.
+  The startup gap-fill for orders that predate the session and the recovery
+  pass after a partition.
+- **`createPaperExecutionPlatform(core, options)`** — paper as a
+  first-class execution backend: simulator + `PaperExecutionAdapter` +
+  `ExecutionManager` + `ExecutionPlatform` over one shared `CoreContext`.
+  The simulator's price feed rides `core.http('fapi')` (environment and
+  request mocks apply to paper runs).
+- **`PaperSession`** — a user-data stream session with no network: simulator
+  fills replay as exchange-shaped frames (`ORDER_TRADE_UPDATE` field-for-field,
+  `ACCOUNT_UPDATE` with signed one-way amounts, only changed symbols), so
+  the trackers, `waitForTerminal()`, retry classification and reconcile
+  semantics behave identically whether orders route to the exchange or the
+  simulator. Translation is synchronous — a fill is folded before
+  `placeOrder()` resolves. `waitForOpen()` resolves immediately when live;
+  `listenKey` is null (the simulator is the server).
+- **`decimalString()`** — simulator-boundary decimal formatting at twelve
+  significant digits: IEEE-754 noise (`0.1 + 0.2`) never reaches tracker
+  records; everything downstream stays exact decimal strings.
+- Exports: `BookEngine`, `ManagedBook`, `PaperSession`,
+  `createPaperExecutionPlatform`, `reconcileExecutionPlatform` (+ REST
+  normalizers `orderShapeFromUsdmOpenOrder` / `orderShapeFromSpotOpenOrder` /
+  `positionUpdatesFromPositionRisk`), frame builders
+  `paperOrderTradeUpdateFrame` / `paperAccountUpdateFrame`,
+  `decimalString`, and the associated option/result types.
+- Docs: `docs/architecture/v3-state.md`; README v3 section extended.
+
+### Changed
+
+- **`PaperExecutionAdapter.onReport`** now fans out to every registered
+  listener instead of replacing the previous one — paper backends routinely
+  have several consumers (the execution manager's ledger *and* the v3
+  session). Documented single-listener usage is unaffected.
+- **`ExecutionPlatform.userSession`** widens to
+  `UserStreamSession | PaperSession` (both satisfy the `userData`/`close()`
+  session contract); `liveUserSession` narrows back to the listen-key
+  session; `isPaper` reports the backend.
+
 ## [3.0.0-next.3] - 2026-09-09
 
 **v3 Milestone 3 — Execution Platform** (prerelease channel). Zero breaking

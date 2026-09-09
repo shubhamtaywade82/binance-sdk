@@ -195,6 +195,21 @@ export interface ListenKeyApi {
 }
 
 /**
+ * Result of one {@link ExecutionPlatform.reconcile} pass: how many REST (or
+ * simulator) views were folded into the trackers. A *view count*, not a
+ * change count — folding a view does not always mutate a record (the stream
+ * may have reported the same state already).
+ */
+export interface ReconciliationSummary {
+  /** Order views folded (open orders from REST, or the simulator's history). */
+  orders: number;
+  /** Position records folded (position-risk REST rows, or simulator positions). */
+  positions: number;
+  /** Epoch ms of the snapshot this pass folded. */
+  fetchedAt: number;
+}
+
+/**
  * Execution platform defaults. Keep-alive runs at the documented 30-minute
  * cadence; a key is rotated after 3 consecutive keep-alive failures (dead
  * key) or 6 reconnect attempts without an OPEN (network partition or the

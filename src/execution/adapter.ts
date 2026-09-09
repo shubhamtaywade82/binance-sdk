@@ -52,6 +52,18 @@ export interface ExecutionReportShape {
   /** Average fill price, when the stream reports it. */
   avgPrice?: string;
   tradeId?: number;
+  /**
+   * Order context the report carries, when its source knows it (the paper
+   * adapter always does). Consumers that translate reports into user-stream
+   * frames (the v3 paper session) need it; the execution manager ignores it.
+   */
+  symbol?: string;
+  /** Order side ('BUY' | 'SELL'), when known. */
+  side?: string;
+  /** Original order type ('MARKET' | 'LIMIT' | …), when known. */
+  orderType?: string;
+  /** Requested quantity, when known. */
+  originalQty?: string;
 }
 
 /** Key that identifies an order for get/cancel reconciliation. */
