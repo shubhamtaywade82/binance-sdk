@@ -1,4 +1,5 @@
 import type { CoreContext } from '../../core/context.js';
+import { ExecutionPlatform } from '../../execution/platform/ExecutionPlatform.js';
 import type { ProductClient } from '../types.js';
 import { buildUsdmSurface, type UsdmSurface } from './namespace.js';
 
@@ -31,6 +32,7 @@ export class USDMClient implements ProductClient {
   private readonly surface: UsdmSurface;
   private listenKeyValue: string | null = null;
   private keepAliveInterval: ReturnType<typeof setInterval> | null = null;
+  private executionPlatformValue: ExecutionPlatform | undefined;
   private closed = false;
 
   constructor(core: CoreContext) {
@@ -80,6 +82,28 @@ export class USDMClient implements ProductClient {
   }
 
   /**
+   * The v3 execution platform: managed user-data stream session, live
+   * order/position feeds, and semantic retry classification. Lazily built —
+   * a REST-only caller never pays for it.
+   *
+   * ```ts
+   * await usdm.executionPlatform.startUserSession();
+   * usdm.executionPlatform.orders.get('nbsdk-…');
+   * usdm.executionPlatform.positions.get('BTCUSDT');
+   * ```
+   */
+  get executionPlatform(): ExecutionPlatform {
+    if (!this.executionPlatformValue) {
+      this.executionPlatformValue = new ExecutionPlatform({
+        product: 'usdm',
+        core: this.core,
+        executionManager: this.surface.execution,
+      });
+    }
+    return this.executionPlatformValue;
+  }
+
+  /**
    * Start the listen-key user-data stream: creates the key, schedules the
    * 30-minute keep-alive, and opens the user WS. Scoped to this product —
    * unlike the multi-product facade, no other product's sockets are touched.
@@ -111,6 +135,7 @@ export class USDMClient implements ProductClient {
   close(): void {
     if (this.closed) return;
     this.closed = true;
+    this.executionPlatformValue?.close();
     this.closeUserStream();
     this.surface.ws.close();
     this.surface.wsUser.close();

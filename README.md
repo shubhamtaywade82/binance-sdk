@@ -445,12 +445,14 @@ everything to a logger with `forwardEventsToLogger(bus, logger)`.
   and `npm run contracts:generate`.
 - `docs/architecture/v3-foundation.md` — the v3 platform architecture and migration plan.
 - `docs/architecture/v3-websocket.md` — the v3 WebSocket platform design (milestone 2).
+- `docs/architecture/v3-execution.md` — the v3 execution platform design (milestone 3).
 
 ## v3 Platform (prerelease)
 
 `3.0.0-next.x` introduces the platform rewrite foundation (see
-`docs/architecture/v3-foundation.md`) and the WebSocket platform (see
-`docs/architecture/v3-websocket.md`); every v2.x surface keeps working unchanged.
+`docs/architecture/v3-foundation.md`), the WebSocket platform (see
+`docs/architecture/v3-websocket.md`), and the execution platform (see
+`docs/architecture/v3-execution.md`); every v2.x surface keeps working unchanged.
 
 ```typescript
 import { BinanceClient, CoreContext, USDMClient, Credentials } from '@nemesis-oss/binance-sdk';
@@ -480,6 +482,21 @@ await sub.waitForReady();
 client.ws.stats();                          // pools, renewal deadlines, WS API state
 await client.ws.api.usdm.accountStatus();  // persistent multiplexed WS API
 sub.close();                               // refcounted UNSUBSCRIBE
+
+// --- Execution platform (milestone 3): usdm.executionPlatform ---
+const session = await usdm.executionPlatform.startUserSession();
+// listen key created + WS connected + 30-min keep-alive + auto key rotation;
+// the product's execution manager now tracks live fills from the stream:
+
+const execution = await usdm.execution.placeOrder({
+  symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: '0.001',
+});
+const record = usdm.executionPlatform.orders.get(execution.clientOrderId);
+// → live OrderRecord: status, exact decimal quantities, per-trade fills
+await usdm.executionPlatform.orders.waitForTerminal(execution.clientOrderId);
+usdm.executionPlatform.positions.get('BTCUSDT');   // from ACCOUNT_UPDATE
+usdm.executionPlatform.classify(err).safety;
+// → 'safe' | 'idempotent' | 'reconciliation-required' | 'never-retry'
 ```
 
 ## LLM Tools & MCP
