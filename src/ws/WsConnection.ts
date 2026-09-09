@@ -433,22 +433,41 @@ export class WsConnection extends EventEmitter {
   /**
    * Marks a socket as retired: future events from it are ignored via the token
    * guards. Closes gracefully, terminating after a grace period so a hung TCP
-   * close cannot pin the event loop open.
+   * close cannot pin the event loop open. Termination is defensive: the `ws`
+   * library throws when terminating a socket that never finished establishing
+   * (e.g. close() racing an in-flight connect) — that throw is noise here.
    */
   private retireSocket(socket: WebSocket | null): void {
     if (!socket) return;
     removeAllListeners(socket);
+    // Terminating a socket that never finished establishing asynchronously
+    // emits 'error' ("WebSocket was closed before the connection was
+    // established") — with its listeners just removed, that would escape as
+    // an uncaught exception. Attach a swallow-listener first.
+    socket.on('error', () => {
+      /* retired socket: teardown noise */
+    });
     if (socket.readyState === WebSocket.OPEN) {
       socket.close(1000, 'client-rotating');
       const forced = setTimeout(() => {
-        if (socket.readyState !== WebSocket.CLOSED) socket.terminate();
+        if (socket.readyState !== WebSocket.CLOSED) {
+          try {
+            socket.terminate();
+          } catch {
+            /* already gone */
+          }
+        }
       }, 5_000);
       forced.unref?.();
     } else if (
       socket.readyState === WebSocket.CONNECTING ||
       socket.readyState === WebSocket.CLOSING
     ) {
-      socket.terminate();
+      try {
+        socket.terminate();
+      } catch {
+        /* the ws library throws on terminate-before-established; the socket is dead either way */
+      }
     }
   }
 

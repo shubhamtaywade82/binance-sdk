@@ -1,4 +1,4 @@
-export const VERSION = '3.0.0-next.1';
+export const VERSION = '3.0.0-next.3';
 
 export { BinanceClient } from './client/BinanceClient.js';
 export type { BinanceClientOptions, MarginNamespace } from './client/BinanceClient.js';
@@ -188,6 +188,34 @@ export type {
   SubscribeOptions,
   ReconnectPolicy,
 } from './ws/platform/types.js';
+
+// v3 execution platform
+export { ExecutionPlatform } from './execution/platform/ExecutionPlatform.js';
+export type { ExecutionPlatformOptions, UserSessionTuning } from './execution/platform/ExecutionPlatform.js';
+export { OrderTracker } from './execution/platform/OrderTracker.js';
+export type { OrderTrackerOptions } from './execution/platform/OrderTracker.js';
+export { PositionTracker } from './execution/platform/PositionTracker.js';
+export type { PositionTrackerOptions } from './execution/platform/PositionTracker.js';
+export { UserStreamSession } from './execution/platform/UserStreamSession.js';
+export type { UserStreamSessionOptions } from './execution/platform/UserStreamSession.js';
+export { classifyRetrySafety, isRetrySafety } from './execution/platform/RetrySafety.js';
+export {
+  EXECUTION_PLATFORM_DEFAULTS,
+  isTerminalOrderStatus,
+} from './execution/platform/types.js';
+export type {
+  OrderStatus,
+  OrderRecord,
+  OrderUpdate,
+  PositionRecord,
+  PositionUpdate,
+  UserSessionState,
+  ListenKeyApi,
+  RetrySafety,
+  RetryClassification,
+} from './execution/platform/types.js';
+export { createUserEventParser } from './execution/platform/normalize.js';
+export type { UserEventParser } from './execution/platform/normalize.js';
 
 export * from './types/market.types.js';
 export * from './types/filters.types.js';

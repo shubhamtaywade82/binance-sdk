@@ -5,6 +5,72 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.0.0-next.3] - 2026-09-09
+
+**v3 Milestone 3 — Execution Platform** (prerelease channel). Zero breaking
+changes: all 451 milestone-2 tests pass unchanged (498 total with the new
+platform suite); every v2.x / M1 / M2 surface keeps working exactly as before.
+
+### Added
+
+- **`ExecutionPlatform` (`usdm.executionPlatform`, `src/execution/platform/`)** —
+  the per-product composition root for live trading state: a managed
+  user-data stream session, order/position state feeds, and semantic retry
+  classification, all over the shared `CoreContext`. USDⓈ-M first (the v3
+  strangler order); a Spot wiring ships alongside. Lazy on `USDMClient`, closed
+  by `USDMClient.close()`.
+- **`UserStreamSession`** — the listen-key lifecycle, owned instead of
+  delegated: `start()` (create key → connect → 30-minute keep-alive,
+  idempotent), three rotation triggers (3 consecutive keep-alive failures, 6
+  reconnect attempts without OPEN, 5 consecutive **flaps** — connections that
+  open and die without delivering a frame, the accept-then-kill signature of a
+  dead listen key that resets reconnect counters), the 23-hour proactive
+  connection rotation, and best-effort key deletion on `close()`. Implements
+  the `userData` on/off contract, so `executionManager.setUserStream(session)`
+  feeds the intent ledger live fills.
+- **`OrderTracker`** — live order-state feed: one `OrderRecord` per order
+  folded from user-stream reports (USDⓈ-M `ORDER_TRADE_UPDATE` and Spot
+  `executionReport`), REST order views and manual updates. Exact decimal
+  strings, per-trade fills deduplicated by trade id, terminal records
+  immutable, `waitForTerminal(clientOrderId)` promise API, exchange-id index,
+  capped retention (default 5000). Sees **all** account orders — including
+  ones placed outside this SDK.
+- **`PositionTracker`** — live position-state feed from `ACCOUNT_UPDATE`: one
+  `PositionRecord` per `symbol` + `positionSide` (one-way `BOTH`, hedge
+  `LONG`/`SHORT`), signed amounts as decimal strings, `nonZero()` exposure
+  view.
+- **`classifyRetrySafety` / `platform.classify(err)`** — semantic retry
+  classification as an explicit contract: `safe` (proven no side effect:
+  `-2013`, `-2011`, throttling, `-1021`), `idempotent` (reserved for keyed
+  backends — the live exchange never enforces clientOrderId uniqueness),
+  `reconciliation-required` (unknown outcome: `NetworkError`,
+  `ExecutionUnknownError`, `-1000/-1001/-1007`), `never-retry` (definitive
+  rejections: filters, margin, permissions, unrecognized errors). Classifies —
+  never auto-retries.
+- **Decimal-fidelity normalization** — platform folds read raw frame strings
+  (Zod schemas run validation-only), so stream decimals never round-trip
+  through binary floats; unknown-but-shaped Binance event types pass through;
+  shapeless frames surface as `error` without killing the stream.
+- Observability: `execution.session.*` (started/keepalive/rotated/
+  rotationFailed/closed), `execution.order.updated`,
+  `execution.position.updated` on the shared bus.
+- `docs/architecture/v3-execution.md`; 47 new tests across 5 files
+  (`test/execution/platform/`) — real `WebSocketServer` user-stream mock, MSW
+  listen-key REST, full end-to-end flows including the flagship: place an
+  order through `usdm.execution`, watch the ledger fill from the stream, read
+  it back from `usdm.executionPlatform.orders`.
+
+### Fixed
+
+- **`WsConnection.retireSocket` uncaught exception** — terminating a socket
+  that never finished establishing asynchronously emits `error` ("WebSocket
+  was closed before the connection was established") *after* its listeners
+  were removed, escaping as an uncaught exception whenever a session was
+  closed mid-connect. A swallow-listener is now attached before termination
+  (all WS classes benefit).
+- `VERSION` export was still `3.0.0-next.1` after the milestone-2 package
+  bump; both now read `3.0.0-next.3`.
+
 ## [3.0.0-next.2] - 2026-09-09
 
 **v3 Milestone 2 — WebSocket Platform** (prerelease channel). Zero breaking
