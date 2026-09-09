@@ -1,0 +1,2206 @@
+{
+  "catalogVersion": 1,
+  "generatedAt": "2026-09-09T01:54:19.496Z",
+  "endpoints": [
+    {
+      "product": "spot",
+      "operation": "market.ping",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/ping",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.ping"
+    },
+    {
+      "product": "spot",
+      "operation": "market.serverTime",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/time",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.serverTime"
+    },
+    {
+      "product": "spot",
+      "operation": "market.exchangeInfo",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/exchangeInfo",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.exchangeInfo"
+    },
+    {
+      "product": "spot",
+      "operation": "market.depth",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/depth",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.depth"
+    },
+    {
+      "product": "spot",
+      "operation": "market.trades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/trades",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.trades"
+    },
+    {
+      "product": "spot",
+      "operation": "market.historicalTrades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/historicalTrades",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "spot.market.historicalTrades"
+    },
+    {
+      "product": "spot",
+      "operation": "market.aggTrades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/aggTrades",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.aggTrades"
+    },
+    {
+      "product": "spot",
+      "operation": "market.klines",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/klines",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.klines"
+    },
+    {
+      "product": "spot",
+      "operation": "market.uiKlines",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/uiKlines",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.uiKlines"
+    },
+    {
+      "product": "spot",
+      "operation": "market.avgPrice",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/avgPrice",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.avgPrice"
+    },
+    {
+      "product": "spot",
+      "operation": "market.ticker24hr",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/ticker/24hr",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.ticker24hr"
+    },
+    {
+      "product": "spot",
+      "operation": "market.tickerPrice",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/ticker/price",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.tickerPrice"
+    },
+    {
+      "product": "spot",
+      "operation": "market.bookTicker",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/ticker/bookTicker",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.bookTicker"
+    },
+    {
+      "product": "spot",
+      "operation": "market.rollingWindowTicker",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/ticker",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.rollingWindowTicker"
+    },
+    {
+      "product": "spot",
+      "operation": "market.tradingDayTicker",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/ticker/tradingDay",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "spot.market.tradingDayTicker"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.createOrder",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/api/v3/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.createOrder"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.createTestOrder",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/api/v3/order/test",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.testOrder"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.getOrder",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.getOrder"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.cancelOrder",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/api/v3/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.cancelOrder"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.cancelOpenOrders",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/api/v3/openOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.cancelOpenOrders"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.getOpenOrders",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/openOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.getOpenOrders"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.getAllOrders",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/allOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.getAllOrders"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.cancelReplace",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/api/v3/order/cancelReplace",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.cancelReplaceOrder"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.createOCO",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/api/v3/orderList/oco",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.createOCOOrder"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.cancelOCO",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/api/v3/orderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.cancelOCOOrder"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.getOCO",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/orderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.getOCOOrder"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.getOpenOCOs",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/openOrderLists",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.getOpenOCOOrders"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.getAllOCOs",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/allOrderLists",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.getAllOCOOrders"
+    },
+    {
+      "product": "spot",
+      "operation": "trading.cancelOpenOCOs",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/api/v3/openOrderLists",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.cancelOpenOCOOrders"
+    },
+    {
+      "product": "spot",
+      "operation": "account.getAccount",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.account"
+    },
+    {
+      "product": "spot",
+      "operation": "account.myTrades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/myTrades",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.myTrades"
+    },
+    {
+      "product": "spot",
+      "operation": "account.myPreventedMatches",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/myPreventedMatches",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.myPreventedMatches"
+    },
+    {
+      "product": "spot",
+      "operation": "account.commission",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/account/commission",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.accountCommission"
+    },
+    {
+      "product": "spot",
+      "operation": "account.orderRateLimit",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/rateLimit/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.trading.rateLimitOrder"
+    },
+    {
+      "product": "spot",
+      "operation": "userStream.create",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/api/v3/userDataStream",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "spot.userStream.createListenKey"
+    },
+    {
+      "product": "spot",
+      "operation": "userStream.keepAlive",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/api/v3/userDataStream",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "spot.userStream.keepAliveListenKey"
+    },
+    {
+      "product": "spot",
+      "operation": "userStream.close",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/api/v3/userDataStream",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "spot.userStream.closeListenKey"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.ping",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/ping",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.ping"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.serverTime",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/time",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.serverTime"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.exchangeInfo",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/exchangeInfo",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.exchangeInfo"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.depth",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/depth",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.depth"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.trades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/trades",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.trades"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.historicalTrades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/historicalTrades",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "futures.market.historicalTrades"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.aggTrades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/aggTrades",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.aggTrades"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.klines",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/klines",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.klines"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.ticker24hr",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/ticker/24hr",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.ticker24hr"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.tickerPrice",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/ticker/price",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.tickerPrice"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.bookTicker",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/ticker/bookTicker",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.bookTicker"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.continuousKlines",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/continuousKlines",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.continuousKlines"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.indexPriceKlines",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/indexPriceKlines",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.indexPriceKlines"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.markPriceKlines",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/markPriceKlines",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.markPriceKlines"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.premiumIndexKlines",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/premiumIndexKlines",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.premiumIndexKlines"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.rpiDepth",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/rpiDepth",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.rpiDepth"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.tradingDayTicker",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/tradingDayTicker",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.tradingDayTicker"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.tickerPriceV2",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v2/ticker/price",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.tickerPriceV2"
+    },
+    {
+      "product": "usdm",
+      "operation": "market.bookTickerV2",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v2/ticker/bookTicker",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.bookTickerV2"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.fundingRateHistory",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/fundingRate",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.fundingRateHistory"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.premiumIndex",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/premiumIndex",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.premiumIndex"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.openInterest",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/openInterest",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.openInterest"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.openInterestHist",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/futures/data/openInterestHist",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.openInterestHist"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.topLongShortAccountRatio",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/futures/data/topLongShortAccountRatio",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.topLongShortAccountRatio"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.topLongShortPositionRatio",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/futures/data/topLongShortPositionRatio",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.topLongShortPositionRatio"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.globalLongShortAccountRatio",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/futures/data/globalLongShortAccountRatio",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.globalLongShortAccountRatio"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.takerLongShortRatio",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/futures/data/takerlongshortRatio",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.takerLongShortRatio"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.basis",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/futures/data/basis",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.basis"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.insuranceBalance",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/futures/data/insuranceBalance",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.insuranceFundBalance"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.deliveryPrice",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/futures/data/delivery-price",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.deliveryPrice"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.fundingInfo",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/fundingInfo",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.fundingInfo"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.assetIndex",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/assetIndex",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.assetIndex"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.indexInfo",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/indexInfo",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.compositeIndexInfo"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.adlQuantile",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/adlQuantile",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.data.adlQuantile"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.lvtKlines",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/lvtKlines",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.blvtInfo"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.constituents",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/constituents",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.indexPriceConstituents"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.symbolConfig",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/symbolConfig",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.data.symbolConfig"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.forceOrders",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/forceOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.data.forceOrders"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.pmExchangeInfo",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/pmExchangeInfo",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.pmExchangeInfo"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.delistSchedule",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/delistSchedule",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.data.delistSchedule"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.symbolAdlRisk",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/symbolAdlRisk",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.data.symbolAdlRisk"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.balanceV2",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v2/balance",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.balance"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.accountV2",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v2/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.account"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.positionRiskV2",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v2/positionRisk",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.positionRisk"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.balanceV3",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v3/balance",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.balanceV3"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.accountV3",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v3/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.accountV3"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.positionRiskV3",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v3/positionRisk",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.positionRiskV3"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.income",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/income",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.incomeHistory"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.userTrades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/userTrades",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.userTrades"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.leverageBracket",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/leverageBracket",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.leverageBrackets"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.commissionRate",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/commissionRate",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.getCommissionRate"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.multiAssetsMargin",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/multiAssetsMargin",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.multiAssetsMargin"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.setMultiAssetsMargin",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/multiAssetsMargin",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.setMultiAssetsMargin"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.feeBurn",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/feeBurn",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.feeBurnStatus"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.setFeeBurn",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/feeBurn",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.setFeeBurnStatus"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.positionMode",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/positionSide/dual",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.positionMode"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.setPositionMode",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/positionSide/dual",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.setPositionMode"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.apiTradingStatus",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/apiTradingStatus",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.apiTradingStatus"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.positionMarginHistory",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/positionMargin/history",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.getPositionMarginHistory"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.orderRateLimit",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/rateLimit/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.rateLimitOrder"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.accountConfig",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/accountConfig",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.getAccountConfig"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.pmAccountInfo",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/pmAccountInfo",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.getPmAccountInfo"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.incomeDownloadId",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/income/asyn",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.requestIncomeDownload"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.incomeDownloadStatus",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/income/asyn/id",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.getIncomeDownloadStatus"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.orderDownloadId",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/order/asyn",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.requestOrderDownload"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.orderDownloadStatus",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/order/asyn/id",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.getOrderDownloadStatus"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.tradeDownloadId",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/trade/asyn",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.requestTradeDownload"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.tradeDownloadStatus",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/trade/asyn/id",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.account.getTradeDownloadStatus"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.setLeverage",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/leverage",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.setLeverage"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.createOrder",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.createOrder"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.createTestOrder",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/order/test",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.createTestOrder"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.getOrder",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.getOrder"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.cancelOrder",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/fapi/v1/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.cancelOrder"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.getOpenOrder",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/openOrder",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.getCurrentOrder"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.getOpenOrders",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/openOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.getOpenOrders"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.getAllOrders",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/allOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.getAllOrders"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.cancelAllOpenOrders",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/fapi/v1/allOpenOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.cancelAllOpenOrders"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.modifyOrder",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/fapi/v1/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.modifyOrder"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.createBatchOrders",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/batchOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.createBatchOrders"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.modifyBatchOrders",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/fapi/v1/batchOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.modifyBatchOrders"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.cancelBatchOrders",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/fapi/v1/batchOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.cancelBatchOrders"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.orderModifyHistory",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/orderAmendment",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.getOrderModifyHistory"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.setMarginType",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/marginType",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.setMarginType"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.modifyPositionMargin",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/positionMargin",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.modifyPositionMargin"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.setCountdownCancelAll",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/countdownCancelAll",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.setCountdownCancelAll"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.createAlgoOrder",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/algoOrder",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.createAlgoOrder"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.cancelAlgoOrder",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/fapi/v1/algoOrder",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.cancelAlgoOrder"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.cancelAllOpenAlgoOrders",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/fapi/v1/algoOpenOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.cancelAllOpenAlgoOrders"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.getAlgoOrder",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/algoOrder",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.getAlgoOrder"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.getOpenAlgoOrders",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/openAlgoOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.getOpenAlgoOrders"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.getAllAlgoOrders",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/allAlgoOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.getAllAlgoOrders"
+    },
+    {
+      "product": "usdm",
+      "operation": "convert.exchangeInfo",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/convert/exchangeInfo",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.trading.convertExchangeInfo"
+    },
+    {
+      "product": "usdm",
+      "operation": "convert.getQuote",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/convert/getQuote",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.convertGetQuote"
+    },
+    {
+      "product": "usdm",
+      "operation": "convert.acceptQuote",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/convert/acceptQuote",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.convertAcceptQuote"
+    },
+    {
+      "product": "usdm",
+      "operation": "convert.orderStatus",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/convert/orderStatus",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "futures.trading.convertOrderStatus"
+    },
+    {
+      "product": "usdm",
+      "operation": "userStream.create",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/fapi/v1/listenKey",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "futures.userStream.createListenKey"
+    },
+    {
+      "product": "usdm",
+      "operation": "userStream.keepAlive",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/fapi/v1/listenKey",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "futures.userStream.keepAliveListenKey"
+    },
+    {
+      "product": "usdm",
+      "operation": "userStream.close",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/fapi/v1/listenKey",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "futures.userStream.closeListenKey"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.ping",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/ping",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.ping"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.serverTime",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/time",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.serverTime"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.exchangeInfo",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/exchangeInfo",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.exchangeInfo"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.depth",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/depth",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.depth"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.trades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/trades",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.trades"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.historicalTrades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/historicalTrades",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "coinm.market.historicalTrades"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.aggTrades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/aggTrades",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.aggTrades"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.klines",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/klines",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.klines"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.ticker24hr",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/ticker/24hr",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.ticker24hr"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.tickerPrice",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/ticker/price",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.tickerPrice"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.bookTicker",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/ticker/bookTicker",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.bookTicker"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.continuousKlines",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/continuousKlines",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.continuousKlines"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.indexPriceKlines",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/indexPriceKlines",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.indexPriceKlines"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.markPriceKlines",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/markPriceKlines",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.markPriceKlines"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.premiumIndex",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/premiumIndex",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.premiumIndex"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.fundingRateHistory",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/fundingRate",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.fundingRateHistory"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.openInterest",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/openInterest",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.openInterest"
+    },
+    {
+      "product": "coinm",
+      "operation": "market.openInterestHist",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/futures/data/openInterestHist",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "coinm.market.openInterestHist"
+    },
+    {
+      "product": "coinm",
+      "operation": "account.balance",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/balance",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.account.balance"
+    },
+    {
+      "product": "coinm",
+      "operation": "account.account",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.account.account"
+    },
+    {
+      "product": "coinm",
+      "operation": "account.positionRisk",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/positionRisk",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.account.positionRisk"
+    },
+    {
+      "product": "coinm",
+      "operation": "account.incomeHistory",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/income",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.account.incomeHistory"
+    },
+    {
+      "product": "coinm",
+      "operation": "account.userTrades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/userTrades",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.account.userTrades"
+    },
+    {
+      "product": "coinm",
+      "operation": "account.leverageBrackets",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/leverageBracket",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.account.leverageBrackets"
+    },
+    {
+      "product": "coinm",
+      "operation": "account.commissionRate",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/commissionRate",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.account.commissionRate"
+    },
+    {
+      "product": "coinm",
+      "operation": "account.positionMode",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/positionSide/dual",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.account.positionMode"
+    },
+    {
+      "product": "coinm",
+      "operation": "account.setPositionMode",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/dapi/v1/positionSide/dual",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.account.setPositionMode"
+    },
+    {
+      "product": "coinm",
+      "operation": "trading.setLeverage",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/dapi/v1/leverage",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.trading.setLeverage"
+    },
+    {
+      "product": "coinm",
+      "operation": "trading.setMarginType",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/dapi/v1/marginType",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.trading.setMarginType"
+    },
+    {
+      "product": "coinm",
+      "operation": "trading.createOrder",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/dapi/v1/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.trading.createOrder"
+    },
+    {
+      "product": "coinm",
+      "operation": "trading.createTestOrder",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/dapi/v1/order/test",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.trading.createTestOrder"
+    },
+    {
+      "product": "coinm",
+      "operation": "trading.getOrder",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.trading.getOrder"
+    },
+    {
+      "product": "coinm",
+      "operation": "trading.cancelOrder",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/dapi/v1/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.trading.cancelOrder"
+    },
+    {
+      "product": "coinm",
+      "operation": "trading.cancelAllOpenOrders",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/dapi/v1/allOpenOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.trading.cancelAllOpenOrders"
+    },
+    {
+      "product": "coinm",
+      "operation": "trading.getOpenOrders",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/openOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.trading.getOpenOrders"
+    },
+    {
+      "product": "coinm",
+      "operation": "trading.getAllOrders",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/dapi/v1/allOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.trading.getAllOrders"
+    },
+    {
+      "product": "coinm",
+      "operation": "trading.modifyPositionMargin",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/dapi/v1/positionMargin",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "coinm.trading.modifyPositionMargin"
+    },
+    {
+      "product": "coinm",
+      "operation": "userStream.create",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/dapi/v1/listenKey",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "coinm.userStream.createListenKey"
+    },
+    {
+      "product": "coinm",
+      "operation": "userStream.keepAlive",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/dapi/v1/listenKey",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "coinm.userStream.keepAliveListenKey"
+    },
+    {
+      "product": "coinm",
+      "operation": "userStream.close",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/dapi/v1/listenKey",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "coinm.userStream.closeListenKey"
+    },
+    {
+      "product": "margin",
+      "operation": "account.crossMarginAccount",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.account.crossAccount"
+    },
+    {
+      "product": "margin",
+      "operation": "account.isolatedMarginAccount",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/isolated/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.account.isolatedAccount"
+    },
+    {
+      "product": "margin",
+      "operation": "account.maxBorrowable",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/maxBorrowable",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.account.maxBorrowable"
+    },
+    {
+      "product": "margin",
+      "operation": "account.maxTransferable",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/maxTransferable",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.account.maxTransferable"
+    },
+    {
+      "product": "margin",
+      "operation": "borrowRepay.record",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/borrow-repay",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.account.borrowRepayRecord"
+    },
+    {
+      "product": "margin",
+      "operation": "account.interestHistory",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/interestHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.account.interestHistory"
+    },
+    {
+      "product": "margin",
+      "operation": "account.forceLiquidationRecord",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/forceLiquidationRec",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.account.forceLiquidationRecord"
+    },
+    {
+      "product": "margin",
+      "operation": "account.priceIndex",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/priceIndex",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "margin.account.priceIndex"
+    },
+    {
+      "product": "margin",
+      "operation": "trading.borrowRepay",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/borrow-repay",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.trading.borrowRepay"
+    },
+    {
+      "product": "margin",
+      "operation": "transfer.crossMargin",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/transfer",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.trading.transfer"
+    },
+    {
+      "product": "margin",
+      "operation": "transfer.isolatedMargin",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/isolated/transfer",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.trading.isolatedTransfer"
+    },
+    {
+      "product": "margin",
+      "operation": "trading.createOrder",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.trading.createOrder"
+    },
+    {
+      "product": "margin",
+      "operation": "trading.cancelOrder",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/sapi/v1/margin/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.trading.cancelOrder"
+    },
+    {
+      "product": "margin",
+      "operation": "trading.cancelAllOpenOrders",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/sapi/v1/margin/openOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.trading.cancelAllOpenOrders"
+    },
+    {
+      "product": "margin",
+      "operation": "trading.getOrder",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.trading.getOrder"
+    },
+    {
+      "product": "margin",
+      "operation": "trading.getOpenOrders",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/openOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.trading.getOpenOrders"
+    },
+    {
+      "product": "margin",
+      "operation": "trading.getAllOrders",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/allOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.trading.getAllOrders"
+    },
+    {
+      "product": "margin",
+      "operation": "trading.myTrades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/myTrades",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.trading.myTrades"
+    },
+    {
+      "product": "wallet",
+      "operation": "transfer.universalTransfer",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/asset/transfer",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.universalTransfer"
+    },
+    {
+      "product": "wallet",
+      "operation": "transfer.universalTransferHistory",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/asset/transfer",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.universalTransferHistory"
+    },
+    {
+      "product": "wallet",
+      "operation": "account.fundingWallet",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/asset/get-funding-asset",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.fundingWallet"
+    },
+    {
+      "product": "wallet",
+      "operation": "account.userAsset",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v3/asset/getUserAsset",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.userAsset"
+    },
+    {
+      "product": "wallet",
+      "operation": "deposit.history",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/capital/deposit/hisrec",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.depositHistory"
+    },
+    {
+      "product": "wallet",
+      "operation": "withdraw.history",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/capital/withdraw/history",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.withdrawHistory"
+    },
+    {
+      "product": "wallet",
+      "operation": "withdraw.apply",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/capital/withdraw/apply",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.withdraw"
+    },
+    {
+      "product": "wallet",
+      "operation": "deposit.address",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/capital/deposit/address",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.depositAddress"
+    },
+    {
+      "product": "wallet",
+      "operation": "account.snapshot",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/accountSnapshot",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.accountSnapshot"
+    },
+    {
+      "product": "wallet",
+      "operation": "account.apiKeyPermissions",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/account/apiRestrictions",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.apiKeyPermissions"
+    },
+    {
+      "product": "wallet",
+      "operation": "account.assetDetail",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/asset/assetDetail",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.assetDetail"
+    },
+    {
+      "product": "wallet",
+      "operation": "account.dustLog",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/asset/dribblet",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.dustLog"
+    },
+    {
+      "product": "wallet",
+      "operation": "account.convertDustToBnb",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/asset/dust",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.convertDustToBnb"
+    },
+    {
+      "product": "wallet",
+      "operation": "account.tradeFee",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/asset/tradeFee",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.tradeFee"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.list",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.list"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.status",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/status",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.status"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.spotAssets",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v3/sub-account/assets",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.spotAssets"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.spotSummary",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/spotSummary",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.spotSummary"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.futuresAccountSummary",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v2/sub-account/futures/accountSummary",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.futuresAccountSummary"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.marginAccount",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/margin/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.marginAccount"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.universalTransfer",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/universalTransfer",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.universalTransfer"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.universalTransferHistory",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/universalTransfer",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.universalTransferHistory"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.createVirtual",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/virtualSubAccount",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.createVirtualSubAccount"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.enableFutures",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/futures/enable",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.enableFutures"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.enableMargin",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/margin/enable",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.enableMargin"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.depositAddress",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/capital/deposit/subAddress",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.depositAddress"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.depositHistory",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/capital/deposit/subHisrec",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.depositHistory"
+    }
+  ]
+}

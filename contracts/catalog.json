@@ -1,0 +1,21 @@
+{
+  "$schema": "./catalog.schema.json",
+  "catalogVersion": 1,
+  "sdkVersion": "3.0.0-next",
+  "generatedAt": "2026-09-09T01:54:19.496Z",
+  "description": "Machine-readable inventory of the SDK REST surface, derived from src/registry. WebSocket and schema catalogs land with the v3 WS platform milestone.",
+  "products": [
+    "coinm",
+    "margin",
+    "spot",
+    "subaccount",
+    "usdm",
+    "wallet"
+  ],
+  "totalEndpoints": 220,
+  "files": [
+    "catalog.json",
+    "endpoint-catalog.json",
+    "security-catalog.json"
+  ]
+}

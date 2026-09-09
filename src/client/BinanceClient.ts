@@ -4,33 +4,19 @@ import type { RateLimitUsage } from './RateLimitTracker.js';
 import { TradingPolicy, type TradingPolicyOptions } from './TradingPolicy.js';
 import { RiskGateway, type RiskGatewayOptions } from '../risk/RiskGateway.js';
 import { EventBus } from '../core/events.js';
+import { CoreContext } from '../core/context.js';
 import { resolveEnvironment } from './endpoints.js';
-import { FuturesData } from '../resources/FuturesData.js';
-import { FuturesMarket } from '../resources/FuturesMarket.js';
-import { SpotMarket } from '../resources/SpotMarket.js';
-import { SpotAccount, SpotTrading } from '../resources/SpotTrading.js';
-import { SpotUserDataStream } from '../resources/SpotUserDataStream.js';
-import { FuturesAccount } from '../resources/FuturesAccount.js';
-import { FuturesTrading } from '../resources/FuturesTrading.js';
-import { FuturesOps } from '../resources/FuturesOps.js';
-import { UserDataStream } from '../resources/UserDataStream.js';
-import { CoinMMarket } from '../resources/CoinMMarket.js';
-import { CoinMAccount } from '../resources/CoinMAccount.js';
-import { CoinMTrading } from '../resources/CoinMTrading.js';
-import { CoinMUserDataStream } from '../resources/CoinMUserDataStream.js';
 import { MarginAccount, MarginTrading } from '../resources/Margin.js';
 import { Wallet } from '../resources/Wallet.js';
 import { SubAccount } from '../resources/SubAccount.js';
-import { FuturesMarketWS } from '../ws/FuturesMarketWS.js';
-import { SpotMarketWS } from '../ws/SpotMarketWS.js';
-import { SpotUserWS } from '../ws/SpotUserWS.js';
-import { FuturesUserWS } from '../ws/FuturesUserWS.js';
-import { CoinMMarketWS } from '../ws/CoinMMarketWS.js';
-import { CoinMUserWS } from '../ws/CoinMUserWS.js';
-import { WsApi } from '../ws/WsApi.js';
-import { SpotWsApi } from '../ws/SpotWsApi.js';
+import { buildSpotSurface, type SpotSurface } from '../products/spot/surface.js';
+import {
+  buildUsdmSurface,
+  type FuturesNamespace,
+  type UsdmSurface,
+} from '../products/usdm/namespace.js';
+import { buildCoinmSurface, type CoinMSurface } from '../products/coinm/surface.js';
 import { ExecutionManager } from '../execution/ExecutionManager.js';
-import { SpotExecutionAdapter } from '../execution/adapter.js';
 import { PaperExecutionAdapter } from '../execution/paper.js';
 import { ExecutionGateway, type ExecutionBackend } from '../execution/Gateway.js';
 import { PaperTradingEngine, type PaperTradingOptions } from '../paper/PaperTradingEngine.js';
@@ -88,60 +74,70 @@ export interface BinanceClientOptions {
   events?: EventBus;
 }
 
+export interface MarginNamespace {
+  account: MarginAccount;
+  trading: MarginTrading;
+}
+
 export class BinanceClient {
-  readonly spot: {
-    market: SpotMarket;
-    account: SpotAccount;
-    trading: SpotTrading;
-    /** Idempotent spot order placement with transport-failure reconciliation. */
-    execution: ExecutionManager;
-    userStream: SpotUserDataStream;
-    ws: SpotMarketWS;
-    wsUser: SpotUserWS;
-    wsApi: SpotWsApi;
-  };
-  readonly futures: {
-    market: FuturesMarket;
-    data: FuturesData;
-    account: FuturesAccount;
-    trading: FuturesTrading;
-    ops: FuturesOps;
-    /** Idempotent order placement with transport-failure reconciliation. */
-    execution: ExecutionManager;
-    userStream: UserDataStream;
-    ws: FuturesMarketWS;
-    wsUser: FuturesUserWS;
-    wsApi: WsApi;
-  } & {
-    /** Ergonomic alias for the USDⓈ-M surface (same objects as `client.futures`). */
-    readonly usdm: BinanceClient['futures'];
-    /** Ergonomic alias for the COIN-M surface (same objects as `client.coinm`). */
-    readonly coinm: BinanceClient['coinm'];
-  };
-  readonly coinm: {
-    market: CoinMMarket;
-    account: CoinMAccount;
-    trading: CoinMTrading;
-    userStream: CoinMUserDataStream;
-    ws: CoinMMarketWS;
-    wsUser: CoinMUserWS;
-  };
-  readonly margin: {
-    account: MarginAccount;
-    trading: MarginTrading;
-  };
-  readonly wallet: Wallet;
-  readonly subaccount: SubAccount;
+  /**
+   * v3 shared runtime: one transport pool, one credential set, one
+   * observability bus, one policy chain. Every product namespace below is
+   * lazily constructed from this context and cached — identity is stable
+   * (`client.futures.execution === client.futures.execution`), and a
+   * namespace is never built until first accessed.
+   */
+  readonly core: CoreContext;
+
+  get spot(): SpotSurface {
+    return this.cached('spot', () => buildSpotSurface(this.core, () => this.spotListenKeyValue));
+  }
+
+  get futures(): FuturesNamespace {
+    return this.cached('futures', () =>
+      this.attachAliases(
+        buildUsdmSurface(this.core, () => this.listenKeyValue),
+      ),
+    );
+  }
+
+  get coinm(): CoinMSurface {
+    return this.cached('coinm', () =>
+      buildCoinmSurface(this.core, () => this.coinmListenKeyValue),
+    );
+  }
+
+  get margin(): MarginNamespace {
+    return this.cached('margin', () => ({
+      account: new MarginAccount(this.core.http('apiRoot')),
+      trading: new MarginTrading(this.core.http('apiRoot')),
+    }));
+  }
+
+  get wallet(): Wallet {
+    return this.cached('wallet', () => new Wallet(this.core.http('apiRoot')));
+  }
+
+  get subaccount(): SubAccount {
+    return this.cached('subaccount', () => new SubAccount(this.core.http('apiRoot')));
+  }
+
   /** The active guardrail policy, or undefined when no `safety` config was supplied. */
-  readonly policy?: TradingPolicy;
+  get policy(): TradingPolicy | undefined {
+    return this.core.policy;
+  }
+
   /** Structured observability bus: `http.*`, `ws.*`, `execution.*`, `risk.*` events. */
-  readonly events: EventBus;
+  get events(): EventBus {
+    return this.core.events;
+  }
+
   /** Product-oriented view: spot / futures.usdm / futures.coinm / margin / wallet / subaccount. */
   get products(): {
-    spot: BinanceClient['spot'];
-    usdm: BinanceClient['futures'];
-    coinm: BinanceClient['coinm'];
-    margin: BinanceClient['margin'];
+    spot: SpotSurface;
+    usdm: FuturesNamespace;
+    coinm: CoinMSurface;
+    margin: MarginNamespace;
     wallet: Wallet;
     subaccount: SubAccount;
   } {
@@ -155,10 +151,7 @@ export class BinanceClient {
     };
   }
 
-  private readonly authHttp: HttpClient;
-  private readonly spotHttp: HttpClient;
-  private readonly dapiHttp: HttpClient;
-  private readonly sapiHttp: HttpClient;
+  private readonly namespaces = new Map<string, unknown>();
   private listenKeyValue: string | null = null;
   private keepAliveInterval: NodeJS.Timeout | null = null;
   private spotListenKeyValue: string | null = null;
@@ -188,126 +181,28 @@ export class BinanceClient {
   }
 
   constructor(options: BinanceClientOptions = {}) {
-    const { endpoints } = resolveEnvironment(options);
-    const events = options.events ?? new EventBus();
-    this.events = events;
-    const riskGateway = options.safety ? new RiskGateway(options.safety, events) : undefined;
-    this.policy = riskGateway ?? (options.safety ? new TradingPolicy(options.safety) : undefined);
-    const httpOptions = {
-      policy: this.policy,
-      events,
-      apiKey: options.apiKey,
-      apiSecret: options.apiSecret,
-      privateKey: options.privateKey,
-      signatureAlgorithm: options.signatureAlgorithm,
-      recvWindow: options.recvWindow ?? 5000,
-      timeoutMs: options.timeoutMs ?? 15_000,
-      maxRetries: options.maxRetries ?? 3,
-      retryBaseDelayMs: options.retryBaseDelayMs,
-      retryMaxDelayMs: options.retryMaxDelayMs,
-      rateLimitWeightPerMinute: options.rateLimitWeightPerMinute,
-      rateLimitSafetyMargin: options.rateLimitSafetyMargin,
-      httpsAgent: options.httpsAgent,
-      proxy: options.proxy,
+    this.core = new CoreContext(options);
+  }
+
+  /** Build-once cache for lazy product namespaces. */
+  private cached<T>(key: string, build: () => T): T {
+    let value = this.namespaces.get(key) as T | undefined;
+    if (value === undefined) {
+      value = build();
+      this.namespaces.set(key, value);
+    }
+    return value;
+  }
+
+  /** Attach the ergonomic `futures.usdm` / `futures.coinm` aliases to the USDⓈ-M surface. */
+  private attachAliases(usdm: UsdmSurface): FuturesNamespace {
+    const withAliases = {
+      ...usdm,
+      usdm: null as unknown as FuturesNamespace,
+      coinm: this.coinm,
     };
-
-    this.authHttp = new HttpClient({ baseURL: endpoints.restRoot, ...httpOptions });
-
-    this.spotHttp = new HttpClient({ baseURL: endpoints.restSpot, ...httpOptions });
-    const spotHttp = this.spotHttp;
-    const spotTrading = new SpotTrading(spotHttp);
-    this.spot = {
-      market: new SpotMarket(spotHttp),
-      account: new SpotAccount(spotHttp),
-      trading: spotTrading,
-      execution: new ExecutionManager(new SpotExecutionAdapter(spotTrading), {
-        events,
-        riskGateway,
-      }),
-      userStream: new SpotUserDataStream(spotHttp),
-      ws: new SpotMarketWS(endpoints.wsSpotMarket, { events }),
-      wsUser: new SpotUserWS({
-        baseUserUrl: endpoints.wsSpotUser,
-        getListenKey: () => this.spotListenKeyValue,
-        events,
-      }),
-      wsApi: new SpotWsApi({
-        baseUrl: endpoints.wsSpotApi,
-        apiKey: options.apiKey,
-        apiSecret: options.apiSecret,
-        privateKey: options.privateKey,
-        signatureAlgorithm: options.signatureAlgorithm,
-        recvWindow: options.recvWindow,
-      }),
-    };
-
-    const futuresMarket = new FuturesMarket(
-      new HttpClient({ baseURL: endpoints.restFapi, ...httpOptions }),
-      endpoints.restRoot,
-    );
-    const futuresData = new FuturesData({
-      restFapi: endpoints.restFapi,
-      restFuturesData: endpoints.restFuturesData,
-      ...httpOptions,
-    });
-    const futuresAccount = new FuturesAccount(this.authHttp);
-    const futuresTrading = new FuturesTrading(this.authHttp);
-    const execution = new ExecutionManager(futuresTrading, { events, riskGateway });
-
-    const futuresNamespace = {
-      market: futuresMarket,
-      data: futuresData,
-      account: futuresAccount,
-      trading: futuresTrading,
-      ops: new FuturesOps(futuresMarket, futuresData, futuresAccount, futuresTrading),
-      execution,
-      userStream: new UserDataStream(this.authHttp),
-      ws: new FuturesMarketWS(endpoints.wsMarket, { events }),
-      wsUser: new FuturesUserWS({
-        baseUserUrl: endpoints.wsUser,
-        getListenKey: () => this.listenKeyValue,
-        events,
-      }),
-      wsApi: new WsApi({
-        baseUrl: endpoints.wsApi,
-        apiKey: options.apiKey,
-        apiSecret: options.apiSecret,
-        privateKey: options.privateKey,
-        signatureAlgorithm: options.signatureAlgorithm,
-        recvWindow: options.recvWindow,
-      }),
-    };
-
-    this.dapiHttp = new HttpClient({ baseURL: endpoints.restDapiRoot, ...httpOptions });
-    const coinmNamespace = {
-      market: new CoinMMarket(new HttpClient({ baseURL: endpoints.restDapi, ...httpOptions })),
-      account: new CoinMAccount(this.dapiHttp),
-      trading: new CoinMTrading(this.dapiHttp),
-      userStream: new CoinMUserDataStream(this.dapiHttp),
-      ws: new CoinMMarketWS(endpoints.wsDapiMarket, { events }),
-      wsUser: new CoinMUserWS({
-        baseUserUrl: endpoints.wsDapiUser,
-        getListenKey: () => this.coinmListenKeyValue,
-        events,
-      }),
-    };
-    this.coinm = coinmNamespace;
-
-    const futuresWithAliases = {
-      ...futuresNamespace,
-      usdm: null as unknown as BinanceClient['futures'],
-      coinm: coinmNamespace,
-    };
-    futuresWithAliases.usdm = futuresWithAliases;
-    this.futures = futuresWithAliases;
-
-    this.sapiHttp = new HttpClient({ baseURL: endpoints.restApiRoot, ...httpOptions });
-    this.margin = {
-      account: new MarginAccount(this.sapiHttp),
-      trading: new MarginTrading(this.sapiHttp),
-    };
-    this.wallet = new Wallet(this.sapiHttp);
-    this.subaccount = new SubAccount(this.sapiHttp);
+    withAliases.usdm = withAliases;
+    return withAliases;
   }
 
   /**
@@ -317,10 +212,10 @@ export class BinanceClient {
    */
   async syncTime(): Promise<void> {
     await Promise.all([
-      this.authHttp.syncTime('/fapi/v1/time'),
-      this.spotHttp.syncTime('/time'),
-      this.dapiHttp.syncTime('/dapi/v1/time'),
-      this.sapiHttp.syncTime('/api/v3/time'),
+      this.core.http('fapiRoot').syncTime('/fapi/v1/time'),
+      this.core.http('spot').syncTime('/time'),
+      this.core.http('dapiRoot').syncTime('/dapi/v1/time'),
+      this.core.http('apiRoot').syncTime('/api/v3/time'),
     ]);
   }
 
@@ -335,10 +230,10 @@ export class BinanceClient {
     sapi: RateLimitUsage;
   } {
     return {
-      spot: this.spotHttp.getRateLimitUsage(),
-      futures: this.authHttp.getRateLimitUsage(),
-      coinm: this.dapiHttp.getRateLimitUsage(),
-      sapi: this.sapiHttp.getRateLimitUsage(),
+      spot: this.core.http('spot').getRateLimitUsage(),
+      futures: this.core.http('fapiRoot').getRateLimitUsage(),
+      coinm: this.core.http('dapiRoot').getRateLimitUsage(),
+      sapi: this.core.http('apiRoot').getRateLimitUsage(),
     };
   }
 
