@@ -1,77 +1,56 @@
-import { EventEmitter } from 'node:events';
-import WebSocket, { type RawData } from 'ws';
-import {
-  parseUserDataEvent,
-  type UserDataEvent,
-} from '../types/userdata.types.js';
+import type { EventBus } from '../core/events.js';
+import type { WsConnectionOptions, WsConnectionState } from './WsConnection.js';
+import { WsConnection } from './WsConnection.js';
+import { parseUserDataEvent, type UserDataEvent } from '../types/userdata.types.js';
 
-export interface FuturesUserWSOptions {
+export { type WsConnectionState };
+
+export interface FuturesUserWSOptions extends Omit<WsConnectionOptions, 'buildUrl'> {
   baseUserUrl: string;
   getListenKey: () => string | null;
-  reconnectDelayMs?: number;
-  maxReconnectDelayMs?: number;
 }
 
-export class FuturesUserWS extends EventEmitter {
-  private ws: WebSocket | null = null;
-  private reconnectAttempt = 0;
-  private closedByUser = false;
+/**
+ * USD-M futures user-data stream.
+ *
+ * Refactored onto {@link WsConnection}: the listenKey URL is rebuilt on every
+ * (re)connect, reconnects are race-free, the lifecycle is an explicit state
+ * machine, and the connection is proactively rotated before Binance's 24h
+ * stream limit (with the same listenKey, per Binance docs).
+ */
+export class FuturesUserWS extends WsConnection {
+  private readonly getListenKey: () => string | null;
+  private readonly baseUserUrl: string;
 
-  constructor(private readonly options: FuturesUserWSOptions) {
-    super();
+  constructor(options: FuturesUserWSOptions) {
+    const { baseUserUrl, getListenKey, ...connectionOptions } = options;
+    super({
+      ...connectionOptions,
+      name: connectionOptions.name ?? 'futuresUser',
+      buildUrl: () => {
+        const listenKey = getListenKey();
+        return listenKey ? `${baseUserUrl}/${listenKey}` : null;
+      },
+    });
+    this.baseUserUrl = baseUserUrl;
+    this.getListenKey = getListenKey;
   }
 
-  connect(): void {
-    const listenKey = this.options.getListenKey();
-    if (!listenKey) {
+  /**
+   * Start (or restart) the user-data stream. Emits the historical `error`
+   * event when no listenKey is available yet, matching the legacy contract.
+   */
+  override connect(): void {
+    if (!this.getListenKey()) {
       this.emit('error', new Error('No listenKey available for user data stream'));
       return;
     }
-    this.closedByUser = false;
-    const url = `${this.options.baseUserUrl}/${listenKey}`;
-    this.ws = new WebSocket(url);
-
-    this.ws.on('open', () => {
-      this.reconnectAttempt = 0;
-      this.emit('open');
-    });
-
-    this.ws.on('message', (raw: RawData) => {
-      this.handleMessage(raw.toString());
-    });
-
-    this.ws.on('close', () => {
-      this.emit('close');
-      if (!this.closedByUser) this.scheduleReconnect();
-    });
-
-    this.ws.on('error', (err: Error) => {
-      this.emit('error', err);
-    });
+    super.connect();
   }
 
-  close(): void {
-    this.closedByUser = true;
-    this.ws?.close();
-  }
-
-  reconnect(): void {
-    if (this.ws?.readyState === WebSocket.OPEN) this.ws.close();
-    this.reconnectAttempt = 0;
-    if (!this.closedByUser) this.connect();
-  }
-
-  resetReconnectAttempts(): void {
-    this.reconnectAttempt = 0;
-  }
-
-  private handleMessage(raw: string): void {
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      return;
-    }
+  protected override handleRawMessage(text: string): void {
+    const parsed = this.parseFrame(text);
+    if (parsed === undefined) return;
     try {
       const event: UserDataEvent = parseUserDataEvent(parsed);
       this.emit(event.e, event);
@@ -81,13 +60,8 @@ export class FuturesUserWS extends EventEmitter {
     }
   }
 
-  private scheduleReconnect(): void {
-    const base = this.options.reconnectDelayMs ?? 1000;
-    const max = this.options.maxReconnectDelayMs ?? 30_000;
-    const delay = Math.min(base * 2 ** this.reconnectAttempt, max);
-    this.reconnectAttempt += 1;
-    setTimeout(() => {
-      if (!this.closedByUser) this.connect();
-    }, delay);
+  /** The user-data stream base URL this instance was configured with. */
+  getUserStreamBase(): string {
+    return this.baseUserUrl;
   }
 }

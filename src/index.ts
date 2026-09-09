@@ -1,9 +1,11 @@
-export const VERSION = '2.0.0';
+export const VERSION = '2.2.0';
 
 export { BinanceClient } from './client/BinanceClient.js';
 export type { BinanceClientOptions } from './client/BinanceClient.js';
+export { createSpotClient, createUSDMClient, createCoinMClient } from './client/factories.js';
+export type { SpotClient, USDMClient, CoinMClient } from './client/factories.js';
 export { HttpClient } from './client/HttpClient.js';
-export type { HttpClientOptions, AuthMode, HttpMethod, SignatureAlgorithm } from './client/HttpClient.js';
+export type { HttpClientOptions, AuthMode, HttpMethod, SignatureAlgorithm, RetryPolicy } from './client/HttpClient.js';
 export { resolveEnvironment } from './client/endpoints.js';
 export type { Environment, Endpoints } from './client/endpoints.js';
 export { Signer } from './client/Signer.js';
@@ -12,6 +14,67 @@ export { RateLimitTracker } from './client/RateLimitTracker.js';
 export type { RateLimitUsage, RateLimitTrackerOptions } from './client/RateLimitTracker.js';
 export { TradingPolicy } from './client/TradingPolicy.js';
 export type { TradingPolicyOptions } from './client/TradingPolicy.js';
+export { RiskGateway } from './risk/RiskGateway.js';
+export type { RiskGatewayOptions, RiskStatus, CircuitBreakerState } from './risk/RiskGateway.js';
+
+// ---- Core: exact decimal math, observability, lossless JSON ----
+export { Decimal, dec, sum, vwap } from './core/decimal.js';
+export type { DecimalInput } from './core/decimal.js';
+export { EventBus, forwardEventsToLogger } from './core/events.js';
+export type { SdkEvent, SdkEventListener, EventBusOptions, SdkLogger } from './core/events.js';
+export { parseJsonLossless, parseJsonLosslessAs, normalizeIntStrings } from './core/json.js';
+
+// ---- Execution: idempotent placement + reconciliation ----
+export { ExecutionManager } from './execution/ExecutionManager.js';
+export type { ExecutionManagerOptions } from './execution/types.js';
+export type { Execution, ExecutionFill, ReconciliationState } from './execution/types.js';
+export { ExecutionUnknownError } from './execution/types.js';
+export { FuturesExecutionAdapter, SpotExecutionAdapter, isExecutionAdapter } from './execution/adapter.js';
+export type {
+  ExecutionAdapter,
+  ExecutionReportShape,
+  OrderShape,
+  OrderKey,
+  UserStreamLike,
+} from './execution/adapter.js';
+export { PaperExecutionAdapter } from './execution/paper.js';
+export { ExecutionGateway } from './execution/Gateway.js';
+export type { ExecutionBackend, ExecutionGatewayOptions } from './execution/Gateway.js';
+
+// ---- State: local L2 order books ----
+export { OrderBook } from './state/OrderBook.js';
+export type {
+  BookLevel,
+  BookSnapshotInput,
+  DiffInput,
+  OrderBookMetrics,
+  RawLevel,
+} from './state/OrderBook.js';
+export { OrderBookEngine } from './state/OrderBookEngine.js';
+export type { OrderBookEngineOptions } from './state/OrderBookEngine.js';
+
+// ---- Registry: endpoint maps ----
+export {
+  ENDPOINT_REGISTRY,
+  listEndpoints,
+  findEndpoint,
+  endpointCounts,
+} from './registry/endpoints.js';
+export type { EndpointEntry, EndpointAuth, EndpointMethod, EndpointQuery } from './registry/endpoints.js';
+
+// ---- Contracts: security schemes, weights, canonical paths ----
+export {
+  canonicalPath,
+  contractFor,
+  describeContract,
+  findContract,
+  getContract,
+} from './contracts/index.js';
+export type {
+  EndpointContract,
+  EndpointSecurityScheme,
+  HttpContractMeta,
+} from './contracts/index.js';
 
 export { MarketDataBase } from './resources/MarketDataBase.js';
 export { SpotMarket } from './resources/SpotMarket.js';
@@ -46,9 +109,29 @@ export type {
   PaperPositionSide,
   PaperTradingOptions,
 } from './paper/PaperTradingEngine.js';
+export {
+  InstantFillModel,
+  SlippageModel,
+  PartialFillModel,
+  OrderBookModel,
+  LatencyModel,
+  CompositeModel,
+  TakerMakerFeeModel,
+  BinanceUsdmFeeModel,
+} from './paper/models.js';
+export type {
+  ExecutionModel,
+  ExecutionContext,
+  ExecutionQuote,
+  FeeModel,
+  FeeQuote,
+  BookView,
+} from './paper/models.js';
 
 export { BaseWS } from './ws/BaseWS.js';
-export type { BaseWSOptions } from './ws/BaseWS.js';
+export type { BaseWSOptions, WsConnectionState } from './ws/BaseWS.js';
+export { WsConnection } from './ws/WsConnection.js';
+export type { WsConnectionOptions } from './ws/WsConnection.js';
 export { SpotMarketWS } from './ws/SpotMarketWS.js';
 export { SpotUserWS } from './ws/SpotUserWS.js';
 export type { SpotUserWSOptions } from './ws/SpotUserWS.js';
@@ -83,6 +166,7 @@ export {
   createFuturesToolkit,
   toolkitToFormats,
   type FuturesToolkit,
+  type FuturesToolkitOptions,
 } from './tools/index.js';
 export type {
   ToolDefinition,
@@ -100,6 +184,7 @@ export {
   marketDataTools,
   accountTools,
   tradingTools,
+  executionTools,
   spotTools,
   derivedTools,
   wsTools,

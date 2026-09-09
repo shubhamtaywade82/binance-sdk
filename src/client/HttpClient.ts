@@ -1,6 +1,8 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import Bottleneck from 'bottleneck';
 import { BinanceApiError, BinanceAuthError, NetworkError, RateLimitError } from '../errors/index.js';
+import type { EventBus } from '../core/events.js';
+import { contractFor, type HttpContractMeta } from '../contracts/index.js';
 import { RateLimitTracker, type RateLimitUsage } from './RateLimitTracker.js';
 import { Signer, type SignatureAlgorithm } from './Signer.js';
 import type { TradingPolicy } from './TradingPolicy.js';
@@ -8,6 +10,19 @@ import type { TradingPolicy } from './TradingPolicy.js';
 export type AuthMode = 'public' | 'apiKey' | 'signed';
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 export type { SignatureAlgorithm };
+
+/**
+ * Retry behaviour for failed requests.
+ *
+ * - `strict` (default): retries only when the outcome is provably safe.
+ *   Unprocessed rejections (429/418), idempotent methods (GET/DELETE) and
+ *   explicitly whitelisted paths are retried; anything else — notably POST/PUT
+ *   order placement, where a timeout means the order *may already be live* —
+ *   fails fast so the caller can reconcile instead of double-submitting.
+ * - `legacy`: retries every 5xx/network error regardless of side effects
+ *   (the pre-2.1 behaviour; kept as an escape hatch, not recommended).
+ */
+export type RetryPolicy = 'strict' | 'legacy';
 
 export interface HttpClientOptions {
   baseURL: string;
@@ -32,12 +47,21 @@ export interface HttpClientOptions {
   retryBaseDelayMs?: number;
   retryMaxDelayMs?: number;
   retryFactor?: number;
+  /** Retry strategy, see {@link RetryPolicy}. Default `strict`. */
+  retryPolicy?: RetryPolicy;
+  /**
+   * Extra POST/PUT paths that are known-safe to retry (e.g. side-effect-free
+   * endpoints specific to your usage). Matched by path prefix.
+   */
+  idempotentPaths?: string[];
   /** Custom keep-alive/https agent, e.g. for corporate proxies or connection pooling. */
   httpsAgent?: AxiosRequestConfig['httpsAgent'];
   /** Axios proxy configuration. */
   proxy?: AxiosRequestConfig['proxy'];
   /** Client-side guardrails evaluated before any mutating request is sent. */
   policy?: TradingPolicy;
+  /** Structured request lifecycle events (`http.request.*`). */
+  events?: EventBus;
 }
 
 interface BinanceErrorBody {
@@ -46,6 +70,13 @@ interface BinanceErrorBody {
 }
 
 const RETRYABLE_STATUS = new Set([429, 418, 500, 502, 503, 504]);
+const UNPROCESSED_STATUS = new Set([429, 418]);
+
+/**
+ * POST/PUT endpoints where a retry can never duplicate a side effect.
+ * (ListenKey creation is deliberately excluded: it mints a new key.)
+ */
+const IDEMPOTENT_POST_PREFIXES = ['/fapi/v1/order/test', '/api/v3/order/test', '/sapi/v1/capital/deposit/hisrec'];
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -62,6 +93,7 @@ function normalizeHeaders(headers: unknown): Record<string, string> {
 
 export class HttpClient {
   private readonly axios: AxiosInstance;
+  private readonly baseURL: string;
   private readonly limiter: Bottleneck;
   private readonly signer: Signer;
   private readonly rateLimitTracker: RateLimitTracker;
@@ -69,15 +101,21 @@ export class HttpClient {
   private readonly apiKey?: string;
   private readonly recvWindow: number;
   private readonly timeoutMs: number;
+  private readonly idempotentPaths: string[];
+  private readonly events?: EventBus;
   private maxRetries: number;
   private minTimeMs: number;
   private retryBaseDelayMs: number;
   private retryMaxDelayMs: number;
   private retryFactor: number;
+  /** Mutable copy of the retry policy, adjustable via configureRetry(). */
+  private retryPolicy: RetryPolicy;
   private pendingRequests = 0;
   private timeOffsetMs = 0;
+  private requestCounter = 0;
 
   constructor(options: HttpClientOptions) {
+    this.baseURL = options.baseURL;
     this.apiKey = options.apiKey;
     this.recvWindow = options.recvWindow ?? 5000;
     this.timeoutMs = options.timeoutMs ?? 15_000;
@@ -86,6 +124,9 @@ export class HttpClient {
     this.retryBaseDelayMs = options.retryBaseDelayMs ?? 1000;
     this.retryMaxDelayMs = options.retryMaxDelayMs ?? 30_000;
     this.retryFactor = options.retryFactor ?? 2;
+    this.retryPolicy = options.retryPolicy ?? 'strict';
+    this.idempotentPaths = [...IDEMPOTENT_POST_PREFIXES, ...(options.idempotentPaths ?? [])];
+    this.events = options.events;
     this.signer = new Signer({
       algorithm: options.signatureAlgorithm,
       apiSecret: options.apiSecret,
@@ -142,20 +183,29 @@ export class HttpClient {
     baseDelayMs: number;
     maxDelayMs: number;
     factor: number;
+    policy: RetryPolicy;
   } {
     return {
       maxRetries: this.maxRetries,
       baseDelayMs: this.retryBaseDelayMs,
       maxDelayMs: this.retryMaxDelayMs,
       factor: this.retryFactor,
+      policy: this.retryPolicy,
     };
   }
 
-  configureRetry(options: { maxRetries?: number; baseDelayMs?: number; maxDelayMs?: number; factor?: number }): void {
+  configureRetry(options: {
+    maxRetries?: number;
+    baseDelayMs?: number;
+    maxDelayMs?: number;
+    factor?: number;
+    policy?: RetryPolicy;
+  }): void {
     if (options.maxRetries !== undefined) this.maxRetries = options.maxRetries;
     if (options.baseDelayMs !== undefined) this.retryBaseDelayMs = options.baseDelayMs;
     if (options.maxDelayMs !== undefined) this.retryMaxDelayMs = options.maxDelayMs;
     if (options.factor !== undefined) this.retryFactor = options.factor;
+    if (options.policy !== undefined) this.retryPolicy = options.policy;
   }
 
   /**
@@ -166,12 +216,17 @@ export class HttpClient {
   async syncTime(timePath = '/time'): Promise<number> {
     const res = await this.axios.request<{ serverTime: number }>({ method: 'GET', url: timePath });
     this.timeOffsetMs = res.data.serverTime - Date.now();
+    this.emitEvent('http.clock.synced', { timePath, offsetMs: this.timeOffsetMs });
     return this.timeOffsetMs;
   }
 
   getTimeOffsetMs(): number {
     return this.timeOffsetMs;
   }
+
+  // ---------------------------------------------------------------------------
+  // Request pipeline
+  // ---------------------------------------------------------------------------
 
   private async request<T>(
     method: HttpMethod,
@@ -182,12 +237,23 @@ export class HttpClient {
     // Evaluated before signing and before the limiter, so a refused request costs no
     // rate-limit budget and never has a signature generated for it.
     this.policy?.check(method, path, params ?? {});
-    const url = this.buildUrl(path, params, mode);
-    const config: AxiosRequestConfig = { method, url, headers: this.buildHeaders(mode) };
+    const requestId = ++this.requestCounter;
+    const startedAt = Date.now();
+    // Contract metadata (product/operation/security/declared weight) resolved
+    // once per request and attached to every http.request.* event.
+    const contract = contractFor(this.baseURL, method, path);
+    this.emitEvent('http.request.start', {
+      requestId,
+      method,
+      path,
+      mode,
+      product: contract?.product,
+      operation: contract?.operation,
+    });
     return this.limiter.schedule(async () => {
       const throttleMs = this.rateLimitTracker.getThrottleDelayMs();
       if (throttleMs > 0) await sleep(throttleMs);
-      return this.requestWithRetry<T>(config, 0, method, path);
+      return this.requestWithRetry<T>(method, path, params, mode, 0, requestId, startedAt, contract);
     });
   }
 
@@ -241,19 +307,82 @@ export class HttpClient {
     return this.apiKey;
   }
 
+  /** Transient failures worth retrying at all: 5xx/429/418, or no response. */
+  private shouldRetry(err: { response?: { status?: number } }): boolean {
+    if (err.response?.status !== undefined) return RETRYABLE_STATUS.has(err.response.status);
+    return true;
+  }
+
+  /**
+   * Whether a retry of `method path` is free of duplicate-side-effect risk.
+   *
+   * GET/DELETE are inherently idempotent. POST/PUT only when the path is
+   * explicitly whitelisted (test orders, read-only SAPI queries). A network
+   * error or 5xx on a real order placement is *not* retried: the request may
+   * have reached the matching engine, and resubmitting could double the order.
+   */
+  private isRetrySafe(method: HttpMethod, path: string): boolean {
+    if (method === 'GET' || method === 'DELETE') return true;
+    const lower = path.toLowerCase();
+    return this.idempotentPaths.some((prefix) => lower.startsWith(prefix.toLowerCase()));
+  }
+
+  private canRetry(method: HttpMethod, path: string, err: { response?: { status?: number } }): boolean {
+    if (this.retryPolicy === 'legacy') return true;
+    const status = err.response?.status;
+    if (status !== undefined && UNPROCESSED_STATUS.has(status)) {
+      // 429/418: the request was rejected before processing — safe for any method.
+      return true;
+    }
+    return this.isRetrySafe(method, path);
+  }
+
   private async requestWithRetry<T>(
-    config: AxiosRequestConfig,
-    attempt: number,
     method: HttpMethod,
-    endpoint: string,
+    path: string,
+    params: Record<string, unknown> | undefined,
+    mode: AuthMode,
+    attempt: number,
+    requestId: number,
+    startedAt: number,
+    contract?: HttpContractMeta,
   ): Promise<T> {
+    // Rebuilt per attempt: a retried SIGNED request must carry a fresh
+    // timestamp+signature, otherwise the retry itself fails with -1021 once
+    // the original timestamp drifts outside recvWindow.
+    const config: AxiosRequestConfig = {
+      method,
+      url: this.buildUrl(path, params, mode),
+      headers: this.buildHeaders(mode),
+    };
+
     this.pendingRequests += 1;
     try {
       const res = await this.axios.request<T>(config);
       this.rateLimitTracker.update(normalizeHeaders(res.headers));
+      this.emitEvent('http.request.end', {
+        requestId,
+        method,
+        path,
+        status: res.status,
+        latencyMs: Date.now() - startedAt,
+        attempt,
+        product: contract?.product,
+        operation: contract?.operation,
+        security: contract?.security,
+        declaredWeight: contract?.declaredWeight,
+      });
       return res.data;
     } catch (err) {
       if (!axios.isAxiosError(err)) {
+        this.emitEvent('http.request.error', {
+          requestId,
+          method,
+          path,
+          message: 'unexpected non-axios error',
+          product: contract?.product,
+          operation: contract?.operation,
+        });
         throw new NetworkError('Unexpected error calling Binance API', err);
       }
       const status = err.response?.status;
@@ -261,12 +390,51 @@ export class HttpClient {
       const headers = normalizeHeaders(err.response?.headers);
       this.rateLimitTracker.update(headers);
 
-      if (attempt < this.maxRetries && this.shouldRetry(err)) {
-        await sleep(this.calculateDelay(attempt));
-        return this.requestWithRetry<T>(config, attempt + 1, method, endpoint);
+      // Retry only when (a) the failure is transient (5xx/429/418 or a network
+      // error) AND (b) resubmitting cannot duplicate a side effect.
+      if (attempt < this.maxRetries && this.shouldRetry(err) && this.canRetry(method, path, err)) {
+        const delay = this.calculateDelay(attempt);
+        this.emitEvent('http.request.retry', {
+          requestId,
+          method,
+          path,
+          attempt: attempt + 1,
+          delayMs: delay,
+          status: status ?? null,
+          reason: status !== undefined ? `http ${status}` : 'network error',
+          product: contract?.product,
+          operation: contract?.operation,
+        });
+        await sleep(delay);
+        return this.requestWithRetry<T>(
+          method,
+          path,
+          params,
+          mode,
+          attempt + 1,
+          requestId,
+          startedAt,
+          contract,
+        );
       }
 
-      const context = { endpoint, method, headers };
+      const context = { endpoint: path, method, headers, requestId };
+      this.emitEvent('http.request.error', {
+        requestId,
+        method,
+        path,
+        status: status ?? null,
+        code: body?.code ?? null,
+        message: body?.msg ?? err.message,
+        attempts: attempt + 1,
+        product: contract?.product,
+        operation: contract?.operation,
+        security: contract?.security,
+        retryableButUnsafe:
+          status !== undefined && RETRYABLE_STATUS.has(status) && !this.canRetry(method, path, err)
+            ? true
+            : status === undefined && !this.canRetry(method, path, err),
+      });
       if (status === 429 || status === 418) {
         throw new RateLimitError(
           body?.msg ?? 'Binance rate limit exceeded',
@@ -292,14 +460,14 @@ export class HttpClient {
     return Number.isFinite(seconds) ? seconds * 1000 : undefined;
   }
 
-  private shouldRetry(err: { response?: { status?: number } }): boolean {
-    if (err.response?.status !== undefined) return RETRYABLE_STATUS.has(err.response.status);
-    return true;
-  }
-
   private calculateDelay(attempt: number): number {
     const delay = Math.min(this.retryBaseDelayMs * this.retryFactor ** attempt, this.retryMaxDelayMs);
     const jitter = delay * 0.1 * (Math.random() * 2 - 1);
     return Math.max(0, delay + jitter);
+  }
+
+  private emitEvent(name: string, payload: Record<string, unknown>): void {
+    if (!this.events) return;
+    this.events.scoped('http').emit(name, payload);
   }
 }

@@ -1,4 +1,11 @@
 import { FuturesMarket } from '../resources/FuturesMarket.js';
+import {
+  InstantFillModel,
+  type ExecutionContext,
+  type ExecutionModel,
+  type ExecutionQuote,
+  type FeeModel,
+} from './models.js';
 
 export type PaperPositionSide = 'LONG' | 'SHORT' | 'NONE';
 
@@ -21,11 +28,13 @@ export interface PaperOrder {
   type: 'MARKET' | 'LIMIT';
   quantity: number;
   price: number;
-  status: 'FILLED';
+  status: 'FILLED' | 'PARTIALLY_FILLED';
   filledQuantity: number;
   avgFillPrice: number;
   /** Realized PnL booked by this order, if it reduced or closed a position. */
   realizedPnl: number;
+  /** Commission charged by the configured FeeModel (quote currency). */
+  commission?: number;
   createdAt: number;
 }
 
@@ -46,6 +55,13 @@ export interface PaperTradingOptions {
   initialBalance?: number;
   /** Injectable so tests and offline callers can supply their own price source. */
   market?: FuturesMarket;
+  /**
+   * Fill semantics (slippage, partial fills, book walking, latency).
+   * Defaults to the legacy instant-fill behaviour.
+   */
+  executionModel?: ExecutionModel;
+  /** Fee schedule; defaults to zero fees (legacy behaviour). */
+  feeModel?: FeeModel;
 }
 
 function emptyPosition(symbol: string): PaperPosition {
@@ -67,17 +83,22 @@ function emptyPosition(symbol: string): PaperPosition {
  *
  * Accounting model: `balance` moves only on realized PnL. Opening a position locks
  * `notional / leverage` of margin out of `availableBalance`; reducing it releases
- * that margin pro-rata and books the realized PnL. Orders fill instantly at the
- * current mark for MARKET, or at the stated limit price for LIMIT — there is no
- * order book simulation, slippage or funding.
+ * that margin pro-rata and books the realized PnL. Fill semantics default to
+ * instant fills at the current mark (MARKET) or limit price (LIMIT); configure
+ * `executionModel`/`feeModel` for slippage, partial fills, book walking, latency
+ * and commission — see `paper/models.ts`.
  */
 export class PaperTradingEngine {
   private readonly account: PaperAccount;
   private readonly market: FuturesMarket;
+  private readonly executionModel: ExecutionModel;
+  private readonly feeModel?: FeeModel;
   private orderIdCounter = 1_000_000;
 
   constructor(options: PaperTradingOptions = {}) {
     this.market = options.market ?? new FuturesMarket();
+    this.executionModel = options.executionModel ?? new InstantFillModel();
+    this.feeModel = options.feeModel;
     const initialBalance = options.initialBalance ?? 10_000;
     this.account = {
       balance: initialBalance,
@@ -121,14 +142,28 @@ export class PaperTradingEngine {
     if (type === 'LIMIT' && !(params.price! > 0)) throw new Error('Price required for LIMIT orders');
 
     const marketPrice = await this.getMarketPrice(symbol);
-    const fillPrice = type === 'MARKET' ? marketPrice : (params.price as number);
+    const context: ExecutionContext = {
+      symbol,
+      side,
+      type,
+      quantity,
+      limitPrice: type === 'LIMIT' ? params.price : undefined,
+      marketPrice,
+    };
+    const quote: ExecutionQuote = await this.executionModel.quote(context);
+    if (quote.status === 'REJECTED') {
+      throw new Error(`Order rejected by execution model: ${quote.reason ?? 'no fill'}`);
+    }
+    const filledQuantity = quote.filledQuantity;
+    if (!(filledQuantity > 0)) throw new Error('Execution model produced zero fill quantity');
+    const fillPrice = quote.fillPrice;
 
     const position = this.positionFor(symbol);
     const opposing =
       (side === 'SELL' && position.side === 'LONG') || (side === 'BUY' && position.side === 'SHORT');
 
     // Only the quantity that opens or extends exposure consumes new margin.
-    const openingQty = opposing ? Math.max(0, quantity - position.quantity) : quantity;
+    const openingQty = opposing ? Math.max(0, filledQuantity - position.quantity) : filledQuantity;
     const requiredMargin = (openingQty * fillPrice) / leverage;
     if (requiredMargin > this.account.availableBalance + 1e-9) {
       throw new Error(
@@ -137,7 +172,14 @@ export class PaperTradingEngine {
       );
     }
 
-    const realizedPnl = this.applyFill(position, side, quantity, fillPrice, leverage);
+    let realizedPnl = this.applyFill(position, side, filledQuantity, fillPrice, leverage);
+    let commission = 0;
+    if (this.feeModel) {
+      commission = this.feeModel.compute(quote, context).commission;
+      this.account.balance -= commission;
+      this.account.realizedPnl -= commission;
+      realizedPnl -= commission;
+    }
     this.markToMarket(symbol, marketPrice);
     this.recomputeTotals();
 
@@ -148,10 +190,11 @@ export class PaperTradingEngine {
       type,
       quantity,
       price: fillPrice,
-      status: 'FILLED',
-      filledQuantity: quantity,
+      status: quote.status === 'FILLED' ? 'FILLED' : 'PARTIALLY_FILLED',
+      filledQuantity,
       avgFillPrice: fillPrice,
       realizedPnl,
+      commission: commission > 0 ? commission : undefined,
       createdAt: Date.now(),
     };
     this.account.orders.push(order);

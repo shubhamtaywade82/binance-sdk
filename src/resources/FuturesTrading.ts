@@ -33,8 +33,18 @@ export class FuturesTrading {
     );
   }
 
+  /**
+   * Place an order. The response schema depends on `newOrderRespType`:
+   * `ACK` (the default) yields {@link NewOrderAck}; `RESULT` yields the full
+   * {@link Order} shape. Parsing follows the requested mode so RESULT
+   * responses are not silently truncated into the ACK schema.
+   */
   async createOrder(params: CreateOrderParams): Promise<NewOrderAck | Order> {
-    return NewOrderAckSchema.parse(await this.http.post('/fapi/v1/order', params, 'signed'));
+    const raw = await this.http.post('/fapi/v1/order', params, 'signed');
+    if (params.newOrderRespType === 'RESULT') {
+      return OrderResponseSchema.parse(raw);
+    }
+    return NewOrderAckSchema.parse(raw);
   }
 
   async createTestOrder(params: CreateOrderParams): Promise<Record<string, unknown>> {

@@ -63,11 +63,12 @@ describe('HttpClient rate limiter & retry config', () => {
     const client = new HttpClient({ baseURL: 'https://fapi.binance.com/fapi/v1', minTimeMs: 10 });
     expect(client.getRateLimiterStatus().minTimeMs).toBe(10);
     expect(client.getRetryConfig().maxRetries).toBe(3);
+    expect(client.getRetryConfig().policy).toBe('strict');
 
     client.configureRateLimiter({ minTimeMs: 100 });
     client.configureRetry({ maxRetries: 5, baseDelayMs: 500, maxDelayMs: 4000, factor: 3 });
 
     expect(client.getRateLimiterStatus().minTimeMs).toBe(100);
-    expect(client.getRetryConfig()).toEqual({ maxRetries: 5, baseDelayMs: 500, maxDelayMs: 4000, factor: 3 });
+    expect(client.getRetryConfig()).toEqual({ maxRetries: 5, baseDelayMs: 500, maxDelayMs: 4000, factor: 3, policy: 'strict' });
   });
 });

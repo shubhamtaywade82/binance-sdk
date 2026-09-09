@@ -1,4 +1,4 @@
-import { BaseWS } from './BaseWS.js';
+import { BaseWS, type BaseWSOptions } from './BaseWS.js';
 import type { KlineInterval } from '../types/market.types.js';
 
 export type CoinMContractType = 'perpetual' | 'current_quarter' | 'next_quarter';
@@ -9,8 +9,8 @@ export type CoinMMarkPriceSpeed = '1s' | '3s';
  * and inverse-contract symbols/pairs (e.g. `btcusd_perp`, `btcusd`).
  */
 export class CoinMMarketWS extends BaseWS {
-  constructor(baseStreamUrl = 'wss://dstream.binance.com/stream') {
-    super({ baseStreamUrl });
+  constructor(baseStreamUrl = 'wss://dstream.binance.com/stream', options?: Omit<BaseWSOptions, 'baseStreamUrl'>) {
+    super({ baseStreamUrl, ...options, name: options?.name ?? 'coinmMarket' });
   }
 
   kline(symbol: string, interval: KlineInterval): string {

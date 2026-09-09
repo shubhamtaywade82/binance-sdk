@@ -1,10 +1,15 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { BinanceClient } from '../client/BinanceClient.js';
-import { createFuturesToolkit } from '../tools/index.js';
+import { createFuturesToolkit, type FuturesToolkitOptions } from '../tools/index.js';
 
-export function createBinanceMcpServer(client: BinanceClient): McpServer {
+/**
+ * MCP server over the toolkit. Pass `toolkit: { executionBackend: 'paper' }`
+ * to route every order tool through the simulator — safe to expose to any
+ * host without API-key trading risk.
+ */
+export function createBinanceMcpServer(client: BinanceClient, options: FuturesToolkitOptions = {}): McpServer {
   const server = new McpServer({ name: 'binance-sdk', version: '2.0.0' });
-  const toolkit = createFuturesToolkit(client);
+  const toolkit = createFuturesToolkit(client, options);
 
   toolkit.tools.forEach((tool) => {
     server.registerTool(tool.name, { description: tool.description, inputSchema: tool.inputSchema }, async (args) => ({

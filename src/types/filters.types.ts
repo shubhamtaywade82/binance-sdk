@@ -55,9 +55,18 @@ function num(value: unknown, fallback: number): number {
  */
 export function stepDecimals(step: string | number): number {
   const text = typeof step === 'number' ? step.toFixed(12) : String(step).trim();
+  // Bound the scan: filter strings are short, but the parser is fed arbitrary
+  // exchange payloads, so nothing here should be super-linear in input size.
+  if (text.length > 64) {
+    return stepDecimals(text.slice(0, 64));
+  }
   const dot = text.indexOf('.');
   if (dot === -1) return 0;
-  return text.slice(dot + 1).replace(/0+$/, '').length;
+  // Linear trailing-zero scan. A `/0+$/` regex is quadratic on adversarial
+  // inputs (e.g. "0a0a0a0…") — the flagged polynomial-ReDoS pattern.
+  let end = text.length;
+  while (end > dot + 1 && text.charCodeAt(end - 1) === 48) end--;
+  return end - (dot + 1);
 }
 
 /** Format a value at a fixed precision, which is what should be sent to Binance. */

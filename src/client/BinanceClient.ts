@@ -2,6 +2,8 @@ import type { AxiosRequestConfig } from 'axios';
 import { HttpClient, type SignatureAlgorithm } from './HttpClient.js';
 import type { RateLimitUsage } from './RateLimitTracker.js';
 import { TradingPolicy, type TradingPolicyOptions } from './TradingPolicy.js';
+import { RiskGateway, type RiskGatewayOptions } from '../risk/RiskGateway.js';
+import { EventBus } from '../core/events.js';
 import { resolveEnvironment } from './endpoints.js';
 import { FuturesData } from '../resources/FuturesData.js';
 import { FuturesMarket } from '../resources/FuturesMarket.js';
@@ -27,6 +29,14 @@ import { CoinMMarketWS } from '../ws/CoinMMarketWS.js';
 import { CoinMUserWS } from '../ws/CoinMUserWS.js';
 import { WsApi } from '../ws/WsApi.js';
 import { SpotWsApi } from '../ws/SpotWsApi.js';
+import { ExecutionManager } from '../execution/ExecutionManager.js';
+import { SpotExecutionAdapter } from '../execution/adapter.js';
+import { PaperExecutionAdapter } from '../execution/paper.js';
+import { ExecutionGateway, type ExecutionBackend } from '../execution/Gateway.js';
+import { PaperTradingEngine, type PaperTradingOptions } from '../paper/PaperTradingEngine.js';
+
+import { OrderBookEngine } from '../state/OrderBookEngine.js';
+import type { OrderBook } from '../state/OrderBook.js';
 
 export interface BinanceClientOptions {
   apiKey?: string;
@@ -63,10 +73,19 @@ export interface BinanceClientOptions {
   proxy?: AxiosRequestConfig['proxy'];
   /**
    * Client-side guardrails for autonomous/LLM-driven callers: dry run, read-only, symbol
-   * allowlist, per-order notional cap, withdrawal and transfer switches. Omit for no policy
-   * (all requests permitted). Opting in denies withdrawals unless explicitly allowed.
+   * allowlist, per-order notional cap, leverage/exposure/daily-loss limits, circuit breaker,
+   * withdrawal and transfer switches. Omit for no policy (all requests permitted).
+   * Opting in denies withdrawals unless explicitly allowed.
+   *
+   * Superset of the v2.0 `TradingPolicyOptions` — a full {@link RiskGateway} is
+   * constructed, and it is also fed by `futures.execution`.
    */
-  safety?: TradingPolicyOptions;
+  safety?: RiskGatewayOptions;
+  /**
+   * Bring your own observability bus; when omitted a fresh internal one is
+   * created and exposed as `client.events`.
+   */
+  events?: EventBus;
 }
 
 export class BinanceClient {
@@ -74,6 +93,8 @@ export class BinanceClient {
     market: SpotMarket;
     account: SpotAccount;
     trading: SpotTrading;
+    /** Idempotent spot order placement with transport-failure reconciliation. */
+    execution: ExecutionManager;
     userStream: SpotUserDataStream;
     ws: SpotMarketWS;
     wsUser: SpotUserWS;
@@ -85,10 +106,17 @@ export class BinanceClient {
     account: FuturesAccount;
     trading: FuturesTrading;
     ops: FuturesOps;
+    /** Idempotent order placement with transport-failure reconciliation. */
+    execution: ExecutionManager;
     userStream: UserDataStream;
     ws: FuturesMarketWS;
     wsUser: FuturesUserWS;
     wsApi: WsApi;
+  } & {
+    /** Ergonomic alias for the USDⓈ-M surface (same objects as `client.futures`). */
+    readonly usdm: BinanceClient['futures'];
+    /** Ergonomic alias for the COIN-M surface (same objects as `client.coinm`). */
+    readonly coinm: BinanceClient['coinm'];
   };
   readonly coinm: {
     market: CoinMMarket;
@@ -106,6 +134,26 @@ export class BinanceClient {
   readonly subaccount: SubAccount;
   /** The active guardrail policy, or undefined when no `safety` config was supplied. */
   readonly policy?: TradingPolicy;
+  /** Structured observability bus: `http.*`, `ws.*`, `execution.*`, `risk.*` events. */
+  readonly events: EventBus;
+  /** Product-oriented view: spot / futures.usdm / futures.coinm / margin / wallet / subaccount. */
+  get products(): {
+    spot: BinanceClient['spot'];
+    usdm: BinanceClient['futures'];
+    coinm: BinanceClient['coinm'];
+    margin: BinanceClient['margin'];
+    wallet: Wallet;
+    subaccount: SubAccount;
+  } {
+    return {
+      spot: this.spot,
+      usdm: this.futures.usdm,
+      coinm: this.futures.coinm,
+      margin: this.margin,
+      wallet: this.wallet,
+      subaccount: this.subaccount,
+    };
+  }
 
   private readonly authHttp: HttpClient;
   private readonly spotHttp: HttpClient;
@@ -141,9 +189,13 @@ export class BinanceClient {
 
   constructor(options: BinanceClientOptions = {}) {
     const { endpoints } = resolveEnvironment(options);
-    this.policy = options.safety ? new TradingPolicy(options.safety) : undefined;
+    const events = options.events ?? new EventBus();
+    this.events = events;
+    const riskGateway = options.safety ? new RiskGateway(options.safety, events) : undefined;
+    this.policy = riskGateway ?? (options.safety ? new TradingPolicy(options.safety) : undefined);
     const httpOptions = {
       policy: this.policy,
+      events,
       apiKey: options.apiKey,
       apiSecret: options.apiSecret,
       privateKey: options.privateKey,
@@ -163,15 +215,21 @@ export class BinanceClient {
 
     this.spotHttp = new HttpClient({ baseURL: endpoints.restSpot, ...httpOptions });
     const spotHttp = this.spotHttp;
+    const spotTrading = new SpotTrading(spotHttp);
     this.spot = {
       market: new SpotMarket(spotHttp),
       account: new SpotAccount(spotHttp),
-      trading: new SpotTrading(spotHttp),
+      trading: spotTrading,
+      execution: new ExecutionManager(new SpotExecutionAdapter(spotTrading), {
+        events,
+        riskGateway,
+      }),
       userStream: new SpotUserDataStream(spotHttp),
-      ws: new SpotMarketWS(endpoints.wsSpotMarket),
+      ws: new SpotMarketWS(endpoints.wsSpotMarket, { events }),
       wsUser: new SpotUserWS({
         baseUserUrl: endpoints.wsSpotUser,
         getListenKey: () => this.spotListenKeyValue,
+        events,
       }),
       wsApi: new SpotWsApi({
         baseUrl: endpoints.wsSpotApi,
@@ -194,18 +252,21 @@ export class BinanceClient {
     });
     const futuresAccount = new FuturesAccount(this.authHttp);
     const futuresTrading = new FuturesTrading(this.authHttp);
+    const execution = new ExecutionManager(futuresTrading, { events, riskGateway });
 
-    this.futures = {
+    const futuresNamespace = {
       market: futuresMarket,
       data: futuresData,
       account: futuresAccount,
       trading: futuresTrading,
       ops: new FuturesOps(futuresMarket, futuresData, futuresAccount, futuresTrading),
+      execution,
       userStream: new UserDataStream(this.authHttp),
-      ws: new FuturesMarketWS(endpoints.wsMarket),
+      ws: new FuturesMarketWS(endpoints.wsMarket, { events }),
       wsUser: new FuturesUserWS({
         baseUserUrl: endpoints.wsUser,
         getListenKey: () => this.listenKeyValue,
+        events,
       }),
       wsApi: new WsApi({
         baseUrl: endpoints.wsApi,
@@ -218,17 +279,27 @@ export class BinanceClient {
     };
 
     this.dapiHttp = new HttpClient({ baseURL: endpoints.restDapiRoot, ...httpOptions });
-    this.coinm = {
+    const coinmNamespace = {
       market: new CoinMMarket(new HttpClient({ baseURL: endpoints.restDapi, ...httpOptions })),
       account: new CoinMAccount(this.dapiHttp),
       trading: new CoinMTrading(this.dapiHttp),
       userStream: new CoinMUserDataStream(this.dapiHttp),
-      ws: new CoinMMarketWS(endpoints.wsDapiMarket),
+      ws: new CoinMMarketWS(endpoints.wsDapiMarket, { events }),
       wsUser: new CoinMUserWS({
         baseUserUrl: endpoints.wsDapiUser,
         getListenKey: () => this.coinmListenKeyValue,
+        events,
       }),
     };
+    this.coinm = coinmNamespace;
+
+    const futuresWithAliases = {
+      ...futuresNamespace,
+      usdm: null as unknown as BinanceClient['futures'],
+      coinm: coinmNamespace,
+    };
+    futuresWithAliases.usdm = futuresWithAliases;
+    this.futures = futuresWithAliases;
 
     this.sapiHttp = new HttpClient({ baseURL: endpoints.restApiRoot, ...httpOptions });
     this.margin = {
@@ -335,6 +406,91 @@ export class BinanceClient {
       /* best-effort cleanup */
     });
     this.coinmListenKeyValue = null;
+  }
+
+  /**
+   * Local L2 order-book engine on the futures market stream + REST snapshots:
+   * best bid/ask, spread, microprice, imbalance, VWAP — all decimal-exact.
+   *
+   * ```ts
+   * const books = client.createFuturesOrderBookEngine();
+   * const btc = await books.subscribe('BTCUSDT');
+   * btc.metrics(); // { bestBid, bestAsk, spread, imbalance, microprice, ... }
+   * ```
+   */
+  createFuturesOrderBookEngine(options?: {
+    updateSpeed?: '100ms' | '500ms';
+    resyncDelayMs?: number;
+  }): OrderBookEngine {
+    return new OrderBookEngine({
+      ws: this.futures.ws,
+      fetchSnapshot: async (symbol) => {
+        const snapshot = await this.futures.market.depth(symbol.toUpperCase(), 1000);
+        // Re-stringify: the typed schema converts to numbers; the book engine
+        // accepts numeric pairs but prefers exact strings.
+        return {
+          lastUpdateId: snapshot.lastUpdateId,
+          bids: snapshot.bids.map((level) => [String(level.price), String(level.qty)] as [string, string]),
+          asks: snapshot.asks.map((level) => [String(level.price), String(level.qty)] as [string, string]),
+        };
+      },
+      events: this.events,
+      ...options,
+    });
+  }
+
+  /** Local L2 book for a futures symbol (sugar over createFuturesOrderBookEngine). */
+  async subscribeFuturesOrderBook(symbol: string, options?: { updateSpeed?: '100ms' | '500ms' }): Promise<OrderBook> {
+    const engine = this.createFuturesOrderBookEngine(options);
+    return engine.subscribe(symbol);
+  }
+
+  /**
+   * Paper trading as a first-class execution backend.
+   *
+   * Returns an {@link ExecutionManager} whose orders route through a local
+   * {@link PaperTradingEngine} simulator — the same `Execution` envelope, the
+   * same idempotency and reconciliation semantics as the live manager, zero
+   * exchange traffic.
+   *
+   * ```ts
+   * const paper = client.createPaperExecutionManager({ initialBalance: 50_000 });
+   * const execution = await paper.placeOrder({
+   *   symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.01,
+   * });
+   * ```
+   */
+  createPaperExecutionManager(options: PaperTradingOptions = {}): ExecutionManager {
+    return new ExecutionManager(new PaperExecutionAdapter(new PaperTradingEngine(options)), {
+      clientOrderIdPrefix: 'paper',
+      events: this.events,
+    });
+  }
+
+  /**
+   * Execution gateway: route orders to the live exchange or the paper
+   * simulator through one interface, with independent ledgers per backend.
+   *
+   * ```ts
+   * const gateway = client.createExecutionGateway({ defaultBackend: 'paper' });
+   * await gateway.placeOrder({ symbol: 'BTCUSDT', ... });            // paper
+   * await gateway.placeOrder({ ...order }, { backend: 'live' });      // live
+   * gateway.paperEngine.getAccountInfo();                              // simulation state
+   * ```
+   */
+  createExecutionGateway(
+    options: { paper?: PaperTradingOptions; defaultBackend?: ExecutionBackend } = {},
+  ): ExecutionGateway {
+    return new ExecutionGateway({
+      live: this.futures.execution,
+      paperEngine: new PaperTradingEngine(options.paper),
+      defaultBackend: options.defaultBackend,
+    });
+  }
+
+  /** Snapshot of the active risk gateway's state, when `safety` was configured. */
+  getRiskStatus(): ReturnType<RiskGateway['riskStatus']> | undefined {
+    return this.policy instanceof RiskGateway ? this.policy.riskStatus() : undefined;
   }
 
   closeAllWebSockets(): void {

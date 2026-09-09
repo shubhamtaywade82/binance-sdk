@@ -1,0 +1,42 @@
+# binance-sdk
+
+> TypeScript SDK for Binance: Spot, USDⓈ-M & COIN-M Futures, Margin, Wallet, Sub-account.
+> REST + WebSocket + WS-API, signed requests (HMAC/Ed25519/RSA), execution reconciliation,
+> risk gateway, paper trading, local order books, LLM tools and an MCP server.
+
+## Client surface
+
+- `new BinanceClient({ apiKey, apiSecret, testnet?, demo?, safety? })`
+- `client.spot.{market, account, trading, userStream, ws, wsUser, wsApi}`
+- `client.futures.{market, data, account, trading, ops, execution, userStream, ws, wsUser, wsApi}` (aliases: `client.futures.usdm`, `client.futures.coinm`)
+- `client.coinm.{market, account, trading, userStream, ws, wsUser}`
+- `client.margin.{account, trading}`, `client.wallet`, `client.subaccount`
+- `client.events` — structured observability bus (`http.*`, `ws.*`, `execution.*`, `risk.*`)
+
+## Execution & risk
+
+- `client.futures.execution.placeOrder(params)` — idempotent; reconciles by `clientOrderId` after transport failures.
+- `client.futures.execution.cancelOrder(symbol, { orderId? | origClientOrderId? })`
+- `safety: { dryRun, readOnly, allowedSymbols, maxNotionalPerOrder, maxLeverage, maxOpenNotional, maxDailyLoss, ... }` — RiskGateway.
+
+## Endpoint maps
+
+- [Spot](docs/endpoint-map/spot.md): 37 endpoints
+- [USDⓈ-M Futures](docs/endpoint-map/usdm.md): 98 endpoints
+- [COIN-M Futures](docs/endpoint-map/coinm.md): 40 endpoints
+- [Margin](docs/endpoint-map/margin.md): 18 endpoints
+- [Wallet](docs/endpoint-map/wallet.md): 14 endpoints
+- [Sub-account](docs/endpoint-map/subaccount.md): 13 endpoints
+
+## WebSocket
+
+- `await client.futures.ws.subscribe([client.futures.ws.kline('BTCUSDT','1m')])` — resolves on server ack.
+- `ws.on('message', (stream, payload) => {})`, `ws.on('raw', (stream, raw) => {})`.
+- Lifecycle states: IDLE / CONNECTING / OPEN / RECONNECTING / CLOSING / CLOSED via `ws.getState()`.
+- Connections rotate proactively at T-23h (Binance 24h limit) and self-heal subscriptions via LIST_SUBSCRIPTIONS.
+
+## More
+
+- Full endpoint list: llms-full.txt
+- MCP server: `npx binance-sdk-mcp`
+- Package: @nemesis-oss/binance-sdk

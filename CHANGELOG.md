@@ -5,6 +5,173 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-09-08
+
+Agent-native execution surface: the toolkit's order tools now route through the
+`ExecutionGateway`, so MCP/LLM callers get paper/live routing, idempotency and
+reconciliation for free. No breaking changes — `createFuturesToolkit(client)` keeps its
+exact v2.2 behaviour; everything below is additive.
+
+### Added
+
+- **Execution tool group (`execution.tools`)** — six gateway-routed tools:
+  `execution_place_order` (idempotent via `intentId`, `backend: 'live' | 'paper'` per call),
+  `execution_cancel_order` (terminal CANCELED on already-gone orders, never a thrown -2011),
+  `execution_get_order` (searches both ledgers when the backend is unspecified),
+  `execution_list_orders` (per-backend ledger), `execution_reconcile_order` (forced
+  reconciliation for ambiguous intents) and `execution_status` (default backend,
+  risk-gateway snapshot, paper account state). All return the same `Execution`
+  envelope with exact decimal strings on both backends.
+- **`FuturesToolkitOptions`** — `createFuturesToolkit(client, { executionBackend: 'paper',
+  paper: { initialBalance: 50_000 } })` runs the whole toolkit against the simulator;
+  `tk.gateway` exposes the underlying `ExecutionGateway` for code that wants direct access.
+- **Paper-mode MCP servers** — `createBinanceMcpServer(client, { executionBackend: 'paper' })`
+  registers every tool (including the execution group) against the simulator: safe to
+  expose to any host without API-key trading risk. The MCP tool catalog picks up the
+  execution group automatically.
+- Exports: `executionTools`, `FuturesToolkitOptions` from the package root.
+
+### Fixed
+
+- None — additive release.
+
+## [2.2.0] - 2026-09-08
+
+Architecture release: the contract layer, multi-backend execution (spot + paper), and
+product-modularity surfaces of the v2 roadmap. No breaking changes — `new ExecutionManager(futuresTrading)`
+still works, all v2.1 behaviour is preserved, and every addition is a new opt-in surface.
+
+### Fixed
+
+- **CI: fire-and-forget subscribe crash**: `ws.subscribe()`/`ws.unsubscribe()` return Promises
+  (v2.1), but legacy callers ignore them; when such a promise rejected (connection closed
+  mid-subscribe, ack timeout) it became an *unhandled* rejection, which terminates Node by
+  default — CI itself crashed on this. The returned promise is now internally guarded: awaiting
+  callers still observe the rejection, while ignored rejections surface as
+  `ws.subscribe.rejected` / `ws.unsubscribe.rejected` events on the observability bus instead
+  of a crashed process.
+- **CodeQL `js/polynomial-redos`**: `stepDecimals()`'s trailing-zero regex was quadratic on
+  adversarial filter strings; replaced with a bounded linear scan.
+- **CodeQL `js/tainted-format-string`**: exchange-supplied stream names no longer interpolate
+  into format-string argument positions (`scripts/smoke-test.ts`, `examples/ws-streams.ts`).
+
+### Added
+
+- **Contract layer (`src/contracts/`)** — machine-readable view of every implemented REST
+  endpoint: normalized security schemes (`none`/`apiKey`/`signature`), declared request weights
+  where Binance documents param-independent ones, path canonicalization (bare resource paths
+  resolve against each host's base URL), and a single query API (`getContract`,
+  `findContract`, `contractFor`, `describeContract`). Shaped so a generated (OpenAPI-spec)
+  implementation can replace the hand-curated backing store without changing consumers.
+- **Contract-aware observability**: every `http.request.*` event now carries
+  `product`, `operation`, `security` and `declaredWeight` resolved from the contract layer —
+  per-request records match the target architecture (requestId, product, endpoint, method,
+  latency, status, weight).
+- **Execution adapters (one execution semantics, three backends)**: product specifics moved
+  behind `ExecutionAdapter` — `FuturesExecutionAdapter` (USDⓈ-M field names +
+  `ORDER_TRADE_UPDATE`), `SpotExecutionAdapter` (`cummulativeQuoteQty`, computed average price,
+  `executionReport` user-stream shape), `PaperExecutionAdapter` (simulator). The
+  `ExecutionManager` (idempotency, in-flight dedup, reconciliation matrix, ledger, risk
+  feed-through) is shared verbatim.
+- **`client.spot.execution`** — the full idempotent placement + reconciliation matrix for spot
+  orders, streaming fills from the spot user-data stream.
+- **Paper trading as an execution backend** — `client.createPaperExecutionManager(options)`:
+  orders route through the local `PaperTradingEngine` simulator and return the identical
+  `Execution` envelope; unknown-order fetches fail with the exchange-identical `-2013`,
+  cancels reconcile through `-2011`, and fills stream in as execution reports just like a
+  live user stream. Strategy code can switch paper → live by changing one configuration value.
+- **ExecutionGateway (`client.createExecutionGateway()`)** — routes orders to the live
+  exchange or the paper simulator through one interface with independent ledgers:
+  `gateway.placeOrder(params, { backend: 'live' | 'paper' })`, `gateway.paperEngine` for
+  simulation state, `gateway.use(backend)` for a scoped manager.
+- **Standalone product clients**: `createSpotClient()`, `createUSDMClient()`,
+  `createCoinMClient()` — single-product surfaces (plus `syncTime`/`close`/
+  `getRateLimitUsage`) built on the same underlying client, for callers that only need one
+  product without the multi-client facade.
+
+## [2.1.0] - 2026-09-08
+
+Correctness and architecture release, addressing the top findings of the v2.0 code review:
+execution idempotency, WebSocket lifecycle, decimal-safe money math, observability, risk
+layering, local market state and agent-native documentation. No breaking changes — every new
+behaviour is either additive or the safe-by-default position of a new option.
+
+### Fixed
+
+- **Double-submit protection (P0)**: the HTTP layer no longer blindly retries `POST`/`PUT` on
+  `5xx`/network errors — a timed-out order placement may already be live on the exchange.
+  Retries are now endpoint-aware (`retryPolicy: 'strict'` by default, `'legacy'` escape hatch):
+  `429`/`418` (rejected before processing) retry on any method; `5xx`/network errors only retry
+  idempotent methods and whitelisted paths (`order/test`, …, extend via `idempotentPaths`).
+- **Stale-signature retries**: every retry of a SIGNED request is rebuilt with a fresh
+  `timestamp` + signature, so a retry can no longer fail with `-1021` because it reused the
+  original timestamp.
+- **WebSocket reconnect race (P0)**: `reconnect()`/`subscribe()`-during-connect could create
+  duplicate concurrent connections (the old socket's `close` handler scheduled a second
+  reconnect). Sockets are now generation-guarded: events from retired sockets are ignored, and
+  exactly one authoritative connection exists at any time.
+- **24-hour stream rotation (P0)**: Binance terminates stream connections at 24h; the SDK now
+  opens a replacement at T-23h and swaps traffic with zero data gap, instead of waiting for the
+  server to drop the connection and stall every stream for a reconnect cycle.
+- **`createOrder` response parsing**: USDⓈ-M `newOrderRespType: 'RESULT'` responses are now
+  parsed with the full order schema instead of being force-fit into the ACK schema.
+
+### Added
+
+- **ExecutionManager (`client.futures.execution`)** — idempotent order placement with automatic
+  reconciliation: deterministic `newClientOrderId` derived from the caller's `intentId`
+  (duplicate intents return the original execution), transport-failure recovery by polling
+  `GET /fapi/v1/order?origClientOrderId=…`, exactly-one safe resubmission when reconciliation
+  proves the order never landed (`-2013`), `ExecutionUnknownError` (never a silent guess) when
+  the outcome cannot be determined, reconciling `cancelOrder`, live fill streaming from
+  `ORDER_TRADE_UPDATE` when a user-data stream is attached, and a typed `Execution` envelope
+  whose quantities/prices are exact decimal strings (`averagePrice` from `cumQuote/executedQty`).
+- **WebSocket lifecycle state machine** (`src/ws/WsConnection.ts`): `IDLE/CONNECTING/OPEN/
+  RECONNECTING/CLOSING/CLOSED` with `getState()`, `state` events, `waitForOpen()`,
+  liveness watchdog (`staleMs` — protocol pings count as activity), and observability events
+  for every transition. All market and user stream classes were rebuilt on it.
+- **Subscription acknowledgement & self-healing**: `await ws.subscribe(...)` resolves only on
+  the server's ack; after every (re)connect the live subscription set is verified with
+  `LIST_SUBSCRIPTIONS` and repaired (`resynchronize()`); `ws.on('raw', …)` exposes every frame
+  losslessly parsed, including stream types without a typed schema yet.
+- **Decimal-safe financial math (`src/core/decimal.ts`)**: dependency-free BigInt fixed-point
+  `Decimal` (18-digit scale, banker's rounding) used by the execution, risk, order-book and
+  paper-fee layers; `vwap()`/`sum()` helpers.
+- **Large-integer preservation (`src/core/json.ts`)**: WS frames are parsed with
+  `parseJsonLossless`, so identifiers above 2^53 surface as decimal strings instead of
+  silently-corrupted floats.
+- **Structured observability (`src/core/events.ts`)**: `client.events` bus publishes
+  JSON-serializable `http.*`, `ws.*`, `execution.*`, `risk.*`, `orderBook.*` events with
+  exact/prefix/wildcard subscriptions, scoped child buses, optional history ring, and
+  `forwardEventsToLogger()`.
+- **RiskGateway (`src/risk/RiskGateway.ts`)**: `safety` now builds a `TradingPolicy` superset
+  with `maxLeverage`, `maxOpenNotional` (fed by the execution manager), `maxDailyLoss`
+  (UTC-day kill switch), `maxConsecutiveFailures` (circuit breaker), `riskStatus()` /
+  `getRiskStatus()` / `resetBreaker()`.
+- **Local L2 order books (`src/state/`)**: `OrderBook` (snapshot + diff-depth with `pu`/sequence
+  gap detection, binary-search level maintenance) and `OrderBookEngine`
+  (`client.createFuturesOrderBookEngine()`) with best bid/ask, mid, spread/bps, microprice,
+  imbalance, depth-within-pct and VWAP — all decimal-exact, self-healing on desync.
+- **Layered paper execution (`src/paper/models.ts`)**: pluggable `ExecutionModel`s
+  (InstantFill default, Slippage, PartialFill, OrderBook-VWAP, Latency, Composite) and
+  `FeeModel`s (`TakerMakerFeeModel`, `BinanceUsdmFeeModel`), wired into `PaperTradingEngine`
+  with legacy-preserving defaults; `PaperOrder` gains `PARTIALLY_FILLED` and `commission`.
+- **Endpoint registry & agent-native docs (`src/registry/`, `llms.txt`, `docs/endpoint-map/`)**:
+  machine-readable registry of all 220 implemented endpoints with query API
+  (`listEndpoints`/`findEndpoint`/`endpointCounts`), generated per-product endpoint maps,
+  `llms.txt`/`llms-full.txt`, and `npm run docs:generate` which cross-checks the registry
+  against the live `http.<verb>()` calls in the source.
+- **Product aliases**: `client.futures.usdm` / `client.futures.coinm` / `client.products`.
+
+### Tests
+
+87 new tests (318 total): decimal exactness, lossless JSON (including the 17-digit odd-integer
+edge case), event bus, WS state machine + reconnect-race + rotation + ack semantics (real
+`ws` server), endpoint-aware retry policy (msw, including double-submit and re-signing
+regressions), ExecutionManager idempotency/reconciliation paths, RiskGateway limits and
+circuit breakers, order-book diff/metrics, paper models, registry consistency, and client
+wiring.
+
 ## [2.0.0] - 2026-08-24
 
 The only version ever published to npm before this release is `1.0.0`. Everything below —
