@@ -1,0 +1,42 @@
+{
+  "catalogVersion": 1,
+  "generatedAt": "2026-09-09T01:54:19.496Z",
+  "products": {
+    "coinm": {
+      "public": 17,
+      "apiKey": 4,
+      "signed": 19,
+      "total": 40
+    },
+    "margin": {
+      "public": 1,
+      "apiKey": 0,
+      "signed": 17,
+      "total": 18
+    },
+    "spot": {
+      "public": 14,
+      "apiKey": 4,
+      "signed": 19,
+      "total": 37
+    },
+    "subaccount": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 13,
+      "total": 13
+    },
+    "usdm": {
+      "public": 37,
+      "apiKey": 4,
+      "signed": 57,
+      "total": 98
+    },
+    "wallet": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 14,
+      "total": 14
+    }
+  }
+}

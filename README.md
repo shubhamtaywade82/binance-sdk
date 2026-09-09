@@ -26,6 +26,11 @@ const client = new BinanceClient({
   testnet: true,               // or demo: true; defaults to live
 });
 
+// v3: lazy product namespaces over one shared CoreContext — nothing is built
+// until first access, and `client.core` exposes the shared runtime.
+client.core.credentials.canSign;   // true
+client.core.http('fapi');          // cached per-host transport
+
 // Public market data (no keys needed)
 const klines = await client.spot.market.klines('SOLUSDT', '15m', { limit: 500 });
 const funding = await client.futures.data.fundingRateHistory('ETHUSDT', { limit: 100 });
@@ -423,13 +428,47 @@ everything to a logger with `forwardEventsToLogger(bus, logger)`.
   (Binance Agent-Native convention).
 - `docs/endpoint-map/*.md` — per-product tables of every implemented endpoint
   (operation → method → path → auth → SDK surface).
+- **`contracts/` (v3)** — machine-readable inventory of the SDK surface:
+  `endpoint-catalog.json` (every REST operation: product, method, path, security, weight,
+  implementer), `security-catalog.json` (auth matrix per product), `catalog.json` (index).
+  Generated with `npm run contracts:generate` and CI-validated against the registry —
+  the input layer for generated bindings, tool metadata and coverage accounting.
 - `ENDPOINT_REGISTRY` / `listEndpoints({ product, method, authentication })` in code.
 - **Contract layer**: `getContract(product, operation)` / `findContract(path, method)` /
   `contractFor(baseURL, method, path)` — registry entries with normalized security schemes
   (`none`/`apiKey`/`signature`) and declared request weights; `describeContract()` renders a
   one-line description for logs and agents.
 - Regenerate everything from the registry with `npm run docs:generate` (the generator
-  cross-checks the registry against the actual `http.<verb>()` calls in `src/resources`).
+  cross-checks the registry against the actual `http.<verb>()` calls in `src/resources`)
+  and `npm run contracts:generate`.
+- `docs/architecture/v3-foundation.md` — the v3 platform architecture and migration plan.
+
+## v3 Platform (prerelease)
+
+`3.0.0-next.x` introduces the platform rewrite foundation (see
+`docs/architecture/v3-foundation.md`); every v2.x surface keeps working unchanged.
+
+```typescript
+import { BinanceClient, CoreContext, USDMClient, Credentials } from '@nemesis-oss/binance-sdk';
+
+// Standalone product client over a caller-owned shared runtime
+const core = new CoreContext({ apiKey, apiSecret });
+const usdm = new USDMClient(core);
+await core.syncTime();                     // one clock sync, every host
+const fill = await usdm.execution.placeOrder({
+  symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: '0.01',
+});
+usdm.close();                              // product-scoped cleanup
+
+// Two products, one runtime: shared transports, shared event bus
+const other = new USDMClient(core);        // same weight budget, same events
+
+// The multi-product facade is lazy now — namespaces build on first access
+// (stable identity) and share client.core:
+const client = new BinanceClient({ apiKey, apiSecret });
+client.core.credentials.describe();        // 'hmac key ****xxxx'
+client.futures.execution === client.futures.execution;  // true — cached
+```
 
 ## LLM Tools & MCP
 

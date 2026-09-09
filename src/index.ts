@@ -1,9 +1,9 @@
-export const VERSION = '2.2.0';
+export const VERSION = '3.0.0-next.1';
 
 export { BinanceClient } from './client/BinanceClient.js';
-export type { BinanceClientOptions } from './client/BinanceClient.js';
+export type { BinanceClientOptions, MarginNamespace } from './client/BinanceClient.js';
 export { createSpotClient, createUSDMClient, createCoinMClient } from './client/factories.js';
-export type { SpotClient, USDMClient, CoinMClient } from './client/factories.js';
+export type { SpotClient, USDMClient as StandaloneUSDMClient, CoinMClient as StandaloneCoinMClient } from './client/factories.js';
 export { HttpClient } from './client/HttpClient.js';
 export type { HttpClientOptions, AuthMode, HttpMethod, SignatureAlgorithm, RetryPolicy } from './client/HttpClient.js';
 export { resolveEnvironment } from './client/endpoints.js';
@@ -23,6 +23,17 @@ export type { DecimalInput } from './core/decimal.js';
 export { EventBus, forwardEventsToLogger } from './core/events.js';
 export type { SdkEvent, SdkEventListener, EventBusOptions, SdkLogger } from './core/events.js';
 export { parseJsonLossless, parseJsonLosslessAs, normalizeIntStrings } from './core/json.js';
+
+// ---- v3 Foundation: CoreContext, Credentials, product boundary ----
+export { CoreContext } from './core/context.js';
+export type { RestHost, CoreTransportOptions } from './core/context.js';
+export { Credentials } from './core/credentials.js';
+export type { ProductId, ProductClient, ProductFactory } from './products/types.js';
+export { isProductClient } from './products/types.js';
+export { USDMClient } from './products/usdm/USDMClient.js';
+export type { UsdmSurface, FuturesNamespace } from './products/usdm/namespace.js';
+export type { SpotSurface } from './products/spot/surface.js';
+export type { CoinMSurface } from './products/coinm/surface.js';
 
 // ---- Execution: idempotent placement + reconciliation ----
 export { ExecutionManager } from './execution/ExecutionManager.js';
