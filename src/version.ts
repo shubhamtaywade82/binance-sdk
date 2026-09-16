@@ -10,4 +10,4 @@
  * Update in lockstep with the `version` field in `package.json` and the
  * `[Unreleased]` / latest release section in `CHANGELOG.md`.
  */
-export const VERSION = '3.0.0-next.4';
+export const VERSION = '3.0.0';

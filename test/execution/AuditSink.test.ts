@@ -5,6 +5,7 @@ import {
   StreamAuditSink,
   auditRecordFromExecution,
   type AuditRecord,
+  type AuditSink,
 } from '../../src/execution/AuditSink.js';
 import { ExecutionGateway } from '../../src/execution/Gateway.js';
 import type { Execution } from '../../src/execution/types.js';
@@ -162,7 +163,9 @@ describe('ExecutionGateway audit wiring (M6)', () => {
     expect(gw.audit).toBeInstanceOf(InMemoryAuditSink);
 
     return gw.placeOrder({ symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: '0.01' }).then(() => {
-      const records = [...gw.audit.records()!];
+      // gw.audit is asserted to be an InMemoryAuditSink above; cast so
+      // records() is non-optional and `this` binding works.
+      const records = [...(gw.audit as InMemoryAuditSink).records()];
       expect(records).toHaveLength(1);
       expect(records[0]!.action).toBe('place');
       expect(records[0]!.outcome).toBe('acked');

@@ -1,6 +1,6 @@
 # v3 Architecture — Foundation (Milestone 1)
 
-Status: implemented in `3.0.0-next.1` · branch `feat/sdk-v3-core`
+Status: stable since `3.0.0` (was `3.0.0-next.1` prerelease) · branch `feat/sdk-v3-core`
 
 ## The principle
 
@@ -65,5 +65,9 @@ wiring between facade and standalone entry points.
 
 ## Version strategy
 
-Develop as `3.0.0-next.x`; publish `3.0.0` when coverage, execution, WS,
-state, paper and agent are stable. `2.x` remains the released line until then.
+`3.0.0` ships the platform rewrite: foundation (M1), WebSocket platform
+(M2), execution platform (M3), state engine + paper backend (M4),
+product surface completion for Spot / USDⓈ-M / COIN-M (M5), and the
+execution audit sink (M6). Coverage, execution, WS, state, paper and
+the agent layer (MCP server, tools, audit sink) are all stable. The
+v2.x line remains supported for back-compat.

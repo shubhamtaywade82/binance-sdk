@@ -1,8 +1,8 @@
 # v3 Architecture — Milestone 4: State Engine & Paper Execution Backend
 
-> Status: prerelease (`3.0.0-next.4`). Builds on [v3 Foundation](./v3-foundation.md),
-> the [v3 WebSocket Platform](./v3-websocket.md) and the
-> [v3 Execution Platform](./v3-execution.md).
+> Status: stable since `3.0.0` (was `3.0.0-next.4` prerelease). Builds on
+> [v3 Foundation](./v3-foundation.md), the [v3 WebSocket Platform](./v3-websocket.md)
+> and the [v3 Execution Platform](./v3-execution.md).
 
 Milestone 4 completes the trading state picture with two capabilities, both
 behind boundaries that already existed:
@@ -195,5 +195,13 @@ Everything is additive:
   `UserStreamSession | PaperSession` (both carry the `userData` contract,
   `close()`, `waitForOpen()`; `liveUserSession` narrows back when needed).
 
-Next milestone (5): product surface completion (Spot product client,
-generated-coverage compiler) on the same core.
+Follow-ups (post-3.0.0):
+- COIN-M `ExecutionPlatform` and `BookEngine` support (CoinMClient
+  currently has the surface + manual user-stream lifecycle, but
+  no managed executionPlatform / books — those are wired for
+  `'usdm' | 'spot'` only).
+- Catalog-driven tool generation for the MCP server (M6 landed the
+  audit sink; the second half of M6 is auto-deriving the MCP tool
+  catalog from `contracts/endpoint-catalog.json`).
+- Lift function coverage on the v2 resources / tools back to 80%
+  (tracked in `vitest.config.ts`).

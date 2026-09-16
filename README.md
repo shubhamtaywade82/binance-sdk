@@ -304,14 +304,26 @@ await gateway.placeOrder({ ...order }, { backend: 'live' }); // one live order
 gateway.paperEngine.getAccountInfo();                    // simulation state
 ```
 
-Standalone single-product clients for focused integrations:
+Standalone single-product clients for focused integrations. v2 factories
+still ship for back-compat; the v3 first-class `ProductClient` classes
+(`SpotClient`, `USDMClient`, `CoinMClient`) own their own `CoreContext`,
+the v3 execution platform (Spot / USDⓈ-M) and the v3 state engine
+(Spot / USDⓈ-M):
 
 ```typescript
 import { createSpotClient, createUSDMClient } from '@nemesis-oss/binance-sdk';
-const spot = createSpotClient({ apiKey, apiSecret });
+const spot = createSpotClient({ apiKey, apiSecret }); // v2 factory
 await spot.syncTime();
 await spot.market.depth('BTCUSDT', 20);
 spot.close();
+
+// v3 first-class product client — owns CoreContext, owns the platform
+import { CoreContext, SpotClient, USDMClient, CoinMClient } from '@nemesis-oss/binance-sdk';
+const core = new CoreContext({ apiKey, apiSecret });
+const usdm = new USDMClient(core);
+await usdm.executionPlatform.startUserSession(); // managed listen-key + 30-min keep-alive
+const book = await usdm.books.watch('BTCUSDT');    // local L2 book, synced
+usdm.close();
 ```
 
 ### Local order books
@@ -448,13 +460,15 @@ everything to a logger with `forwardEventsToLogger(bus, logger)`.
 - `docs/architecture/v3-execution.md` — the v3 execution platform design (milestone 3).
 - `docs/architecture/v3-state.md` — the v3 state engine + paper backend design (milestone 4).
 
-## v3 Platform (prerelease)
+## v3 Platform (stable since 3.0.0)
 
-`3.0.0-next.x` introduces the platform rewrite foundation (see
+`3.0.0` ships the platform rewrite: the foundation (see
 `docs/architecture/v3-foundation.md`), the WebSocket platform (see
 `docs/architecture/v3-websocket.md`), the execution platform (see
-`docs/architecture/v3-execution.md`), and the state engine + paper execution
-backend (see `docs/architecture/v3-state.md`); every v2.x surface keeps
+`docs/architecture/v3-execution.md`), the state engine + paper execution
+backend (see `docs/architecture/v3-state.md`), the first-class
+Spot / USDⓈ-M / COIN-M product clients, and the execution audit sink;
+every v2.x surface keeps
 working unchanged.
 
 ```typescript
