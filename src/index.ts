@@ -1,4 +1,4 @@
-export const VERSION = '3.0.0-next.4';
+export { VERSION } from './version.js';
 
 export { BinanceClient } from './client/BinanceClient.js';
 export type { BinanceClientOptions, MarginNamespace } from './client/BinanceClient.js';
