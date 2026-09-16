@@ -57,6 +57,19 @@ export type {
 export { PaperExecutionAdapter } from './execution/paper.js';
 export { ExecutionGateway } from './execution/Gateway.js';
 export type { ExecutionBackend, ExecutionGatewayOptions } from './execution/Gateway.js';
+// v3 execution audit sink (M6)
+export {
+  InMemoryAuditSink,
+  FanOutAuditSink,
+  StreamAuditSink,
+  auditRecordFromExecution,
+} from './execution/AuditSink.js';
+export type {
+  AuditSink,
+  AuditRecord,
+  AuditAction,
+  AuditOutcome,
+} from './execution/AuditSink.js';
 
 // ---- State: local L2 order books ----
 export { OrderBook } from './state/OrderBook.js';

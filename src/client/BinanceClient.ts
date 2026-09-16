@@ -20,6 +20,7 @@ import { buildCoinmSurface, type CoinMSurface } from '../products/coinm/surface.
 import { ExecutionManager } from '../execution/ExecutionManager.js';
 import { PaperExecutionAdapter } from '../execution/paper.js';
 import { ExecutionGateway, type ExecutionBackend } from '../execution/Gateway.js';
+import type { AuditSink } from '../execution/AuditSink.js';
 import { PaperTradingEngine, type PaperTradingOptions } from '../paper/PaperTradingEngine.js';
 
 import { OrderBookEngine } from '../state/OrderBookEngine.js';
@@ -396,12 +397,13 @@ export class BinanceClient {
    * ```
    */
   createExecutionGateway(
-    options: { paper?: PaperTradingOptions; defaultBackend?: ExecutionBackend } = {},
+    options: { paper?: PaperTradingOptions; defaultBackend?: ExecutionBackend; audit?: AuditSink } = {},
   ): ExecutionGateway {
     return new ExecutionGateway({
       live: this.futures.execution,
       paperEngine: new PaperTradingEngine(options.paper),
       defaultBackend: options.defaultBackend,
+      audit: options.audit,
     });
   }
 
