@@ -84,6 +84,7 @@
   "devDependencies": {
     "@types/node": "^26.2.0",
     "@types/ws": "^8.5.13",
+    "@vitest/coverage-v8": "^5.0.1",
     "msw": "^2.7.0",
     "tsup": "^8.3.5",
     "tsx": "^4.23.12",
