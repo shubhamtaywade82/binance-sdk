@@ -1,9 +1,13 @@
-export const VERSION = '3.0.0-next.4';
+export { VERSION } from './version.js';
 
 export { BinanceClient } from './client/BinanceClient.js';
 export type { BinanceClientOptions, MarginNamespace } from './client/BinanceClient.js';
 export { createSpotClient, createUSDMClient, createCoinMClient } from './client/factories.js';
-export type { SpotClient, USDMClient as StandaloneUSDMClient, CoinMClient as StandaloneCoinMClient } from './client/factories.js';
+export type {
+  SpotClient as StandaloneSpotClient,
+  USDMClient as StandaloneUSDMClient,
+  CoinMClient as StandaloneCoinMClient,
+} from './client/factories.js';
 export { HttpClient } from './client/HttpClient.js';
 export type { HttpClientOptions, AuthMode, HttpMethod, SignatureAlgorithm, RetryPolicy } from './client/HttpClient.js';
 export { resolveEnvironment } from './client/endpoints.js';
@@ -32,7 +36,9 @@ export type { ProductId, ProductClient, ProductFactory } from './products/types.
 export { isProductClient } from './products/types.js';
 export { USDMClient } from './products/usdm/USDMClient.js';
 export type { UsdmSurface, FuturesNamespace } from './products/usdm/namespace.js';
+export { SpotClient } from './products/spot/SpotClient.js';
 export type { SpotSurface } from './products/spot/surface.js';
+export { CoinMClient } from './products/coinm/CoinMClient.js';
 export type { CoinMSurface } from './products/coinm/surface.js';
 
 // ---- Execution: idempotent placement + reconciliation ----
@@ -51,6 +57,19 @@ export type {
 export { PaperExecutionAdapter } from './execution/paper.js';
 export { ExecutionGateway } from './execution/Gateway.js';
 export type { ExecutionBackend, ExecutionGatewayOptions } from './execution/Gateway.js';
+// v3 execution audit sink (M6)
+export {
+  InMemoryAuditSink,
+  FanOutAuditSink,
+  StreamAuditSink,
+  auditRecordFromExecution,
+} from './execution/AuditSink.js';
+export type {
+  AuditSink,
+  AuditRecord,
+  AuditAction,
+  AuditOutcome,
+} from './execution/AuditSink.js';
 
 // ---- State: local L2 order books ----
 export { OrderBook } from './state/OrderBook.js';

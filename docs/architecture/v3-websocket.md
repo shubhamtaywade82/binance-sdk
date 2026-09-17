@@ -1,6 +1,6 @@
 # v3 Architecture — WebSocket Platform (Milestone 2)
 
-Status: implemented in `3.0.0-next.2` · branch `sdk-v3-websocket`
+Status: stable since `3.0.0` (was `3.0.0-next.2` prerelease) · branch `sdk-v3-websocket`
 
 ## The problem
 

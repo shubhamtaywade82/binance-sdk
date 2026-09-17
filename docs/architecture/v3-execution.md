@@ -1,6 +1,6 @@
 # v3 Architecture — Milestone 3: Execution Platform
 
-> Status: prerelease (`3.0.0-next.3`). Builds on [v3 Foundation](./v3-foundation.md)
+> Status: stable since `3.0.0` (was `3.0.0-next.3` prerelease). Builds on [v3 Foundation](./v3-foundation.md)
 > and the [v3 WebSocket Platform](./v3-websocket.md).
 
 Milestone 3 turns execution from a per-call concern into a platform. The v2.x

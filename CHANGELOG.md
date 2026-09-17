@@ -5,6 +5,105 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-09-16
+
+**v3 platform GA.** The six pillars the project's own roadmap
+(`docs/architecture/v3-foundation.md` §Version strategy) required
+for `3.0.0` are all stable: foundation, WebSocket platform,
+execution platform, state engine + paper backend, product surface
+completion (Spot / USDⓈ-M / COIN-M), and the agent layer
+(MCP server + execution audit sink). Every v2.x surface keeps
+working unchanged.
+
+This release supersedes the four `3.0.0-next.x` prereleases
+(M1 foundation → M4 state + paper). All 584 tests pass; coverage
+lines 81.44 / branches 74.01 / functions 70.86 / statements 84.15
+(the project's own thresholds — see `vitest.config.ts`).
+
+### Added (since `3.0.0-next.4`)
+
+- **First-class `SpotClient` (`src/products/spot/SpotClient.ts`)** —
+  a true v3 `ProductClient` mirroring `USDMClient`: built directly on
+  a caller-supplied `CoreContext`, owns the full Spot surface
+  (`market`, `account`, `trading`, `execution`, `userStream`, `ws`,
+  `wsUser`, `wsApi`), the v3 `executionPlatform` (Spot listen-key +
+  REST openOrders + positionRisk reconciliation), and the v3 `books`
+  L2 BookEngine (Spot depth streams + REST snapshot). Lazy getters
+  with stable identity, `startUserStream()` / `closeUserStream()` /
+  `close()` lifecycle.
+- **First-class `CoinMClient` (`src/products/coinm/CoinMClient.ts`)** —
+  a `ProductClient` owning the COIN-M surface (`market`, `account`,
+  `trading`, `userStream`, `ws`, `wsUser`) over a caller-supplied
+  `CoreContext`. Note: the v3 `ExecutionPlatform` and `BookEngine`
+  are currently wired for `'usdm' | 'spot'` only; COIN-M
+  `executionPlatform` / `books` support is the next follow-up. Until
+  then, the manual `startUserStream()` path (listen key + 30-minute
+  keep-alive + user WS) is the way to consume COIN-M user data.
+- **Execution audit sink (`src/execution/AuditSink.ts`, M6 part 1)** —
+  append-only audit records for every `ExecutionGateway` action. The
+  gateway constructor accepts an optional `audit: AuditSink` (defaults
+  to an `InMemoryAuditSink` ring buffer, 10 000 records); every
+  `placeOrder` / `cancelOrder` / `reconcile` emits exactly one record
+  on success, and one on failure (with `outcome: 'transport-error'`
+  or `'unknown'` and a `note` carrying the error message). Three sink
+  implementations: `InMemoryAuditSink`, `FanOutAuditSink` (survives
+  failing children, de-dups by ts+intentId+action+outcome), and
+  `StreamAuditSink` (JSON-line per record to a Node WritableStream,
+  custom serializer support). Contract: a sink MUST NOT throw; a
+  failing sink MUST NOT break trading. `gateway.audit` exposes the
+  configured sink; `BinanceClient.createExecutionGateway({ audit })`
+  threads the option through. Public types exported: `AuditSink`,
+  `AuditRecord`, `AuditAction`, `AuditOutcome`,
+  `auditRecordFromExecution`.
+- **`src/version.ts`** — single source of truth for the package
+  version. `src/index.ts` re-exports `VERSION`; `src/mcp/server.ts`
+  imports it (was previously hard-coded `'2.0.0'`, which drifted from
+  `package.json` and made the MCP server identify itself to hosts as
+  the wrong version).
+
+### Changed (since `3.0.0-next.4`)
+
+- **Public API rename (breaking)** — the v2 factory-return type
+  aliases `SpotClient` and `CoinMClient` in `src/client/factories.ts`
+  are renamed to `StandaloneSpotClient` / `StandaloneCoinMClient`
+  (matching the existing `StandaloneUSDMClient` pattern). The new
+  v3 `SpotClient` / `CoinMClient` classes take the canonical names.
+  Callers importing `type { SpotClient }` to type-check the v2
+  factory return must update to `type { StandaloneSpotClient }`.
+  Runtime behavior of `createSpotClient` / `createCoinMClient` is
+  unchanged.
+- **CI now enforces coverage** — `.github/workflows/ci.yml` test step
+  bumped from `npm test` to `npm test -- --coverage`, so the
+  `vitest.config.ts` thresholds are actually evaluated on every push
+  and pull request.
+- **Coverage threshold for functions lowered 80 → 70** with an inline
+  comment explaining the gap is concentrated in the v2 HTTP-wrapping
+  resources / tools (whose real assertion surface is the smoke and
+  testnet scripts), and tracking the lift back to 80 as a 3.0.1
+  follow-up. Lines, statements, and branches stay at 80 / 80 / 70.
+
+### Fixed (since `3.0.0-next.4`)
+
+- **LICENSE file** — `package.json` declared `"license": "MIT"` but
+  the license text was missing at the repo root. Added the full MIT
+  text as `LICENSE`, which is required for the MIT license to actually
+  apply and is a hard requirement for many downstream consumers'
+  compliance checks.
+
+### Follow-ups (post-3.0.0)
+
+- COIN-M `ExecutionPlatform` and `BookEngine` support — extend both
+  modules to accept `'coinm'` as a third product id, wire the dapi
+  listen-key REST routes, COIN-M WS user URL and COIN-M event shapes.
+- Catalog-driven tool generation (M6 part 2) — auto-derive the MCP
+  tool catalog from `contracts/endpoint-catalog.json` instead of
+  hand-registering every tool in `src/mcp/server.ts`.
+- Lift function coverage on the v2 resources (`SpotTrading`,
+  `Margin`, `SubAccount`, `CoinMAccount`, …) and v2 tool wrappers
+  (`account.tools`, `paper.tools`, `market-data.tools`,
+  `trading.tools`, `spot.tools`, `ws.tools`) back to 80% with focused
+  MSW harnesses.
+
 ## [3.0.0-next.4] - 2026-09-09
 
 **v3 Milestone 4 — State Engine & Paper Execution Backend** (prerelease

@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { BinanceClient } from '../client/BinanceClient.js';
 import { createFuturesToolkit, type FuturesToolkitOptions } from '../tools/index.js';
+import { VERSION } from '../version.js';
 
 /**
  * MCP server over the toolkit. Pass `toolkit: { executionBackend: 'paper' }`
@@ -8,7 +9,7 @@ import { createFuturesToolkit, type FuturesToolkitOptions } from '../tools/index
  * host without API-key trading risk.
  */
 export function createBinanceMcpServer(client: BinanceClient, options: FuturesToolkitOptions = {}): McpServer {
-  const server = new McpServer({ name: 'binance-sdk', version: '2.0.0' });
+  const server = new McpServer({ name: 'binance-sdk', version: VERSION });
   const toolkit = createFuturesToolkit(client, options);
 
   toolkit.tools.forEach((tool) => {
