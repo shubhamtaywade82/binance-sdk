@@ -7,6 +7,25 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- **`contracts/schema-catalog.json` + `npm run schema:generate`** — the
+  long-flagged gap ("Zod schemas exist per-resource but aren't indexed
+  anywhere queryable") closed for the part that's mechanically safe to
+  close: JSON Schema for every LLM/agent tool's request parameters (159
+  tools, all of `market`/`account`/`trading`/`spot`/`derived`/`execution`/
+  `ws`/`paper`), generated directly from each tool's own Zod `inputSchema`
+  via `z.toJSONSchema` — exact, not hand-curated, verified to convert
+  cleanly for all 159 before this shipped. Deliberately does **not**
+  attempt a response schema per registry endpoint: fewer than two-thirds
+  of resource methods return through a Zod `.parse()` call at all, several
+  of those share one schema across multiple methods (e.g.
+  `CoinMOrderResponseSchema` backs `createOrder`/`getOrder`/`cancelOrder`),
+  and there's no mechanical way to associate a schema export with a
+  specific registry operation without hand-curating ~220 rows by eye —
+  which this project's own contract layer explicitly avoids doing. See
+  `scripts/generate-schema-catalog.ts`'s header for the full reasoning.
+  CI-validated by `test/contracts/schema-catalog.test.ts` against the live
+  toolkit, so the checked-in catalog can't silently rot.
+
 - **`contracts/tool-coverage.json` + `npm run tools:coverage`** — the
   3.0.0 CHANGELOG's own follow-up ("catalog-driven tool generation")
   turned out not to be safely achievable in the strong sense: the

@@ -1,0 +1,4710 @@
+{
+  "catalogVersion": 1,
+  "generatedAt": "2026-09-20T08:37:11.214Z",
+  "description": "JSON Schema for every LLM/agent tool's request parameters (src/tools/*.tools.ts via createFuturesToolkit()). Scope: tool inputs only, not a response schema per registry endpoint -- see this file's generator script header for why that's a separate, harder problem. Each schema is generated directly from its own Zod inputSchema (zero hand-curation).",
+  "totalTools": 159,
+  "categories": {
+    "market": {
+      "product": "usdm",
+      "count": 37,
+      "tools": [
+        {
+          "name": "futures_ping",
+          "description": "Test connectivity to the Binance USD-M futures REST API. Returns empty object {} on success.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_server_time",
+          "description": "Get the current Binance USD-M futures server time in milliseconds since epoch.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_exchange_info",
+          "description": "Get exchange trading rules and symbol metadata: contract type, status, base/quote assets, price/quantity filters, tick size, step size, notional and leverage brackets, delivery dates.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ticker_price",
+          "description": "Get latest price for one symbol (v1).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ticker_price_v2",
+          "description": "Get latest price for one symbol, or for all symbols when symbol is omitted (v2 endpoint). Use all-symbols mode for market overviews.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "description": "USD-M pair, e.g. BTCUSDT",
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ticker_24hr",
+          "description": "Get 24-hour rolling price change statistics for a symbol: price change %, high, low, volume, quote volume, open interest.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_book_ticker",
+          "description": "Get best bid/ask (top of book) for a single symbol (v1).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_book_ticker_v2",
+          "description": "Get best bid/ask (top of book) for one symbol, or all symbols when omitted (v2 endpoint).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "description": "USD-M pair, e.g. BTCUSDT",
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_order_book",
+          "description": "Get order book depth for a symbol. Limits: 5, 10, 20, 50, 100, 500, 1000.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "limit": {
+                "default": "100",
+                "type": "string",
+                "enum": [
+                  "5",
+                  "10",
+                  "20",
+                  "50",
+                  "100",
+                  "500",
+                  "1000"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_recent_trades",
+          "description": "Get the most recent executed trades for a symbol (public endpoint).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_historical_trades",
+          "description": "Get older trades for a symbol by fromId (older than recent).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              },
+              "fromId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_agg_trades",
+          "description": "Get compressed/aggregate trades for a symbol within an optional time window. Each entry aggregates trades with the same price and side.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_klines",
+          "description": "Get candlestick (OHLCV) data for a symbol. Intervals: 1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M. Max 1500 per request.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "3m",
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "8h",
+                  "12h",
+                  "1d",
+                  "3d",
+                  "1w",
+                  "1M"
+                ]
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "interval",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_continuous_klines",
+          "description": "Get klines for a continuous contract (perpetual, current_quarter, next_quarter) identified by base pair (e.g. BTCUSDT).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Base pair, e.g. BTCUSDT"
+              },
+              "contractType": {
+                "default": "perpetual",
+                "type": "string",
+                "enum": [
+                  "perpetual",
+                  "current_quarter",
+                  "next_quarter"
+                ]
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "3m",
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "8h",
+                  "12h",
+                  "1d",
+                  "3d",
+                  "1w",
+                  "1M"
+                ]
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "contractType",
+              "interval",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_index_price_klines",
+          "description": "Get index price candlesticks for a pair (e.g. BTCUSDT index).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Base pair, e.g. BTCUSDT"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "3m",
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "8h",
+                  "12h",
+                  "1d",
+                  "3d",
+                  "1w",
+                  "1M"
+                ]
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "interval",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_mark_price_klines",
+          "description": "Get mark price candlesticks for a symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "3m",
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "8h",
+                  "12h",
+                  "1d",
+                  "3d",
+                  "1w",
+                  "1M"
+                ]
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "interval",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_trading_day_ticker",
+          "description": "Get the trading-day ticker (v1: rolling window stats by symbol, including open, close, high, low, volume, closeTime).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_mark_price",
+          "description": "Get mark price, index price, estimated settle price, last funding rate, next funding time and interest rate for a symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_funding_rate_history",
+          "description": "Get historical funding rates for a symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "limit": {
+                "default": 100,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_funding_info",
+          "description": "Get funding rate configuration for all symbols with adjusted funding cap/floor or interval (e.g. under extreme volatility).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_open_interest",
+          "description": "Get the current total open interest for a symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_open_interest_hist",
+          "description": "Get historical open interest statistics per period.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "period": {
+                "default": "1h",
+                "type": "string",
+                "enum": [
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "12h",
+                  "1d"
+                ]
+              },
+              "limit": {
+                "default": 30,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              }
+            },
+            "required": [
+              "symbol",
+              "period",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_top_long_short_account_ratio",
+          "description": "Get top trader long/short account ratio (number of accounts) for a symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "period": {
+                "default": "1h",
+                "type": "string",
+                "enum": [
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "12h",
+                  "1d"
+                ]
+              },
+              "limit": {
+                "default": 30,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              }
+            },
+            "required": [
+              "symbol",
+              "period",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_top_long_short_position_ratio",
+          "description": "Get top trader long/short position ratio (accounts with net positions) for a symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "period": {
+                "default": "1h",
+                "type": "string",
+                "enum": [
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "12h",
+                  "1d"
+                ]
+              },
+              "limit": {
+                "default": 30,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              }
+            },
+            "required": [
+              "symbol",
+              "period",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_global_long_short_ratio",
+          "description": "Get global long/short account ratio for a symbol (all accounts).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "period": {
+                "default": "1h",
+                "type": "string",
+                "enum": [
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "12h",
+                  "1d"
+                ]
+              },
+              "limit": {
+                "default": 30,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              }
+            },
+            "required": [
+              "symbol",
+              "period",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_taker_long_short_ratio",
+          "description": "Get taker buy/sell volume ratio for a symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "period": {
+                "default": "1h",
+                "type": "string",
+                "enum": [
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "12h",
+                  "1d"
+                ]
+              },
+              "limit": {
+                "default": 30,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              }
+            },
+            "required": [
+              "symbol",
+              "period",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_basis",
+          "description": "Get basis data (spot-futures spread, mark price - index price) for a pair and contract type.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Base pair, e.g. BTCUSDT"
+              },
+              "period": {
+                "default": "1h",
+                "type": "string",
+                "enum": [
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "12h",
+                  "1d"
+                ]
+              },
+              "limit": {
+                "default": 30,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "period",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_asset_index",
+          "description": "Get multi-assets mode asset index (collateral price) for one asset or all assets.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "description": "Asset index symbol, e.g. ADAUSD",
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_composite_index_info",
+          "description": "Get composite index symbol information (e.g. DEFIUSDT) with constituent weights.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "description": "USD-M pair, e.g. BTCUSDT",
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_insurance_balance",
+          "description": "Get insurance fund balance snapshots for a symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BNBUSDT"
+              },
+              "limit": {
+                "default": 100,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_index_price_constituents",
+          "description": "Get the index price constituents (exchange weights) for a symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_premium_index_klines",
+          "description": "Get premium index candlesticks for a symbol (mark price premium over index price).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "3m",
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "8h",
+                  "12h",
+                  "1d",
+                  "3d",
+                  "1w",
+                  "1M"
+                ]
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "interval",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_rpi_depth",
+          "description": "Get the RPI (Retail Price Improvement) order book depth for a symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "limit": {
+                "default": 1000,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_delivery_price",
+          "description": "Get historical quarterly contract settlement/delivery prices for a pair.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Base pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_symbol_adl_risk",
+          "description": "Get the auto-deleveraging (ADL) risk level for one symbol or all symbols on the account (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "description": "USD-M pair, e.g. BTCUSDT",
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_adl_quantile",
+          "description": "Get the position ADL (auto-deleveraging) quantile estimation for one symbol or all symbols (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "description": "USD-M pair, e.g. BTCUSDT",
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_force_orders",
+          "description": "Get the user's force-liquidation orders (LIQUIDATION) and ADL orders for a symbol or all symbols (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "description": "USD-M pair, e.g. BTCUSDT",
+                "type": "string",
+                "minLength": 1
+              },
+              "autoCloseType": {
+                "type": "string",
+                "enum": [
+                  "LIQUIDATION",
+                  "ADL"
+                ]
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "limit": {
+                "default": 50,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1500
+              }
+            },
+            "required": [
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    "account": {
+      "product": "usdm",
+      "count": 26,
+      "tools": [
+        {
+          "name": "futures_balance",
+          "description": "Get futures account balances (v3): asset, wallet balance, unrealized profit, margin balance, available balance (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_account",
+          "description": "Get full account information (v3): total wallet/margin balance, unrealized profit, available balance, assets & positions (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_balance_v2",
+          "description": "Get futures account balance (v2 legacy) per asset (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_account_v2",
+          "description": "Get futures account information (v2 legacy) (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_position_risk",
+          "description": "Get current open positions (v3): symbol, side, size, entry price, mark price, liquidation price, leverage, unrealized PnL, margin (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_income_history",
+          "description": "Get futures income history (realized PnL, funding fees, commissions, transfers, insurance clearing). incomeType examples: TRANSFER, REALIZED_PNL, FUNDING_FEE, COMMISSION, INSURANCE_CLEAR, REFERRAL_KICKBACK (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "incomeType": {
+                "description": "e.g. TRANSFER, REALIZED_PNL, FUNDING_FEE, COMMISSION",
+                "type": "string"
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "limit": {
+                "default": 100,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_user_trades",
+          "description": "Get account trade list (filled trades) for a symbol with optional time range (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "limit": {
+                "default": 100,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              },
+              "fromId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_leverage_brackets",
+          "description": "Get notional and leverage brackets for one symbol or all: tier caps, maintenance margin rate, max leverage (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_commission_rate",
+          "description": "Get user commission rate (taker & maker fee) for a symbol (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. ETHUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_multi_assets_mode",
+          "description": "Get current multi-assets margin mode status (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_set_multi_assets_mode",
+          "description": "Enable or disable multi-assets mode (signed; 7-day cooldown between toggles).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "description": "true to enable, false to disable"
+              }
+            },
+            "required": [
+              "enabled"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_fee_burn_status",
+          "description": "Get BNB fee burn status for futures trades (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_set_fee_burn",
+          "description": "Toggle BNB fee burn on futures trades (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "description": "true to enable fee burn"
+              }
+            },
+            "required": [
+              "enabled"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_position_mode",
+          "description": "Get current position mode: one-way (BOTH) or hedge mode (LONG/SHORT) (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_set_position_mode",
+          "description": "Change position mode: hedgeMode true = dual side (hedge), false = one-way (signed; 30-day cooldown).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "hedgeMode": {
+                "type": "boolean",
+                "description": "true = hedge mode, false = one-way"
+              }
+            },
+            "required": [
+              "hedgeMode"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_api_trading_status",
+          "description": "Get futures trading quantitative rules indicators and disable intervals (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_position_margin_history",
+          "description": "Get isolated position margin change history. type: 1 = add margin, 2 = reduce margin (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "1",
+                  "2"
+                ],
+                "description": "1 = add margin, 2 = reduce margin"
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "limit": {
+                "default": 50,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "symbol",
+              "type",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_rate_limit_order",
+          "description": "Query the current user order rate limit usage (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_request_order_download",
+          "description": "Request a futures order-history download (async, 7-day window). Returns a downloadId (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_order_download_status",
+          "description": "Get the futures order-history download link by downloadId (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "downloadId": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "downloadId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_request_trade_download",
+          "description": "Request a futures trade-history download (async, 7-day window). Returns a downloadId (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_trade_download_status",
+          "description": "Get the futures trade-history download link by downloadId (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "downloadId": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "downloadId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_account_config",
+          "description": "Get futures account configuration: fee tier, trading permissions, dual-side position setting (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_portfolio_margin_account_info",
+          "description": "Get Portfolio Margin account info for an asset: cross margin balance and liability (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "asset": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Asset, e.g. USDT"
+              }
+            },
+            "required": [
+              "asset"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_request_income_download",
+          "description": "Request a futures income/transaction-history download (async). Returns a downloadId (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "startTime",
+              "endTime"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_income_download_status",
+          "description": "Get the futures income/transaction-history download link by downloadId (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "downloadId": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "downloadId"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    "trading": {
+      "product": "usdm",
+      "count": 26,
+      "tools": [
+        {
+          "name": "futures_new_order",
+          "description": "Place a new futures order. Types: LIMIT, MARKET, STOP, STOP_MARKET, TAKE_PROFIT, TAKE_PROFIT_MARKET, TRAILING_STOP_MARKET. Use STOP_MARKET as the take-profit/stop-loss trigger and LIMIT for the actual fill. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "side": {
+                "type": "string",
+                "enum": [
+                  "BUY",
+                  "SELL"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "LIMIT",
+                  "MARKET",
+                  "STOP",
+                  "STOP_MARKET",
+                  "TAKE_PROFIT",
+                  "TAKE_PROFIT_MARKET",
+                  "TRAILING_STOP_MARKET"
+                ]
+              },
+              "quantity": {
+                "description": "Order quantity in base asset",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "price": {
+                "description": "Required for LIMIT and STOP/TAKE_PROFIT (limit-triggered) types",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "timeInForce": {
+                "type": "string",
+                "enum": [
+                  "GTC",
+                  "IOC",
+                  "FOK",
+                  "GTX"
+                ]
+              },
+              "stopPrice": {
+                "description": "Trigger price for STOP/STOP_MARKET/TAKE_PROFIT/TAKE_PROFIT_MARKET",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "reduceOnly": {
+                "description": "true = only reduces the position, never opens",
+                "type": "boolean"
+              },
+              "positionSide": {
+                "type": "string",
+                "enum": [
+                  "BOTH",
+                  "LONG",
+                  "SHORT"
+                ]
+              },
+              "newClientOrderId": {
+                "type": "string"
+              },
+              "closePosition": {
+                "description": "Close the full position on trigger (mutually exclusive with quantity)",
+                "type": "boolean"
+              },
+              "newOrderRespType": {
+                "type": "string",
+                "enum": [
+                  "ACK",
+                  "RESULT"
+                ]
+              },
+              "priceProtect": {
+                "type": "boolean"
+              },
+              "workingType": {
+                "description": "Trigger price basis; default CONTRACT_PRICE",
+                "type": "string",
+                "enum": [
+                  "MARK_PRICE",
+                  "CONTRACT_PRICE"
+                ]
+              },
+              "callbackRate": {
+                "description": "Percent callback for TRAILING_STOP_MARKET, e.g. 0.5",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "activationPrice": {
+                "description": "Activation price for TRAILING_STOP_MARKET",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "selfTradePreventionMode": {
+                "type": "string",
+                "enum": [
+                  "NONE",
+                  "EXPIRE_TAKER",
+                  "EXPIRE_MAKER",
+                  "EXPIRE_BOTH"
+                ]
+              },
+              "goodTillDate": {
+                "description": "Timestamp when a GTD order expires",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "side",
+              "type",
+              "quantity"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_test_order",
+          "description": "Validate a new order without submitting it. Returns 200 on success; use to validate fields and margin before real orders. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "side": {
+                "type": "string",
+                "enum": [
+                  "BUY",
+                  "SELL"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "LIMIT",
+                  "MARKET",
+                  "STOP",
+                  "STOP_MARKET",
+                  "TAKE_PROFIT",
+                  "TAKE_PROFIT_MARKET",
+                  "TRAILING_STOP_MARKET"
+                ]
+              },
+              "quantity": {
+                "description": "Order quantity in base asset",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "price": {
+                "description": "Required for LIMIT and STOP/TAKE_PROFIT (limit-triggered) types",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "timeInForce": {
+                "type": "string",
+                "enum": [
+                  "GTC",
+                  "IOC",
+                  "FOK",
+                  "GTX"
+                ]
+              },
+              "stopPrice": {
+                "description": "Trigger price for STOP/STOP_MARKET/TAKE_PROFIT/TAKE_PROFIT_MARKET",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "reduceOnly": {
+                "description": "true = only reduces the position, never opens",
+                "type": "boolean"
+              },
+              "positionSide": {
+                "type": "string",
+                "enum": [
+                  "BOTH",
+                  "LONG",
+                  "SHORT"
+                ]
+              },
+              "newClientOrderId": {
+                "type": "string"
+              },
+              "closePosition": {
+                "description": "Close the full position on trigger (mutually exclusive with quantity)",
+                "type": "boolean"
+              },
+              "newOrderRespType": {
+                "type": "string",
+                "enum": [
+                  "ACK",
+                  "RESULT"
+                ]
+              },
+              "priceProtect": {
+                "type": "boolean"
+              },
+              "workingType": {
+                "description": "Trigger price basis; default CONTRACT_PRICE",
+                "type": "string",
+                "enum": [
+                  "MARK_PRICE",
+                  "CONTRACT_PRICE"
+                ]
+              },
+              "callbackRate": {
+                "description": "Percent callback for TRAILING_STOP_MARKET, e.g. 0.5",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "activationPrice": {
+                "description": "Activation price for TRAILING_STOP_MARKET",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "selfTradePreventionMode": {
+                "type": "string",
+                "enum": [
+                  "NONE",
+                  "EXPIRE_TAKER",
+                  "EXPIRE_MAKER",
+                  "EXPIRE_BOTH"
+                ]
+              },
+              "goodTillDate": {
+                "description": "Timestamp when a GTD order expires",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "side",
+              "type",
+              "quantity"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_get_order",
+          "description": "Query a specific order by orderId or client order id. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "orderId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "origClientOrderId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_cancel_order",
+          "description": "Cancel a specific open order by orderId or client order id. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "orderId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "origClientOrderId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_get_open_order",
+          "description": "Query a current open order (must exist in the open order book). Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "orderId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "origClientOrderId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_open_orders",
+          "description": "Get all current open orders, for one symbol or all symbols. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_all_orders",
+          "description": "Get historical orders for a symbol with optional time range (last 7 days by default). Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "orderId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "limit": {
+                "default": 100,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_cancel_all_orders",
+          "description": "Cancel all open orders for a symbol. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_modify_order",
+          "description": "Modify an open order (price/quantity/stopPrice). Cannot modify when position side is BOTH and closePosition is true. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "side": {
+                "type": "string",
+                "enum": [
+                  "BUY",
+                  "SELL"
+                ]
+              },
+              "quantity": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "price": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "orderId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "origClientOrderId": {
+                "type": "string"
+              },
+              "stopPrice": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "timeInForce": {
+                "type": "string",
+                "enum": [
+                  "GTC",
+                  "IOC",
+                  "FOK",
+                  "GTX"
+                ]
+              },
+              "positionSide": {
+                "type": "string",
+                "enum": [
+                  "BOTH",
+                  "LONG",
+                  "SHORT"
+                ]
+              },
+              "newClientOrderId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "symbol",
+              "side",
+              "quantity"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_order_modify_history",
+          "description": "Get order modification history for a symbol. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "limit": {
+                "default": 100,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_batch_orders",
+          "description": "Place up to 5 orders in one request (array of order objects, max 30 per minute per symbol). Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "orders": {
+                "minItems": 1,
+                "maxItems": 5,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "symbol": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "USD-M pair, e.g. BTCUSDT"
+                    },
+                    "side": {
+                      "type": "string",
+                      "enum": [
+                        "BUY",
+                        "SELL"
+                      ]
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "LIMIT",
+                        "MARKET",
+                        "STOP",
+                        "STOP_MARKET",
+                        "TAKE_PROFIT",
+                        "TAKE_PROFIT_MARKET",
+                        "TRAILING_STOP_MARKET"
+                      ]
+                    },
+                    "quantity": {
+                      "description": "Order quantity in base asset",
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    },
+                    "price": {
+                      "description": "Required for LIMIT and STOP/TAKE_PROFIT (limit-triggered) types",
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    },
+                    "timeInForce": {
+                      "type": "string",
+                      "enum": [
+                        "GTC",
+                        "IOC",
+                        "FOK",
+                        "GTX"
+                      ]
+                    },
+                    "stopPrice": {
+                      "description": "Trigger price for STOP/STOP_MARKET/TAKE_PROFIT/TAKE_PROFIT_MARKET",
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    },
+                    "reduceOnly": {
+                      "description": "true = only reduces the position, never opens",
+                      "type": "boolean"
+                    },
+                    "positionSide": {
+                      "type": "string",
+                      "enum": [
+                        "BOTH",
+                        "LONG",
+                        "SHORT"
+                      ]
+                    },
+                    "newClientOrderId": {
+                      "type": "string"
+                    },
+                    "closePosition": {
+                      "description": "Close the full position on trigger (mutually exclusive with quantity)",
+                      "type": "boolean"
+                    },
+                    "newOrderRespType": {
+                      "type": "string",
+                      "enum": [
+                        "ACK",
+                        "RESULT"
+                      ]
+                    },
+                    "priceProtect": {
+                      "type": "boolean"
+                    },
+                    "workingType": {
+                      "description": "Trigger price basis; default CONTRACT_PRICE",
+                      "type": "string",
+                      "enum": [
+                        "MARK_PRICE",
+                        "CONTRACT_PRICE"
+                      ]
+                    },
+                    "callbackRate": {
+                      "description": "Percent callback for TRAILING_STOP_MARKET, e.g. 0.5",
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    },
+                    "activationPrice": {
+                      "description": "Activation price for TRAILING_STOP_MARKET",
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    },
+                    "selfTradePreventionMode": {
+                      "type": "string",
+                      "enum": [
+                        "NONE",
+                        "EXPIRE_TAKER",
+                        "EXPIRE_MAKER",
+                        "EXPIRE_BOTH"
+                      ]
+                    },
+                    "goodTillDate": {
+                      "description": "Timestamp when a GTD order expires",
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "symbol",
+                    "side",
+                    "type",
+                    "quantity"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "orders"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_cancel_batch_orders",
+          "description": "Cancel multiple orders at once (up to 10 by orderId list or client order id list). Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "orderIdList": {
+                "maxItems": 10,
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "origClientOrderIdList": {
+                "maxItems": 10,
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_set_leverage",
+          "description": "Change initial leverage for a symbol (1-125, within bracket). Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "leverage": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 125
+              }
+            },
+            "required": [
+              "symbol",
+              "leverage"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_set_margin_type",
+          "description": "Change margin type for a symbol: isolated or cross. Only allowed when no open position for the symbol. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "marginType": {
+                "type": "string",
+                "enum": [
+                  "isolated",
+                  "cross"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "marginType"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_modify_position_margin",
+          "description": "Add or reduce isolated position margin. marginType: 1 = add margin, 2 = reduce margin. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "amount": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "marginType": {
+                "type": "string",
+                "enum": [
+                  "1",
+                  "2"
+                ],
+                "description": "1 = add margin, 2 = reduce margin"
+              }
+            },
+            "required": [
+              "symbol",
+              "amount",
+              "marginType"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_countdown_cancel_all",
+          "description": "Auto-cancel all open orders for a symbol after countdownTime ms (0 = cancel the countdown). Emergency circuit breaker. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "countdownTime": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 60000
+              }
+            },
+            "required": [
+              "symbol",
+              "countdownTime"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_new_algo_order",
+          "description": "Place a conditional algo order (CONDITIONAL or VP). CONDITIONAL supports STOP_MARKET/TAKE_PROFIT_MARKET types with triggerPrice; VP is a volume-participation order with urgency and quantity. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "algoType": {
+                "type": "string",
+                "enum": [
+                  "CONDITIONAL",
+                  "VP"
+                ]
+              },
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "side": {
+                "type": "string",
+                "enum": [
+                  "BUY",
+                  "SELL"
+                ]
+              },
+              "positionSide": {
+                "type": "string",
+                "enum": [
+                  "BOTH",
+                  "LONG",
+                  "SHORT"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "STOP_MARKET",
+                  "TAKE_PROFIT_MARKET",
+                  "LIMIT"
+                ],
+                "description": "For CONDITIONAL: STOP_MARKET/TAKE_PROFIT_MARKET. For VP: LIMIT"
+              },
+              "quantity": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "triggerPrice": {
+                "description": "Required for CONDITIONAL",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "price": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "timeInForce": {
+                "type": "string",
+                "enum": [
+                  "GTC",
+                  "IOC",
+                  "FOK",
+                  "GTX"
+                ]
+              },
+              "workingType": {
+                "type": "string",
+                "enum": [
+                  "MARK_PRICE",
+                  "CONTRACT_PRICE"
+                ]
+              },
+              "priceProtect": {
+                "type": "boolean"
+              },
+              "reduceOnly": {
+                "type": "boolean"
+              },
+              "closePosition": {
+                "type": "boolean"
+              },
+              "urgency": {
+                "description": "Required for VP",
+                "type": "string",
+                "enum": [
+                  "LOW",
+                  "MEDIUM",
+                  "HIGH"
+                ]
+              },
+              "clientAlgoId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "algoType",
+              "symbol",
+              "side",
+              "type",
+              "quantity"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_cancel_algo_order",
+          "description": "Cancel an open algo order by algoId or clientAlgoId. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "algoId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "clientAlgoId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_cancel_all_algo_orders",
+          "description": "Cancel all open algo orders for a symbol. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_get_algo_order",
+          "description": "Query an algo order by algoId or clientAlgoId. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "algoId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "clientAlgoId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_open_algo_orders",
+          "description": "Get all current open algo orders, optionally filtered by symbol. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_all_algo_orders",
+          "description": "Get historical algo orders for a symbol with optional time range. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "limit": {
+                "default": 100,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_convert_exchange_info",
+          "description": "List asset pairs eligible for futures Convert, optionally filtered by fromAsset/toAsset.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "fromAsset": {
+                "type": "string"
+              },
+              "toAsset": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_convert_get_quote",
+          "description": "Request a Convert quote between two assets (quote expires quickly; accept with futures_convert_accept_quote). Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "fromAsset": {
+                "type": "string",
+                "minLength": 1
+              },
+              "toAsset": {
+                "type": "string",
+                "minLength": 1
+              },
+              "fromAmount": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "toAmount": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "validTime": {
+                "type": "string",
+                "enum": [
+                  "10s",
+                  "30s",
+                  "1m",
+                  "2m"
+                ]
+              }
+            },
+            "required": [
+              "fromAsset",
+              "toAsset"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_convert_accept_quote",
+          "description": "Accept a previously requested Convert quote by quoteId. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "quoteId": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "quoteId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_convert_order_status",
+          "description": "Query the status of a Convert order by orderId or quoteId. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "orderId": {
+                "type": "string"
+              },
+              "quoteId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    "spot": {
+      "product": "spot",
+      "count": 36,
+      "tools": [
+        {
+          "name": "spot_ping",
+          "description": "Test connectivity to the Binance Spot REST API.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_server_time",
+          "description": "Get the current Binance Spot server time in ms since epoch.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_exchange_info",
+          "description": "Get Spot exchange trading rules and symbol metadata (status, base/quote assets, filters, permissions).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_ticker_price",
+          "description": "Get the latest price for a Spot symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_ticker_24hr",
+          "description": "Get 24-hour rolling price change statistics for a Spot symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_book_ticker",
+          "description": "Get the best bid/ask (top of book) for a Spot symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_order_book",
+          "description": "Get the Spot order book depth for a symbol (limits 5/10/20/50/100/500/1000/5000).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "limit": {
+                "default": "100",
+                "type": "string",
+                "enum": [
+                  "5",
+                  "10",
+                  "20",
+                  "50",
+                  "100",
+                  "500",
+                  "1000",
+                  "5000"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_recent_trades",
+          "description": "Get the most recent executed trades for a Spot symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_historical_trades",
+          "description": "Get older Spot trades for a symbol by fromId.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              },
+              "fromId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_agg_trades",
+          "description": "Get compressed/aggregate Spot trades for a symbol within an optional time window.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_klines",
+          "description": "Get Spot candlesticks (OHLCV). Intervals 1m…1M; max 1000 per request.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "3m",
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "8h",
+                  "12h",
+                  "1d",
+                  "3d",
+                  "1w",
+                  "1M"
+                ]
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "interval",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_ui_klines",
+          "description": "Get Spot candlesticks via the optimized uiKlines endpoint (same shape as spot_klines).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "3m",
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "8h",
+                  "12h",
+                  "1d",
+                  "3d",
+                  "1w",
+                  "1M"
+                ]
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "symbol",
+              "interval",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_avg_price",
+          "description": "Get the current average price (5-minute rolling average) for a Spot symbol.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_rolling_window_ticker",
+          "description": "Get rolling-window price change statistics (1d/7d/30d). Omit symbol for all symbols.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "windowSize": {
+                "type": "string",
+                "enum": [
+                  "1d",
+                  "7d",
+                  "30d"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_trading_day_ticker",
+          "description": "Get the Spot trading-day ticker (open/close/high/low/volume by UTC day). Omit symbol for all symbols.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "timeZone": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "FULL",
+                  "MINI"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_account",
+          "description": "Get the Spot account: balances (free/locked), commissions, permissions (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_my_trades",
+          "description": "Get the Spot account trade list (filled trades) for a symbol with optional time range (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "orderId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "fromId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_my_prevented_matches",
+          "description": "Get Spot orders that were expired by the self-trade-prevention (STP) mechanism (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "preventedMatchId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "orderId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "limit": {
+                "default": 500,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_account_commission",
+          "description": "Get the Spot account commission rates for a symbol (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_rate_limit_order",
+          "description": "Query the current Spot order rate limit usage (signed).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_new_order",
+          "description": "Place a new Spot order. Types: LIMIT, MARKET, LIMIT_MAKER, STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, TAKE_PROFIT_LIMIT. For MARKET orders use quantity OR quoteOrderQty. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "side": {
+                "type": "string",
+                "enum": [
+                  "BUY",
+                  "SELL"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "LIMIT",
+                  "MARKET",
+                  "LIMIT_MAKER",
+                  "STOP_LOSS",
+                  "STOP_LOSS_LIMIT",
+                  "TAKE_PROFIT",
+                  "TAKE_PROFIT_LIMIT"
+                ]
+              },
+              "quantity": {
+                "description": "Base-asset quantity; omit if using quoteOrderQty",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "quoteOrderQty": {
+                "description": "Quote-asset quantity (e.g. spend 100 USDT on a MARKET order)",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "price": {
+                "description": "Required for LIMIT / STOP_LOSS_LIMIT / TAKE_PROFIT_LIMIT",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "stopPrice": {
+                "description": "Trigger price for STOP_LOSS / TAKE_PROFIT variants",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "timeInForce": {
+                "description": "Required for LIMIT",
+                "type": "string",
+                "enum": [
+                  "GTC",
+                  "IOC",
+                  "FOK"
+                ]
+              },
+              "newClientOrderId": {
+                "type": "string"
+              },
+              "newOrderRespType": {
+                "type": "string",
+                "enum": [
+                  "ACK",
+                  "RESULT",
+                  "FULL"
+                ]
+              },
+              "icebergQty": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "selfTradePreventionMode": {
+                "type": "string",
+                "enum": [
+                  "NONE",
+                  "EXPIRE_TAKER",
+                  "EXPIRE_MAKER",
+                  "EXPIRE_BOTH"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "side",
+              "type"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_test_order",
+          "description": "Validate a Spot order without submitting it. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "side": {
+                "type": "string",
+                "enum": [
+                  "BUY",
+                  "SELL"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "LIMIT",
+                  "MARKET",
+                  "LIMIT_MAKER",
+                  "STOP_LOSS",
+                  "STOP_LOSS_LIMIT",
+                  "TAKE_PROFIT",
+                  "TAKE_PROFIT_LIMIT"
+                ]
+              },
+              "quantity": {
+                "description": "Base-asset quantity; omit if using quoteOrderQty",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "quoteOrderQty": {
+                "description": "Quote-asset quantity (e.g. spend 100 USDT on a MARKET order)",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "price": {
+                "description": "Required for LIMIT / STOP_LOSS_LIMIT / TAKE_PROFIT_LIMIT",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "stopPrice": {
+                "description": "Trigger price for STOP_LOSS / TAKE_PROFIT variants",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "timeInForce": {
+                "description": "Required for LIMIT",
+                "type": "string",
+                "enum": [
+                  "GTC",
+                  "IOC",
+                  "FOK"
+                ]
+              },
+              "newClientOrderId": {
+                "type": "string"
+              },
+              "newOrderRespType": {
+                "type": "string",
+                "enum": [
+                  "ACK",
+                  "RESULT",
+                  "FULL"
+                ]
+              },
+              "icebergQty": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "selfTradePreventionMode": {
+                "type": "string",
+                "enum": [
+                  "NONE",
+                  "EXPIRE_TAKER",
+                  "EXPIRE_MAKER",
+                  "EXPIRE_BOTH"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "side",
+              "type"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_get_order",
+          "description": "Query a specific Spot order by orderId or client order id. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "orderId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "origClientOrderId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_cancel_order",
+          "description": "Cancel a specific open Spot order by orderId or client order id. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "orderId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "origClientOrderId": {
+                "type": "string"
+              },
+              "newClientOrderId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_open_orders",
+          "description": "Get all current open Spot orders, for one symbol or all symbols. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_all_orders",
+          "description": "Get historical Spot orders for a symbol with optional time range. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "orderId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "limit": {
+                "default": 100,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_cancel_open_orders",
+          "description": "Cancel all open Spot orders for a symbol. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_cancel_replace_order",
+          "description": "Cancel an existing Spot order and place a new one on the same symbol (cancel-replace). Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "side": {
+                "type": "string",
+                "enum": [
+                  "BUY",
+                  "SELL"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "LIMIT",
+                  "MARKET",
+                  "STOP_LOSS",
+                  "STOP_LOSS_LIMIT",
+                  "TAKE_PROFIT",
+                  "TAKE_PROFIT_LIMIT"
+                ]
+              },
+              "cancelReplaceMode": {
+                "default": "STOP_ON_FAILURE",
+                "type": "string",
+                "enum": [
+                  "STOP_ON_FAILURE",
+                  "ALLOW_FAILURE"
+                ]
+              },
+              "cancelOrderId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "cancelOrigClientOrderId": {
+                "type": "string"
+              },
+              "cancelNewClientOrderId": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "price": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "timeInForce": {
+                "type": "string",
+                "enum": [
+                  "GTC",
+                  "IOC",
+                  "FOK"
+                ]
+              },
+              "newClientOrderId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "symbol",
+              "side",
+              "type",
+              "cancelReplaceMode"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_new_oco_order",
+          "description": "Place a new Spot OCO (one-cancels-other) order: a stop-loss limit + a limit-maker take-profit. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "side": {
+                "type": "string",
+                "enum": [
+                  "BUY",
+                  "SELL"
+                ]
+              },
+              "quantity": {
+                "description": "Total base-asset quantity for both legs",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "price": {
+                "description": "Limit (take-profit) price",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "stopPrice": {
+                "description": "Stop-loss trigger price",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "stopLimitPrice": {
+                "description": "Stop-loss limit price (defaults to stopPrice)",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "stopLimitTimeInForce": {
+                "type": "string",
+                "enum": [
+                  "GTC",
+                  "IOC",
+                  "FOK"
+                ]
+              },
+              "listClientOrderId": {
+                "type": "string"
+              },
+              "limitClientOrderId": {
+                "type": "string"
+              },
+              "stopClientOrderId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "symbol",
+              "side",
+              "quantity",
+              "price",
+              "stopPrice"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_cancel_oco_order",
+          "description": "Cancel an entire Spot OCO order list by orderListId or listClientOrderId. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "orderListId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "listClientOrderId": {
+                "type": "string"
+              },
+              "newClientOrderId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_get_oco_order",
+          "description": "Query a Spot OCO order list by orderListId or listClientOrderId. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "orderListId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "origClientOrderId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_open_oco_orders",
+          "description": "Get all current open Spot OCO order lists. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_all_oco_orders",
+          "description": "Get historical Spot OCO order lists for a symbol with optional time range. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              },
+              "fromId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "startTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "endTime": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "limit": {
+                "default": 100,
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "symbol",
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_cancel_open_oco_orders",
+          "description": "Cancel all open Spot OCO order lists for a symbol. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spot pair, e.g. BTCUSDT"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_ws_start_user_stream",
+          "description": "Start the Spot user data stream: creates a listenKey, connects the private WebSocket, and begins keep-alive. Emits executionReport, outboundAccountPosition, balanceUpdate, listStatus.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "spot_ws_stop_user_stream",
+          "description": "Stop the Spot user data stream: closes the private WebSocket and invalidates the listenKey.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    "derived": {
+      "product": "usdm",
+      "count": 7,
+      "tools": [
+        {
+          "name": "futures_symbol_rules",
+          "description": "Get the tradeable rules for a symbol in one call: tick size, step size, min/max quantity, market-order lot bounds and minimum notional, flattened out of exchangeInfo filters. Call this before sizing or pricing any order.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "refresh": {
+                "default": false,
+                "description": "Bypass the 60s cache",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "symbol",
+              "refresh"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_quantize",
+          "description": "Round a price to the symbol's tick size and a quantity to its step size, returning exchange-ready strings. Use this instead of rounding numbers yourself — Binance rejects off-tick prices (-1111).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "price": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "quantity": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "marketOrder": {
+                "default": false,
+                "description": "Use MARKET_LOT_SIZE bounds instead of LOT_SIZE",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "symbol",
+              "marketOrder"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_size_position",
+          "description": "Convert a risk budget into an exchange-ready order quantity. Given a stop price and either riskAmount (quote currency) or riskPct (percent of available balance), returns the quantity rounded down to the symbol step size, plus the notional, required margin and every constraint that failed (min notional, lot bounds, wrong-side stop). Never increases risk to satisfy a minimum — it reports instead.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "side": {
+                "type": "string",
+                "enum": [
+                  "BUY",
+                  "SELL"
+                ]
+              },
+              "stopPrice": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "Protective stop price"
+              },
+              "entryPrice": {
+                "description": "Defaults to current mark price",
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "riskAmount": {
+                "description": "Quote-currency amount to risk, e.g. 50 USDT",
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "riskPct": {
+                "description": "Percent of available balance to risk (signed call)",
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 100
+              },
+              "leverage": {
+                "description": "Used to report required margin",
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 125
+              },
+              "marketOrder": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "symbol",
+              "side",
+              "stopPrice",
+              "marketOrder"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_close_position",
+          "description": "Flatten an open position with a reduce-only market order. Reads the current position, derives the closing side from its sign, and automatically uses reduceOnly in one-way mode vs positionSide in hedge mode (Binance rejects the wrong one). Set dryRun to preview the order without sending it. Signed, destructive.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "positionSide": {
+                "description": "Required when hedge mode has both sides open",
+                "type": "string",
+                "enum": [
+                  "BOTH",
+                  "LONG",
+                  "SHORT"
+                ]
+              },
+              "portion": {
+                "default": 1,
+                "description": "Fraction of the position to close, e.g. 0.5 for half",
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1
+              },
+              "dryRun": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "symbol",
+              "portion",
+              "dryRun"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_market_snapshot",
+          "description": "One-call market picture for a symbol: 24h stats, mark/index price with funding, open interest and long/short positioning. Replaces four separate primitive calls; individual feeds degrade to an error field rather than failing the whole snapshot.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "period": {
+                "default": "1h",
+                "type": "string",
+                "enum": [
+                  "5m",
+                  "15m",
+                  "30m",
+                  "1h",
+                  "2h",
+                  "4h",
+                  "6h",
+                  "12h",
+                  "1d"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "period"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_account_overview",
+          "description": "One-call account picture: funded balances, open positions only (zero-size entries filtered out), working orders, and totals for unrealized PnL and gross notional. Signed.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_place_bracket_order",
+          "description": "Place an entry order together with its protective stop-loss and optional take-profit, with all prices quantized to the symbol tick. Returns each leg separately; if a protective leg fails the response is flagged protectionComplete=false and the entry is NOT auto-cancelled (it may already have filled). Signed, destructive.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "side": {
+                "type": "string",
+                "enum": [
+                  "BUY",
+                  "SELL"
+                ]
+              },
+              "quantity": {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "entryPrice": {
+                "description": "Omit for a MARKET entry",
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "stopLossPrice": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "takeProfitPrice": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "positionSide": {
+                "type": "string",
+                "enum": [
+                  "BOTH",
+                  "LONG",
+                  "SHORT"
+                ]
+              },
+              "workingType": {
+                "default": "MARK_PRICE",
+                "type": "string",
+                "enum": [
+                  "MARK_PRICE",
+                  "CONTRACT_PRICE"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "side",
+              "quantity",
+              "stopLossPrice",
+              "workingType"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    "execution": {
+      "product": "usdm",
+      "count": 6,
+      "tools": [
+        {
+          "name": "execution_place_order",
+          "description": "Place an order through the execution gateway: idempotent (retry with the same intentId returns the original execution), reconciled on ambiguous failures, and routable to the live exchange or the paper simulator via `backend`. Paper orders need no API keys. MARKET and LIMIT types supported on paper.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "side": {
+                "type": "string",
+                "enum": [
+                  "BUY",
+                  "SELL"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "LIMIT",
+                  "MARKET",
+                  "STOP",
+                  "STOP_MARKET",
+                  "TAKE_PROFIT",
+                  "TAKE_PROFIT_MARKET",
+                  "TRAILING_STOP_MARKET"
+                ]
+              },
+              "quantity": {
+                "description": "Order quantity in base asset",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "price": {
+                "description": "Required for LIMIT and STOP/TAKE_PROFIT (limit-triggered) types",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "timeInForce": {
+                "type": "string",
+                "enum": [
+                  "GTC",
+                  "IOC",
+                  "FOK",
+                  "GTX"
+                ]
+              },
+              "stopPrice": {
+                "description": "Trigger price for STOP/STOP_MARKET/TAKE_PROFIT/TAKE_PROFIT_MARKET",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "reduceOnly": {
+                "description": "true = only reduces the position, never opens",
+                "type": "boolean"
+              },
+              "positionSide": {
+                "type": "string",
+                "enum": [
+                  "BOTH",
+                  "LONG",
+                  "SHORT"
+                ]
+              },
+              "newClientOrderId": {
+                "type": "string"
+              },
+              "closePosition": {
+                "description": "Close the full position on trigger (mutually exclusive with quantity)",
+                "type": "boolean"
+              },
+              "newOrderRespType": {
+                "type": "string",
+                "enum": [
+                  "ACK",
+                  "RESULT"
+                ]
+              },
+              "priceProtect": {
+                "type": "boolean"
+              },
+              "workingType": {
+                "description": "Trigger price basis; default CONTRACT_PRICE",
+                "type": "string",
+                "enum": [
+                  "MARK_PRICE",
+                  "CONTRACT_PRICE"
+                ]
+              },
+              "callbackRate": {
+                "description": "Percent callback for TRAILING_STOP_MARKET, e.g. 0.5",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "activationPrice": {
+                "description": "Activation price for TRAILING_STOP_MARKET",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "selfTradePreventionMode": {
+                "type": "string",
+                "enum": [
+                  "NONE",
+                  "EXPIRE_TAKER",
+                  "EXPIRE_MAKER",
+                  "EXPIRE_BOTH"
+                ]
+              },
+              "goodTillDate": {
+                "description": "Timestamp when a GTD order expires",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "intentId": {
+                "description": "Idempotency key. Re-submitting the same intentId returns the original execution instead of placing a second order. Recommended for any retry loop.",
+                "type": "string",
+                "minLength": 1
+              },
+              "backend": {
+                "description": "Execution backend for this call; default is the gateway's default backend",
+                "type": "string",
+                "enum": [
+                  "live",
+                  "paper"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "side",
+              "type",
+              "quantity"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "execution_cancel_order",
+          "description": "Cancel an order idempotently by exchange orderId, clientOrderId, or the intentId from execution_place_order. Cancels of already-gone orders resolve to a terminal CANCELED execution (never a thrown -2011).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "orderId": {
+                "description": "Exchange order id",
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "origClientOrderId": {
+                "description": "Client order id (the reconciliation key)",
+                "type": "string"
+              },
+              "intentId": {
+                "description": "Idempotency key. Re-submitting the same intentId returns the original execution instead of placing a second order. Recommended for any retry loop.",
+                "type": "string",
+                "minLength": 1
+              },
+              "backend": {
+                "description": "Execution backend for this call; default is the gateway's default backend",
+                "type": "string",
+                "enum": [
+                  "live",
+                  "paper"
+                ]
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "execution_get_order",
+          "description": "Fetch an execution from the ledger by its intentId. When `backend` is omitted both ledgers are searched (paper first), so callers do not need to remember where an intent ran.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "intentId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "backend": {
+                "description": "Execution backend for this call; default is the gateway's default backend",
+                "type": "string",
+                "enum": [
+                  "live",
+                  "paper"
+                ]
+              }
+            },
+            "required": [
+              "intentId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "execution_list_orders",
+          "description": "List the execution ledger (most recent first) for a backend. Each entry carries status, fills, and reconciliation state. Paper and live ledgers are independent.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "backend": {
+                "description": "Execution backend for this call; default is the gateway's default backend",
+                "type": "string",
+                "enum": [
+                  "live",
+                  "paper"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "execution_reconcile_order",
+          "description": "Force a reconciliation pass for an intent whose outcome is unknown (e.g. after a timeout). Recovers the true state from the exchange (live) or simulator (paper) instead of guessing.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "intentId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "backend": {
+                "description": "Execution backend for this call; default is the gateway's default backend",
+                "type": "string",
+                "enum": [
+                  "live",
+                  "paper"
+                ]
+              }
+            },
+            "required": [
+              "intentId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "execution_status",
+          "description": "Snapshot of the execution environment: default backend, risk-gateway state (when a trading policy is configured), and the paper simulator account (balance, positions, unrealized PnL). Read-only, never places orders.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    "ws": {
+      "product": "usdm",
+      "count": 14,
+      "tools": [
+        {
+          "name": "futures_ws_subscribe",
+          "description": "Subscribe to real-time market data streams. Topic format: <symbol>@<stream>, e.g. btcusdt@aggTrade, btcusdt@kline_1m, btcusdt@depth20, btcusdt@markPrice@1s, btcusdt@bookTicker, btcusdt@ticker, btcusdt@miniTicker, btcusdt@forceOrder, or all-market topics !ticker@arr, !bookTicker, !markPrice@arr, !forceOrder@arr, !miniTicker@arr. Multiple topics can be passed at once.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "topics": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": "Stream topics, e.g. [\"btcusdt@aggTrade\", \"btcusdt@kline_1m\"]"
+              }
+            },
+            "required": [
+              "topics"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ws_unsubscribe",
+          "description": "Unsubscribe from previously subscribed market data streams.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "topics": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "topics"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ws_subscriptions",
+          "description": "List the currently subscribed WebSocket market streams for this client.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ws_events",
+          "description": "Read the buffered real-time payloads received since the last read for the subscribed streams (aggregate trades, klines, depth deltas, mark price, book tickers, tickers, force orders). Payloads are parsed; depth deltas must be applied to a snapshot from futures_order_book.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "limit": {
+                "default": 50,
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              }
+            },
+            "required": [
+              "limit"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ws_clear_events",
+          "description": "Clear the buffered WebSocket events so the next read only returns new payloads.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ws_start_user_stream",
+          "description": "Start the user data stream: creates a listenKey, connects the private WebSocket, and begins a 30-minute keep-alive. Emits private events (ACCOUNT_UPDATE, ORDER_TRADE_UPDATE, MARGIN_CALL, ACCOUNT_CONFIG_UPDATE, listenKeyExpired) that the application can consume from the client.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ws_stop_user_stream",
+          "description": "Stop the user data stream: closes the private WebSocket and invalidates the listenKey.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ws_api_order_status",
+          "description": "Query an order via the signed WebSocket API (order.status) — lower-latency alternative to futures_get_order.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "orderId": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "origClientOrderId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ws_api_account_status",
+          "description": "Get account info via the signed WebSocket API (account.status).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ws_api_account_position",
+          "description": "Get current positions via the signed WebSocket API (account.position).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ws_api_user_data_stream_start",
+          "description": "Create a listenKey via the signed WebSocket API (userDataStream.start) — no REST call required.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ws_api_user_data_stream_stop",
+          "description": "Invalidate a listenKey via the signed WebSocket API (userDataStream.stop).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "listenKey": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "listenKey"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ws_api_ticker_price",
+          "description": "Get latest price via the unsigned WebSocket API (ticker.price); omit symbol for all symbols.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "futures_ws_api_order_book",
+          "description": "Get order-book depth via the unsigned WebSocket API (depth).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "limit": {
+                "type": "string",
+                "enum": [
+                  "5",
+                  "10",
+                  "20",
+                  "50",
+                  "100",
+                  "500",
+                  "1000"
+                ]
+              }
+            },
+            "required": [
+              "symbol"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    "paper": {
+      "product": null,
+      "count": 7,
+      "tools": [
+        {
+          "name": "paper_init",
+          "description": "Initialize paper-trading state (reset balances, positions, history). No API keys required.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "balance": {
+                "default": 10000,
+                "description": "Starting USDT balance",
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "balance"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "paper_balance",
+          "description": "Get current paper-trading balance and open-position equity (uses live market prices if an open position exists). No API keys required.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "paper_open_position",
+          "description": "Open an in-memory paper position at the live ticker price (or a fixed price). No API keys required.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "description": "USD-M pair, e.g. BTCUSDT"
+              },
+              "side": {
+                "type": "string",
+                "enum": [
+                  "LONG",
+                  "SHORT"
+                ]
+              },
+              "quantity": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "price": {
+                "description": "If omitted, uses live ticker price",
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "symbol",
+              "side",
+              "quantity"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "paper_close_position",
+          "description": "Close a paper position by id (or symbol) and realize PnL at the live/last price.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "Position id from paper_open_position",
+                "type": "string"
+              },
+              "symbol": {
+                "description": "Close the position for this symbol",
+                "type": "string",
+                "minLength": 1
+              },
+              "price": {
+                "description": "If omitted, uses live ticker price",
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "paper_positions",
+          "description": "List open paper positions with live unrealized PnL (marked to market).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "paper_history",
+          "description": "List paper-trading history of open/close events with realized PnL.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "paper_summary",
+          "description": "Summarize paper-trading state: balance, open positions, trade count.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          }
+        }
+      ]
+    }
+  }
+}

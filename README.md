@@ -506,9 +506,16 @@ everything to a logger with `forwardEventsToLogger(bus, logger)`.
   generator — the registry carries no parameter/response schema to safely generate a tool's
   `inputSchema`/handler from, so tools stay hand-authored. See the script's header for exactly
   what the heuristic does and doesn't catch.
+- **`contracts/schema-catalog.json`** — JSON Schema for every tool's request parameters
+  (all 159, across `market`/`account`/`trading`/`spot`/`derived`/`execution`/`ws`/`paper`),
+  generated straight from each tool's own Zod `inputSchema` via `npm run schema:generate` —
+  exact, not curated, and CI-validated (`test/contracts/schema-catalog.test.ts`) against the
+  live toolkit so it can't drift. Deliberately scoped to tool *inputs*: a response schema per
+  registry endpoint would need hand-curating ~220 associations with no mechanical way to keep
+  them honest (see the generator script's header), so it isn't attempted.
 - Regenerate everything from the registry with `npm run docs:generate` (the generator
   cross-checks the registry against the actual `http.<verb>()` calls in `src/resources`),
-  `npm run contracts:generate`, and `npm run tools:coverage`.
+  `npm run contracts:generate`, `npm run tools:coverage`, and `npm run schema:generate`.
 - `docs/architecture/v3-foundation.md` — the v3 platform architecture and migration plan.
 - `docs/architecture/v3-websocket.md` — the v3 WebSocket platform design (milestone 2).
 - `docs/architecture/v3-execution.md` — the v3 execution platform design (milestone 3).
