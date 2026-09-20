@@ -506,13 +506,15 @@ everything to a logger with `forwardEventsToLogger(bus, logger)`.
   generator — the registry carries no parameter/response schema to safely generate a tool's
   `inputSchema`/handler from, so tools stay hand-authored. See the script's header for exactly
   what the heuristic does and doesn't catch.
-- **`contracts/schema-catalog.json`** — JSON Schema for every tool's request parameters
+- **`contracts/schema-catalog.json`** — JSON Schema + MCP `ToolAnnotations` for every tool
   (all 159, across `market`/`account`/`trading`/`spot`/`derived`/`execution`/`ws`/`paper`),
-  generated straight from each tool's own Zod `inputSchema` via `npm run schema:generate` —
-  exact, not curated, and CI-validated (`test/contracts/schema-catalog.test.ts`) against the
-  live toolkit so it can't drift. Deliberately scoped to tool *inputs*: a response schema per
-  registry endpoint would need hand-curating ~220 associations with no mechanical way to keep
-  them honest (see the generator script's header), so it isn't attempted.
+  generated via `npm run schema:generate` — the input schema straight from each tool's own Zod
+  schema (exact, not curated), the annotations from `src/tools/annotations.ts` (hand-classified
+  per tool, see [Tool risk annotations](#llm-tools--mcp) above). CI-validated
+  (`test/contracts/schema-catalog.test.ts`) against the live toolkit so neither can drift.
+  Deliberately scoped to tool *inputs*: a response schema per registry endpoint would need
+  hand-curating ~220 associations with no mechanical way to keep them honest (see the generator
+  script's header), so it isn't attempted.
 - Regenerate everything from the registry with `npm run docs:generate` (the generator
   cross-checks the registry against the actual `http.<verb>()` calls in `src/resources`),
   `npm run contracts:generate`, `npm run tools:coverage`, and `npm run schema:generate`.
@@ -629,6 +631,16 @@ const fill = await call('execution_place_order', {
   `mcp-config/local-dev.json` (runs `npx tsx src/mcp/index.ts` directly).
   `createBinanceMcpServer(client, { executionBackend: 'paper' })` builds a paper-mode server —
   every order tool routes through the simulator, safe to expose to untrusted hosts.
+- **Tool risk annotations**: every tool carries the standard MCP `ToolAnnotations`
+  (`readOnlyHint`/`destructiveHint`/`idempotentHint`/`openWorldHint`) so any conformant MCP host
+  can decide whether to prompt before calling it, without guessing from the tool's name — e.g.
+  `futures_test_order` is `readOnlyHint: true` (Binance's dedicated validation-only endpoint,
+  despite being a POST), `execution_place_order` is `idempotentHint: true` (the
+  `ExecutionGateway`'s real guarantee) where its raw-REST sibling `futures_new_order` is not,
+  and every `paper_*` tool is `openWorldHint: false` (local simulator, never the real exchange).
+  Classified per tool — by reading its handler, not inferring from its name — in
+  `src/tools/annotations.ts`; `createFuturesToolkit()` attaches them automatically, so
+  `toolkitToFormats(tk).mcp` and the live MCP server always agree.
 - **Agent skills**: Markdown skills under `skills/` — futures trading / market-data / algo /
   portfolio-margin, plus spot trading / market-data — for Skills-Hub-style agents.
 

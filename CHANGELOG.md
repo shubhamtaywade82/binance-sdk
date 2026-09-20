@@ -7,6 +7,36 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- **Tool risk annotations (MCP `ToolAnnotations`)** — every one of the 159
+  LLM/agent tools now carries `readOnlyHint`/`destructiveHint`/
+  `idempotentHint`/`openWorldHint`, the standard MCP vocabulary
+  (https://modelcontextprotocol.io) rather than an invented risk scale, so
+  any conformant MCP host can decide whether to prompt before calling a
+  tool without inferring it from the tool's name. Closes the gap an
+  earlier review named directly: "an MCP host can't currently distinguish
+  'read balance' from 'place order' except by tool name."
+  - `src/tools/annotations.ts` — every one of the 159 classifications was
+    assigned by reading that tool's actual handler, not its name; verified
+    159/159 tools have an explicit entry (none silently hit the fallback)
+    before this shipped. A few distinctions worth having gotten right:
+    `futures_test_order`/`spot_test_order` are `readOnlyHint: true` despite
+    being POSTs (Binance's dedicated validation-only endpoint never places
+    anything); `execution_place_order`/`execution_cancel_order` are
+    `idempotentHint: true` (the `ExecutionGateway`'s real guarantee) where
+    their raw-REST siblings `futures_new_order`/`futures_cancel_order` are
+    not; every `paper_*` tool is `openWorldHint: false` (local simulator,
+    never the real exchange, even though a couple of them read a live
+    ticker price to mark the simulated position).
+  - `createFuturesToolkit()` attaches annotations to every tool
+    automatically; `src/mcp/server.ts`'s `createBinanceMcpServer()` now
+    passes them through to `registerTool()`'s `annotations` field, so
+    they're live for any MCP host, not just documentation.
+  - `contracts/schema-catalog.json` extended with each tool's annotations
+    alongside its input schema (both generated from the same live toolkit,
+    so they can't disagree); `test/contracts/schema-catalog.test.ts` and
+    the new `test/tools/annotations.test.ts` both verify the classification
+    end to end.
+
 - **`contracts/schema-catalog.json` + `npm run schema:generate`** — the
   long-flagged gap ("Zod schemas exist per-resource but aren't indexed
   anywhere queryable") closed for the part that's mechanically safe to

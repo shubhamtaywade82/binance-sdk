@@ -1,6 +1,7 @@
 import type { BinanceClient } from '../client/BinanceClient.js';
 import type { ExecutionBackend } from '../execution/Gateway.js';
 import type { PaperTradingOptions } from '../paper/PaperTradingEngine.js';
+import { annotateTools, classifyToolAnnotations } from './annotations.js';
 import { accountTools } from './account.tools.js';
 import { derivedTools } from './derived.tools.js';
 import { executionTools } from './execution.tools.js';
@@ -12,8 +13,9 @@ import { wsTools } from './ws.tools.js';
 import type { ToolDefinition } from './types.js';
 import { toToolList } from './types.js';
 
-export type { ToolDefinition, ToolContext } from './types.js';
+export type { ToolDefinition, ToolContext, ToolAnnotations } from './types.js';
 export { toJsonSchema, toOpenAITool, toAnthropicTool, toMCPTool, toToolList, textResult } from './types.js';
+export { classifyToolAnnotations, annotateTools } from './annotations.js';
 export { marketDataTools } from './market-data.tools.js';
 export { accountTools } from './account.tools.js';
 export { tradingTools } from './trading.tools.js';
@@ -66,9 +68,11 @@ export function createFuturesToolkit(client: BinanceClient, options: FuturesTool
     defaultBackend: options.executionBackend,
   });
   const execution = executionTools(gateway, client);
+  const tools = [...market, ...account, ...trading, ...spot, ...ws, ...derived, ...paper, ...execution];
+  annotateTools(tools); // mutates the shared ToolDefinition objects, so every per-category array below sees it too
   return {
     client,
-    tools: [...market, ...account, ...trading, ...spot, ...ws, ...derived, ...paper, ...execution],
+    tools,
     market,
     account,
     trading,

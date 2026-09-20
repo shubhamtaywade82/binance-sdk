@@ -2,7 +2,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { BinanceClient } from '../../src/client/BinanceClient.js';
-import { createFuturesToolkit, toJsonSchema, type FuturesToolkit } from '../../src/tools/index.js';
+import {
+  createFuturesToolkit,
+  toJsonSchema,
+  type FuturesToolkit,
+  type ToolAnnotations,
+} from '../../src/tools/index.js';
 
 const ROOT = join(import.meta.dirname, '..', '..');
 const CONTRACTS = join(ROOT, 'contracts');
@@ -12,6 +17,7 @@ interface CatalogTool {
   name: string;
   description: string;
   inputSchema: Record<string, unknown>;
+  annotations: ToolAnnotations | null;
 }
 
 interface Catalog {
@@ -50,6 +56,26 @@ describe('schema-catalog.json (tool request schemas)', () => {
       for (let i = 0; i < live.length; i++) {
         expect(cataloged[i].description).toBe(live[i].description);
         expect(cataloged[i].inputSchema).toEqual(toJsonSchema(live[i].inputSchema));
+      }
+    }
+  });
+
+  it('every cataloged annotations object matches the live tool\'s (no drift between catalog and MCP server)', () => {
+    const catalog = loadCatalog();
+    for (const category of CATEGORIES) {
+      const live = toolkit[category];
+      const cataloged = catalog.categories[category].tools;
+      for (let i = 0; i < live.length; i++) {
+        expect(cataloged[i].annotations).toEqual(live[i].annotations ?? null);
+      }
+    }
+  });
+
+  it('every tool has an explicit annotations object -- none fell through as null', () => {
+    const catalog = loadCatalog();
+    for (const category of Object.values(catalog.categories)) {
+      for (const tool of category.tools) {
+        expect(tool.annotations, `${tool.name} has no annotations`).not.toBeNull();
       }
     }
   });

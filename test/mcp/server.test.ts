@@ -10,14 +10,18 @@ vi.mock('@modelcontextprotocol/sdk/server/mcp.js', () => {
   class FakeMcpServer {
     name: string;
     version: string;
-    tools: { name: string; description: string; inputSchema: unknown }[] = [];
+    tools: { name: string; description: string; inputSchema: unknown; annotations: unknown }[] = [];
     resources: { name: string; uri: string; description: string }[] = [];
     constructor(opts: { name: string; version: string }) {
       this.name = opts.name;
       this.version = opts.version;
     }
-    registerTool(name: string, meta: { description: string; inputSchema: unknown }, _handler: unknown) {
-      this.tools.push({ name, description: meta.description, inputSchema: meta.inputSchema });
+    registerTool(
+      name: string,
+      meta: { description: string; inputSchema: unknown; annotations?: unknown },
+      _handler: unknown,
+    ) {
+      this.tools.push({ name, description: meta.description, inputSchema: meta.inputSchema, annotations: meta.annotations });
     }
     registerResource(name: string, uri: string, meta: { description: string }) {
       this.resources.push({ name, uri, description: meta.description });
@@ -29,9 +33,21 @@ vi.mock('@modelcontextprotocol/sdk/server/mcp.js', () => {
 vi.mock('../../src/tools/index.js', () => ({
   createFuturesToolkit: vi.fn(() => ({
     tools: [
-      { name: 'market.klines', description: 'klines', inputSchema: { type: 'object', properties: {} }, handler: async () => 'k' },
+      {
+        name: 'market.klines',
+        description: 'klines',
+        inputSchema: { type: 'object', properties: {} },
+        handler: async () => 'k',
+        annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+      },
       { name: 'account.balance', description: 'balance', inputSchema: { type: 'object', properties: {} }, handler: async () => 'b' },
-      { name: 'execution.place_order', description: 'place order', inputSchema: { type: 'object', properties: {} }, handler: async () => 'p' },
+      {
+        name: 'execution.place_order',
+        description: 'place order',
+        inputSchema: { type: 'object', properties: {} },
+        handler: async () => 'p',
+        annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
+      },
     ],
   })),
 }));
@@ -64,6 +80,26 @@ describe('createBinanceMcpServer', () => {
     ]);
     expect(tools.every((t) => typeof t.description === 'string')).toBe(true);
     expect(tools.every((t) => t.inputSchema !== undefined)).toBe(true);
+  });
+
+  it('threads each tool\'s annotations through to registerTool (MCP ToolAnnotations)', () => {
+    const server = createBinanceMcpServer(fakeClient());
+    const tools = (server as unknown as { tools: { name: string; annotations: unknown }[] }).tools;
+    const byName = Object.fromEntries(tools.map((t) => [t.name, t.annotations]));
+    expect(byName['market.klines']).toEqual({
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    });
+    expect(byName['execution.place_order']).toEqual({
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
+    });
+    // A tool with no annotations attached still registers fine (undefined, not an error).
+    expect(byName['account.balance']).toBeUndefined();
   });
 
   it('registers the futures-symbols, futures-premium-index and spot-symbols resources', () => {

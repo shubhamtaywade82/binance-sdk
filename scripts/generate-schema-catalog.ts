@@ -25,6 +25,13 @@
  * guess. All 159 tools converted cleanly through `z.toJSONSchema` before
  * this script was written; if a future tool's schema doesn't, this script
  * throws rather than silently emitting a bad catalog entry.
+ *
+ * Each entry also carries `annotations` — the standard MCP `ToolAnnotations`
+ * (readOnlyHint/destructiveHint/idempotentHint/openWorldHint) assigned in
+ * `src/tools/annotations.ts` by reading every tool's actual handler, not
+ * its name. `createFuturesToolkit()` attaches these to every tool before
+ * this script ever sees them, so the catalog and the live MCP server
+ * (`src/mcp/server.ts`) can never disagree about a tool's classification.
  */
 
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -64,6 +71,7 @@ function schemaFor(tool: ToolDefinition): Record<string, unknown> {
     name: tool.name,
     description: tool.description,
     inputSchema: toJsonSchema(tool.inputSchema),
+    annotations: tool.annotations ?? null,
   };
 }
 
@@ -88,10 +96,13 @@ const catalog = {
   catalogVersion: 1,
   generatedAt: new Date().toISOString(),
   description:
-    "JSON Schema for every LLM/agent tool's request parameters (src/tools/*.tools.ts via " +
+    "JSON Schema + MCP ToolAnnotations for every LLM/agent tool (src/tools/*.tools.ts via " +
     "createFuturesToolkit()). Scope: tool inputs only, not a response schema per registry " +
     "endpoint -- see this file's generator script header for why that's a separate, harder " +
-    'problem. Each schema is generated directly from its own Zod inputSchema (zero hand-curation).',
+    'problem. inputSchema is generated directly from each tool\'s own Zod schema (zero ' +
+    'hand-curation); annotations are hand-classified per tool in src/tools/annotations.ts ' +
+    '(readOnlyHint/destructiveHint/idempotentHint/openWorldHint) and attached before this ' +
+    'script runs, so this file and the live MCP server can never disagree.',
   totalTools: toolkit.tools.length,
   categories,
 };

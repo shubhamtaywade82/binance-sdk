@@ -13,9 +13,13 @@ export function createBinanceMcpServer(client: BinanceClient, options: FuturesTo
   const toolkit = createFuturesToolkit(client, options);
 
   toolkit.tools.forEach((tool) => {
-    server.registerTool(tool.name, { description: tool.description, inputSchema: tool.inputSchema }, async (args) => ({
-      content: [{ type: 'text', text: String(await tool.handler(args, { env: 'live', isSigned: true })) }],
-    }));
+    server.registerTool(
+      tool.name,
+      { description: tool.description, inputSchema: tool.inputSchema, annotations: tool.annotations },
+      async (args) => ({
+        content: [{ type: 'text', text: String(await tool.handler(args, { env: 'live', isSigned: true })) }],
+      }),
+    );
   });
 
   registerResources(server, client);
