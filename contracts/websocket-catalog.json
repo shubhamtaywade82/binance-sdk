@@ -1,6 +1,6 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-09-09T03:27:17.394Z",
+  "generatedAt": "2026-09-20T07:56:59.344Z",
   "description": "WebSocket platform contract: stream families with documented Binance connection limits, endpoints per environment, and the SDK renewal/liveness policy. Derived from src/ws/platform/types.ts (WS_FAMILY_LIMITS / WS_PLATFORM_DEFAULTS) and src/client/endpoints.ts.",
   "connectionLimits": {
     "lifetimeHours": 24,

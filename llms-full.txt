@@ -92,7 +92,7 @@
 - GET /fapi/v1/income (SIGNED) → futures.account.incomeHistory
 - GET /fapi/v1/userTrades (SIGNED) → futures.account.userTrades
 - GET /fapi/v1/leverageBracket (SIGNED) → futures.account.leverageBrackets
-- GET /fapi/v1/commissionRate (SIGNED) → futures.account.getCommissionRate
+- GET /fapi/v1/commissionRate (SIGNED) → futures.account.commissionRate
 - GET /fapi/v1/multiAssetsMargin (SIGNED) → futures.account.multiAssetsMargin
 - POST /fapi/v1/multiAssetsMargin (SIGNED) → futures.account.setMultiAssetsMargin
 - GET /fapi/v1/feeBurn (SIGNED) → futures.account.feeBurnStatus
@@ -100,10 +100,10 @@
 - GET /fapi/v1/positionSide/dual (SIGNED) → futures.account.positionMode
 - POST /fapi/v1/positionSide/dual (SIGNED) → futures.account.setPositionMode
 - GET /fapi/v1/apiTradingStatus (SIGNED) → futures.account.apiTradingStatus
-- GET /fapi/v1/positionMargin/history (SIGNED) → futures.account.getPositionMarginHistory
+- GET /fapi/v1/positionMargin/history (SIGNED) → futures.account.positionMarginHistory
 - GET /fapi/v1/rateLimit/order (SIGNED) → futures.account.rateLimitOrder
-- GET /fapi/v1/accountConfig (SIGNED) → futures.account.getAccountConfig
-- GET /fapi/v1/pmAccountInfo (SIGNED) → futures.account.getPmAccountInfo
+- GET /fapi/v1/accountConfig (SIGNED) → futures.account.accountConfig
+- GET /fapi/v1/pmAccountInfo (SIGNED) → futures.account.pmAccountInfo
 - GET /fapi/v1/income/asyn (SIGNED) → futures.account.requestIncomeDownload
 - GET /fapi/v1/income/asyn/id (SIGNED) → futures.account.getIncomeDownloadStatus
 - GET /fapi/v1/order/asyn (SIGNED) → futures.account.requestOrderDownload

@@ -7,6 +7,33 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- **`contracts/tool-coverage.json` + `npm run tools:coverage`** — the
+  3.0.0 CHANGELOG's own follow-up ("catalog-driven tool generation")
+  turned out not to be safely achievable in the strong sense: the
+  registry carries product/operation/method/path/security/weight, but no
+  parameter or response schema, so there's nothing to generate a tool's
+  `inputSchema`/handler from without inventing one. What *is* achievable,
+  and what actually closes the drift risk the follow-up named, is a
+  coverage cross-check — the same technique `generate-endpoint-map.ts`
+  already uses one layer down (registry vs. `http.<verb>()` call sites),
+  applied to the tool layer: does every registry endpoint have a matching
+  `.methodName(` call site in the one product-scoped tool file it should?
+  91.1% coverage across the two products with a tool surface at all
+  (Spot, USDⓈ-M); the report also surfaces, for the first time, that
+  COIN-M/Margin/Wallet/Sub-account have **no tool surface whatsoever**.
+  See `scripts/check-tool-coverage.ts`'s header for exactly what the
+  heuristic catches and doesn't.
+- Fixed four stale `implementedBy` entries in
+  `src/registry/usdm.endpoints.ts` (`FuturesAccount`), found while
+  building the coverage check above: `getCommissionRate` /
+  `getPositionMarginHistory` / `getAccountConfig` / `getPmAccountInfo`
+  named methods the resource class doesn't have (the real names —
+  `commissionRate`, `positionMarginHistory`, `accountConfig`,
+  `pmAccountInfo` — carry no `get` prefix). Silently wrong in generated
+  docs and `llms.txt`; invisible to the existing HTTP-path cross-check,
+  which never looks at `implementedBy`. `contracts/`, `docs/endpoint-map/`,
+  `llms.txt` and `llms-full.txt` regenerated to pick up the fix.
+
 - **COIN-M execution platform + state engine parity with USDⓈ-M/Spot** —
   `CoinMClient` previously exposed only the raw REST/WS surface; the v3
   platform layer (`ExecutionPlatform`, `BookEngine`) was wired for

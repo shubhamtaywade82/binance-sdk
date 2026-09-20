@@ -66,6 +66,7 @@
     "typecheck": "tsc --noEmit",
     "docs:generate": "tsx scripts/generate-endpoint-map.ts",
     "contracts:generate": "tsx scripts/generate-contract-catalog.ts",
+    "tools:coverage": "tsx scripts/check-tool-coverage.ts",
     "smoke": "tsx scripts/smoke-test.ts",
     "smoke:testnet": "tsx scripts/testnet-smoke.ts",
     "mcp": "tsx src/mcp/index.ts",

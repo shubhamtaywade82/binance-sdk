@@ -500,9 +500,15 @@ everything to a logger with `forwardEventsToLogger(bus, logger)`.
   `contractFor(baseURL, method, path)` — registry entries with normalized security schemes
   (`none`/`apiKey`/`signature`) and declared request weights; `describeContract()` renders a
   one-line description for logs and agents.
+- **`contracts/tool-coverage.json`** — which registry endpoints have a matching tool in
+  `src/tools/*.tools.ts` (Spot/USDⓈ-M only today — COIN-M/Margin/Wallet/Sub-account have no
+  tool surface yet). Generated with `npm run tools:coverage`; a coverage *report*, not a tool
+  generator — the registry carries no parameter/response schema to safely generate a tool's
+  `inputSchema`/handler from, so tools stay hand-authored. See the script's header for exactly
+  what the heuristic does and doesn't catch.
 - Regenerate everything from the registry with `npm run docs:generate` (the generator
-  cross-checks the registry against the actual `http.<verb>()` calls in `src/resources`)
-  and `npm run contracts:generate`.
+  cross-checks the registry against the actual `http.<verb>()` calls in `src/resources`),
+  `npm run contracts:generate`, and `npm run tools:coverage`.
 - `docs/architecture/v3-foundation.md` — the v3 platform architecture and migration plan.
 - `docs/architecture/v3-websocket.md` — the v3 WebSocket platform design (milestone 2).
 - `docs/architecture/v3-execution.md` — the v3 execution platform design (milestone 3).

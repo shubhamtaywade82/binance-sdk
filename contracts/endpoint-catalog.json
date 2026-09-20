@@ -1,6 +1,6 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-09-09T03:27:17.394Z",
+  "generatedAt": "2026-09-20T07:56:59.344Z",
   "endpoints": [
     {
       "product": "spot",
@@ -880,7 +880,7 @@
       "path": "/fapi/v1/commissionRate",
       "security": "SIGNED",
       "weight": null,
-      "implementedBy": "futures.account.getCommissionRate"
+      "implementedBy": "futures.account.commissionRate"
     },
     {
       "product": "usdm",
@@ -960,7 +960,7 @@
       "path": "/fapi/v1/positionMargin/history",
       "security": "SIGNED",
       "weight": null,
-      "implementedBy": "futures.account.getPositionMarginHistory"
+      "implementedBy": "futures.account.positionMarginHistory"
     },
     {
       "product": "usdm",
@@ -980,7 +980,7 @@
       "path": "/fapi/v1/accountConfig",
       "security": "SIGNED",
       "weight": null,
-      "implementedBy": "futures.account.getAccountConfig"
+      "implementedBy": "futures.account.accountConfig"
     },
     {
       "product": "usdm",
@@ -990,7 +990,7 @@
       "path": "/fapi/v1/pmAccountInfo",
       "security": "SIGNED",
       "weight": null,
-      "implementedBy": "futures.account.getPmAccountInfo"
+      "implementedBy": "futures.account.pmAccountInfo"
     },
     {
       "product": "usdm",

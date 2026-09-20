@@ -56,7 +56,7 @@
 | `account.income` | GET | `/fapi/v1/income` | SIGNED | `futures.account.incomeHistory` |
 | `account.userTrades` | GET | `/fapi/v1/userTrades` | SIGNED | `futures.account.userTrades` |
 | `account.leverageBracket` | GET | `/fapi/v1/leverageBracket` | SIGNED | `futures.account.leverageBrackets` |
-| `account.commissionRate` | GET | `/fapi/v1/commissionRate` | SIGNED | `futures.account.getCommissionRate` |
+| `account.commissionRate` | GET | `/fapi/v1/commissionRate` | SIGNED | `futures.account.commissionRate` |
 | `account.multiAssetsMargin` | GET | `/fapi/v1/multiAssetsMargin` | SIGNED | `futures.account.multiAssetsMargin` |
 | `account.setMultiAssetsMargin` | POST | `/fapi/v1/multiAssetsMargin` | SIGNED | `futures.account.setMultiAssetsMargin` |
 | `account.feeBurn` | GET | `/fapi/v1/feeBurn` | SIGNED | `futures.account.feeBurnStatus` |
@@ -64,10 +64,10 @@
 | `account.positionMode` | GET | `/fapi/v1/positionSide/dual` | SIGNED | `futures.account.positionMode` |
 | `account.setPositionMode` | POST | `/fapi/v1/positionSide/dual` | SIGNED | `futures.account.setPositionMode` |
 | `account.apiTradingStatus` | GET | `/fapi/v1/apiTradingStatus` | SIGNED | `futures.account.apiTradingStatus` |
-| `account.positionMarginHistory` | GET | `/fapi/v1/positionMargin/history` | SIGNED | `futures.account.getPositionMarginHistory` |
+| `account.positionMarginHistory` | GET | `/fapi/v1/positionMargin/history` | SIGNED | `futures.account.positionMarginHistory` |
 | `account.orderRateLimit` | GET | `/fapi/v1/rateLimit/order` | SIGNED | `futures.account.rateLimitOrder` |
-| `account.accountConfig` | GET | `/fapi/v1/accountConfig` | SIGNED | `futures.account.getAccountConfig` |
-| `account.pmAccountInfo` | GET | `/fapi/v1/pmAccountInfo` | SIGNED | `futures.account.getPmAccountInfo` |
+| `account.accountConfig` | GET | `/fapi/v1/accountConfig` | SIGNED | `futures.account.accountConfig` |
+| `account.pmAccountInfo` | GET | `/fapi/v1/pmAccountInfo` | SIGNED | `futures.account.pmAccountInfo` |
 | `account.incomeDownloadId` | GET | `/fapi/v1/income/asyn` | SIGNED | `futures.account.requestIncomeDownload` |
 | `account.incomeDownloadStatus` | GET | `/fapi/v1/income/asyn/id` | SIGNED | `futures.account.getIncomeDownloadStatus` |
 | `account.orderDownloadId` | GET | `/fapi/v1/order/asyn` | SIGNED | `futures.account.requestOrderDownload` |

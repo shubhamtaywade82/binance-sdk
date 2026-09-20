@@ -1,0 +1,92 @@
+{
+  "catalogVersion": 1,
+  "generatedAt": "2026-09-20T07:57:39.910Z",
+  "description": "Heuristic coverage of the LLM/agent tool layer (src/tools/*.tools.ts) against the endpoint registry — see this script's header for the matching method and its limits. Not a substitute for a schema-driven tool generator.",
+  "checkedProducts": [
+    "spot",
+    "usdm"
+  ],
+  "productsWithNoToolSurface": [
+    "coinm",
+    "margin",
+    "subaccount",
+    "wallet"
+  ],
+  "totalCheckedEndpoints": 135,
+  "coveredEndpoints": 123,
+  "coveragePct": 91.1,
+  "uncovered": [
+    {
+      "product": "spot",
+      "operation": "userStream.create",
+      "method": "POST",
+      "path": "/api/v3/userDataStream"
+    },
+    {
+      "product": "spot",
+      "operation": "userStream.keepAlive",
+      "method": "PUT",
+      "path": "/api/v3/userDataStream"
+    },
+    {
+      "product": "spot",
+      "operation": "userStream.close",
+      "method": "DELETE",
+      "path": "/api/v3/userDataStream"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.lvtKlines",
+      "method": "GET",
+      "path": "/fapi/v1/lvtKlines"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.symbolConfig",
+      "method": "GET",
+      "path": "/fapi/v1/symbolConfig"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.pmExchangeInfo",
+      "method": "GET",
+      "path": "/fapi/v1/pmExchangeInfo"
+    },
+    {
+      "product": "usdm",
+      "operation": "data.delistSchedule",
+      "method": "GET",
+      "path": "/fapi/v1/delistSchedule"
+    },
+    {
+      "product": "usdm",
+      "operation": "account.positionRiskV2",
+      "method": "GET",
+      "path": "/fapi/v2/positionRisk"
+    },
+    {
+      "product": "usdm",
+      "operation": "trading.modifyBatchOrders",
+      "method": "PUT",
+      "path": "/fapi/v1/batchOrders"
+    },
+    {
+      "product": "usdm",
+      "operation": "userStream.create",
+      "method": "POST",
+      "path": "/fapi/v1/listenKey"
+    },
+    {
+      "product": "usdm",
+      "operation": "userStream.keepAlive",
+      "method": "PUT",
+      "path": "/fapi/v1/listenKey"
+    },
+    {
+      "product": "usdm",
+      "operation": "userStream.close",
+      "method": "DELETE",
+      "path": "/fapi/v1/listenKey"
+    }
+  ]
+}
