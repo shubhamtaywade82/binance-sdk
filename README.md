@@ -4,9 +4,8 @@ TypeScript SDK for Binance — **Spot, USD-M Futures, COIN-M Futures, Margin, Wa
 Sub-account**, REST + WebSocket, public market data and authenticated trading, with
 zod-validated typed responses throughout.
 
-Canonical Binance client for the `trading-workspace` `sdk/` directory (mirrors `sdk/dhanhq-ts`'s
-role for DhanHQ). Feature-parity with `binance-client-js` (REST + WS), with typed schemas, plus
-production infrastructure (header-based rate-limit tracking, server time sync, HMAC/Ed25519/RSA
+Full REST + WebSocket coverage with typed, zod-validated schemas, plus production
+infrastructure (header-based rate-limit tracking, server time sync, HMAC/Ed25519/RSA
 signing) and client-side safety guardrails for autonomous/LLM-driven callers.
 
 ## Install
