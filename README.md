@@ -414,6 +414,46 @@ Execution models compose: `SlippageModel`, `PartialFillModel`, `OrderBookModel` 
 against a real/injected book), `LatencyModel`, `CompositeModel`. Fee models implement
 `FeeModel` (`TakerMakerFeeModel` / `BinanceUsdmFeeModel`).
 
+Funding and liquidation are opt-in — omit them and positions can be held indefinitely with no
+carry cost, exactly like the legacy engine:
+
+```typescript
+import {
+  PaperTradingEngine,
+  FixedFundingModel,
+  LiveFundingModel,
+  FixedMaintenanceMarginModel,
+  BracketedMaintenanceMarginModel,
+  FuturesData,
+} from '@nemesis-oss/binance-sdk';
+
+const engine = new PaperTradingEngine({
+  initialBalance: 10_000,
+  fundingModel: new FixedFundingModel(0.0001),        // or LiveFundingModel(new FuturesData())
+  liquidationModel: new FixedMaintenanceMarginModel(0.005), // or BracketedMaintenanceMarginModel([...])
+});
+
+// Settle funding for every open position that has crossed an 8h boundary
+// (00:00/08:00/16:00 UTC) since it last settled — call this on your own poll loop:
+const settlements = await engine.applyFunding();
+
+// updatePositions() marks to market and then runs liquidation checks automatically;
+// checkLiquidations() is also callable directly against the last known marks.
+const liquidations = await engine.updatePositions();
+```
+
+- **Funding** (`FundingModel`): `notional * rate` is charged to longs / paid to shorts each
+  8h boundary (Binance's real schedule); `FixedFundingModel` for a constant rate,
+  `LiveFundingModel` to pull the exchange's current rate from `FuturesData.premiumIndex()`.
+  Funding for a symbol is tracked from when its position opened — no retroactive charges
+  for time before that, and tracking resets cleanly when a position fully closes.
+- **Liquidation** (`LiquidationModel`): a position force-closes once
+  `margin + unrealizedPnl` drops to or below its maintenance-margin requirement —
+  `FixedMaintenanceMarginModel` for a flat rate, `BracketedMaintenanceMarginModel` for
+  Binance-style notional-tiered brackets (feed it `client.futures.account.leverageBrackets()`).
+  The realized loss is capped at the position's isolated margin (bankruptcy price), so a single
+  liquidation can never take the simulated wallet balance negative, even on a gapped price.
+
 ### Observability
 
 `client.events` is a structured, JSON-serializable event bus wired through every subsystem:

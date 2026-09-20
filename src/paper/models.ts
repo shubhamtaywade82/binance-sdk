@@ -241,3 +241,113 @@ export class BinanceUsdmFeeModel extends TakerMakerFeeModel {
     super(takerBps, makerBps);
   }
 }
+
+// ---------------------------------------------------------------------------
+// Funding (perpetual futures)
+// ---------------------------------------------------------------------------
+
+export interface FundingContext {
+  symbol: string;
+  side: 'LONG' | 'SHORT';
+  quantity: number;
+  markPrice: number;
+}
+
+/**
+ * Supplies the funding rate to apply at a settlement boundary. Positive rate:
+ * longs pay shorts (Binance convention). The engine applies
+ * `notional * rate` against whichever side is on the paying end.
+ */
+export interface FundingModel {
+  rateFor(ctx: FundingContext): number | Promise<number>;
+}
+
+/** Constant rate every settlement — deterministic, good for tests and what-if scenarios. */
+export class FixedFundingModel implements FundingModel {
+  constructor(private readonly rate: number) {}
+
+  rateFor(_ctx: FundingContext): number {
+    return this.rate;
+  }
+}
+
+/** Minimal surface this model needs from FuturesData — avoids importing the whole resource class. */
+export interface PremiumIndexSource {
+  premiumIndex(symbol: string): Promise<{ lastFundingRate: number }>;
+}
+
+/** Fetches Binance's current live funding rate per symbol (`premiumIndex().lastFundingRate`). */
+export class LiveFundingModel implements FundingModel {
+  constructor(private readonly source: PremiumIndexSource) {}
+
+  async rateFor(ctx: FundingContext): Promise<number> {
+    const info = await this.source.premiumIndex(ctx.symbol);
+    return info.lastFundingRate;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Liquidation (isolated margin)
+// ---------------------------------------------------------------------------
+
+export interface LiquidationContext {
+  symbol: string;
+  side: 'LONG' | 'SHORT';
+  entryPrice: number;
+  quantity: number;
+  /** Isolated margin currently locked in the position. */
+  margin: number;
+  markPrice: number;
+}
+
+export interface MaintenanceMargin {
+  /** Fraction of notional required as maintenance margin (e.g. 0.005 = 0.5%). */
+  rate: number;
+  /** Binance's per-bracket "maintenance amount" subtracted from notional*rate. */
+  amount: number;
+}
+
+/**
+ * Supplies the maintenance-margin requirement for a position. The engine
+ * liquidates (force-closes) a position when `margin + unrealizedPnl` drops to
+ * or below this requirement — the same isolated-margin trigger Binance uses.
+ */
+export interface LiquidationModel {
+  maintenanceMarginFor(ctx: LiquidationContext): MaintenanceMargin;
+}
+
+/** Flat maintenance-margin rate across all notional — a simple, conservative approximation. */
+export class FixedMaintenanceMarginModel implements LiquidationModel {
+  constructor(private readonly rate: number) {}
+
+  maintenanceMarginFor(_ctx: LiquidationContext): MaintenanceMargin {
+    return { rate: this.rate, amount: 0 };
+  }
+}
+
+/** One row of a Binance-style notional-tiered maintenance-margin bracket table. */
+export interface MaintenanceMarginBracket {
+  notionalFloor: number;
+  notionalCap: number;
+  maintenanceMarginRate: number;
+  maintenanceAmount: number;
+}
+
+/**
+ * Tiered brackets matching Binance's real per-symbol leverage-bracket shape
+ * (see `client.futures.account.leverageBrackets()`): higher notional tiers
+ * carry higher maintenance-margin rates and a cumulative "maintenance amount"
+ * offset. Brackets are matched by `notionalFloor < notional <= notionalCap`.
+ */
+export class BracketedMaintenanceMarginModel implements LiquidationModel {
+  constructor(private readonly brackets: readonly MaintenanceMarginBracket[]) {}
+
+  maintenanceMarginFor(ctx: LiquidationContext): MaintenanceMargin {
+    const notional = ctx.markPrice * ctx.quantity;
+    const bracket =
+      this.brackets.find((b) => notional > b.notionalFloor && notional <= b.notionalCap) ??
+      this.brackets[this.brackets.length - 1];
+    if (!bracket) return { rate: 0, amount: 0 };
+    return { rate: bracket.maintenanceMarginRate, amount: bracket.maintenanceAmount };
+  }
+}

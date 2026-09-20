@@ -7,6 +7,10 @@ import {
   PartialFillModel,
   SlippageModel,
   CompositeModel,
+  FixedFundingModel,
+  LiveFundingModel,
+  FixedMaintenanceMarginModel,
+  BracketedMaintenanceMarginModel,
   type ExecutionContext,
 } from '../../src/paper/models.js';
 import { PaperTradingEngine } from '../../src/paper/PaperTradingEngine.js';
@@ -141,5 +145,82 @@ describe('PaperTradingEngine integration with models', () => {
     expect(order.status).toBe('PARTIALLY_FILLED');
     expect(order.filledQuantity).toBe(1);
     expect(engine.getPosition('BTCUSDT')?.quantity).toBe(1);
+  });
+});
+
+describe('funding models', () => {
+  it('FixedFundingModel always returns the configured rate', () => {
+    const model = new FixedFundingModel(0.0001);
+    expect(model.rateFor({ symbol: 'BTCUSDT', side: 'LONG', quantity: 1, markPrice: 100 })).toBe(0.0001);
+  });
+
+  it('LiveFundingModel delegates to premiumIndex().lastFundingRate', async () => {
+    const source = { premiumIndex: vi.fn().mockResolvedValue({ lastFundingRate: 0.00025 }) };
+    const model = new LiveFundingModel(source);
+    const rate = await model.rateFor({ symbol: 'ETHUSDT', side: 'SHORT', quantity: 5, markPrice: 3000 });
+    expect(rate).toBe(0.00025);
+    expect(source.premiumIndex).toHaveBeenCalledWith('ETHUSDT');
+  });
+});
+
+describe('liquidation models', () => {
+  it('FixedMaintenanceMarginModel applies a flat rate regardless of notional', () => {
+    const model = new FixedMaintenanceMarginModel(0.005);
+    const mm = model.maintenanceMarginFor({
+      symbol: 'BTCUSDT',
+      side: 'LONG',
+      entryPrice: 100,
+      quantity: 10,
+      margin: 100,
+      markPrice: 100,
+    });
+    expect(mm).toEqual({ rate: 0.005, amount: 0 });
+  });
+
+  it('BracketedMaintenanceMarginModel picks the bracket matching notional', () => {
+    const model = new BracketedMaintenanceMarginModel([
+      { notionalFloor: 0, notionalCap: 50_000, maintenanceMarginRate: 0.004, maintenanceAmount: 0 },
+      { notionalFloor: 50_000, notionalCap: 250_000, maintenanceMarginRate: 0.005, maintenanceAmount: 50 },
+      { notionalFloor: 250_000, notionalCap: Infinity, maintenanceMarginRate: 0.01, maintenanceAmount: 1_300 },
+    ]);
+
+    // notional = 100 * 100 = 10_000 -> first bracket
+    expect(
+      model.maintenanceMarginFor({
+        symbol: 'BTCUSDT',
+        side: 'LONG',
+        entryPrice: 100,
+        quantity: 100,
+        margin: 1_000,
+        markPrice: 100,
+      }),
+    ).toEqual({ rate: 0.004, amount: 0 });
+
+    // notional = 100 * 1000 = 100_000 -> second bracket
+    expect(
+      model.maintenanceMarginFor({
+        symbol: 'BTCUSDT',
+        side: 'LONG',
+        entryPrice: 100,
+        quantity: 1_000,
+        margin: 10_000,
+        markPrice: 100,
+      }),
+    ).toEqual({ rate: 0.005, amount: 50 });
+  });
+
+  it('BracketedMaintenanceMarginModel falls back to the highest bracket above the top notional cap', () => {
+    const model = new BracketedMaintenanceMarginModel([
+      { notionalFloor: 0, notionalCap: 50_000, maintenanceMarginRate: 0.004, maintenanceAmount: 0 },
+    ]);
+    const mm = model.maintenanceMarginFor({
+      symbol: 'BTCUSDT',
+      side: 'LONG',
+      entryPrice: 100,
+      quantity: 10_000,
+      margin: 1_000_000,
+      markPrice: 100,
+    });
+    expect(mm).toEqual({ rate: 0.004, amount: 0 });
   });
 });

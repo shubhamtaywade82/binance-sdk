@@ -5,6 +5,25 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+
+- **Funding and liquidation models for `PaperTradingEngine`** (`src/paper/models.ts`) —
+  the paper engine could hold a leveraged position indefinitely with no funding carry
+  cost and no liquidation risk, which silently overstated any strategy backtested
+  against it. Both are opt-in, composing with the existing execution/fee models:
+  - `FundingModel` (`FixedFundingModel`, `LiveFundingModel` — pulls
+    `FuturesData.premiumIndex().lastFundingRate`): settles `notional * rate` against
+    longs/shorts at Binance's real 8h boundaries (00:00/08:00/16:00 UTC) via the new
+    `engine.applyFunding()`. Tracked per-position from when it opened — no retroactive
+    charges, resets cleanly on full close.
+  - `LiquidationModel` (`FixedMaintenanceMarginModel`, `BracketedMaintenanceMarginModel`
+    — accepts Binance-style notional-tiered brackets): force-closes a position once
+    `margin + unrealizedPnl` drops to/below the maintenance-margin requirement, via the
+    new `engine.checkLiquidations()` (also run automatically inside `updatePositions()`,
+    which now returns any liquidations that fired instead of `void` — additive, not
+    breaking). The realized loss is capped at the bankruptcy price, so a single
+    liquidation can never take the simulated wallet balance negative.
+
 ### Fixed
 
 - **REST responses now preserve order/trade/update IDs above

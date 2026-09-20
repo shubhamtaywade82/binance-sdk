@@ -149,6 +149,8 @@ export type {
   PaperPosition,
   PaperPositionSide,
   PaperTradingOptions,
+  PaperFundingSettlement,
+  PaperLiquidation,
 } from './paper/PaperTradingEngine.js';
 export {
   InstantFillModel,
@@ -159,6 +161,10 @@ export {
   CompositeModel,
   TakerMakerFeeModel,
   BinanceUsdmFeeModel,
+  FixedFundingModel,
+  LiveFundingModel,
+  FixedMaintenanceMarginModel,
+  BracketedMaintenanceMarginModel,
 } from './paper/models.js';
 export type {
   ExecutionModel,
@@ -167,6 +173,13 @@ export type {
   FeeModel,
   FeeQuote,
   BookView,
+  FundingModel,
+  FundingContext,
+  PremiumIndexSource,
+  LiquidationModel,
+  LiquidationContext,
+  MaintenanceMargin,
+  MaintenanceMarginBracket,
 } from './paper/models.js';
 
 export { BaseWS } from './ws/BaseWS.js';

@@ -5,6 +5,8 @@ import {
   type ExecutionModel,
   type ExecutionQuote,
   type FeeModel,
+  type FundingModel,
+  type LiquidationModel,
 } from './models.js';
 
 export type PaperPositionSide = 'LONG' | 'SHORT' | 'NONE';
@@ -19,6 +21,43 @@ export interface PaperPosition {
   margin: number;
   unrealizedPnl: number;
   openedAt: number;
+  /** Mark price used for the most recent unrealizedPnl computation; also the liquidation-check price. */
+  lastMarkPrice: number;
+}
+
+/** One funding settlement applied to an open position. */
+export interface PaperFundingSettlement {
+  symbol: string;
+  side: PaperPositionSide;
+  rate: number;
+  /** Number of 8h funding boundaries settled in this call (>1 if updatePositions/applyFunding wasn't polled for a while). */
+  periods: number;
+  /** Cash flow applied to balance (negative: paid out; positive: received). */
+  payment: number;
+  markPrice: number;
+  settledAt: number;
+}
+
+/** A position force-closed because margin + unrealized PnL dropped to/below the maintenance requirement. */
+export interface PaperLiquidation {
+  symbol: string;
+  side: PaperPositionSide;
+  quantity: number;
+  entryPrice: number;
+  markPrice: number;
+  bankruptcyPrice: number;
+  maintenanceMargin: number;
+  /** Isolated margin that was locked in the position immediately before liquidation. */
+  lostMargin: number;
+  realizedPnl: number;
+  liquidatedAt: number;
+}
+
+/** Binance settles funding every 8h at 00:00/08:00/16:00 UTC — exact multiples of this interval since the epoch. */
+const FUNDING_INTERVAL_MS = 8 * 60 * 60 * 1000;
+
+function mostRecentFundingBoundary(ts: number): number {
+  return Math.floor(ts / FUNDING_INTERVAL_MS) * FUNDING_INTERVAL_MS;
 }
 
 export interface PaperOrder {
@@ -62,6 +101,10 @@ export interface PaperTradingOptions {
   executionModel?: ExecutionModel;
   /** Fee schedule; defaults to zero fees (legacy behaviour). */
   feeModel?: FeeModel;
+  /** Funding-rate settlement for perpetual futures; omit to skip funding entirely (legacy behaviour). */
+  fundingModel?: FundingModel;
+  /** Maintenance-margin/liquidation model; omit to disable liquidation checks entirely (legacy behaviour). */
+  liquidationModel?: LiquidationModel;
 }
 
 function emptyPosition(symbol: string): PaperPosition {
@@ -74,6 +117,7 @@ function emptyPosition(symbol: string): PaperPosition {
     margin: 0,
     unrealizedPnl: 0,
     openedAt: 0,
+    lastMarkPrice: 0,
   };
 }
 
@@ -93,12 +137,18 @@ export class PaperTradingEngine {
   private readonly market: FuturesMarket;
   private readonly executionModel: ExecutionModel;
   private readonly feeModel?: FeeModel;
+  private readonly fundingModel?: FundingModel;
+  private readonly liquidationModel?: LiquidationModel;
+  /** Most recent funding boundary settled per symbol; cleared when a position fully closes. */
+  private readonly lastFundingSettledAt: Record<string, number> = {};
   private orderIdCounter = 1_000_000;
 
   constructor(options: PaperTradingOptions = {}) {
     this.market = options.market ?? new FuturesMarket();
     this.executionModel = options.executionModel ?? new InstantFillModel();
     this.feeModel = options.feeModel;
+    this.fundingModel = options.fundingModel;
+    this.liquidationModel = options.liquidationModel;
     const initialBalance = options.initialBalance ?? 10_000;
     this.account = {
       balance: initialBalance,
@@ -246,7 +296,13 @@ export class PaperTradingEngine {
     position.quantity = totalQty;
     position.side = side;
     position.leverage = leverage;
-    if (previousQty === 0) position.openedAt = Date.now();
+    if (previousQty === 0) {
+      position.openedAt = Date.now();
+      // Funding only accrues for boundaries crossed *while* the position is open —
+      // seed at the most recent boundary so the next applyFunding() call charges
+      // exactly the periods elapsed since opening, not retroactively.
+      this.lastFundingSettledAt[position.symbol] = mostRecentFundingBoundary(Date.now());
+    }
 
     const margin = (quantity * fillPrice) / leverage;
     position.margin += margin;
@@ -274,6 +330,7 @@ export class PaperTradingEngine {
       // Guard against float drift leaving a sliver of margin locked forever.
       this.account.availableBalance += position.margin;
       position.margin = 0;
+      delete this.lastFundingSettledAt[position.symbol];
     }
     return realized;
   }
@@ -286,6 +343,7 @@ export class PaperTradingEngine {
     }
     const direction = position.side === 'LONG' ? 1 : -1;
     position.unrealizedPnl = (price - position.entryPrice) * position.quantity * direction;
+    position.lastMarkPrice = price;
   }
 
   private recomputeTotals(): void {
@@ -296,8 +354,12 @@ export class PaperTradingEngine {
     this.account.totalWalletBalance = this.account.balance + this.account.unrealizedPnl;
   }
 
-  /** Refresh unrealized PnL for every open position against live prices. */
-  async updatePositions(): Promise<void> {
+  /**
+   * Refresh unrealized PnL for every open position against live prices, then run
+   * liquidation checks against the fresh marks (a no-op unless `liquidationModel`
+   * is configured). Returns any liquidations that fired.
+   */
+  async updatePositions(): Promise<PaperLiquidation[]> {
     const open = Object.values(this.account.positions).filter((p) => p.side !== 'NONE');
     await Promise.all(
       open.map(async (position) => {
@@ -309,6 +371,117 @@ export class PaperTradingEngine {
       }),
     );
     this.recomputeTotals();
+    return this.checkLiquidations();
+  }
+
+  /**
+   * Settle funding for every open position that has crossed one or more 8h
+   * funding boundaries (00:00/08:00/16:00 UTC) since it last settled. A no-op
+   * unless `fundingModel` is configured. The same rate is applied to every
+   * boundary crossed in one call — an approximation for callers that don't
+   * poll every 8h; pass a real historical rate source for exact replay.
+   */
+  async applyFunding(now: number = Date.now()): Promise<PaperFundingSettlement[]> {
+    if (!this.fundingModel) return [];
+    const settlements: PaperFundingSettlement[] = [];
+    const currentBoundary = mostRecentFundingBoundary(now);
+    const open = Object.values(this.account.positions).filter((p) => p.side !== 'NONE');
+
+    for (const position of open) {
+      const lastSettled = this.lastFundingSettledAt[position.symbol] ?? currentBoundary;
+      if (currentBoundary <= lastSettled) continue;
+      const periods = Math.round((currentBoundary - lastSettled) / FUNDING_INTERVAL_MS);
+
+      let markPrice: number;
+      try {
+        markPrice = await this.getMarketPrice(position.symbol);
+      } catch {
+        continue; // try again on the next call rather than settling against a stale/unknown price
+      }
+
+      const rate = await this.fundingModel.rateFor({
+        symbol: position.symbol,
+        side: position.side as 'LONG' | 'SHORT',
+        quantity: position.quantity,
+        markPrice,
+      });
+      const notional = markPrice * position.quantity;
+      const paymentPerPeriod = position.side === 'LONG' ? -notional * rate : notional * rate;
+      const payment = paymentPerPeriod * periods;
+
+      this.account.balance += payment;
+      this.account.realizedPnl += payment;
+      this.account.availableBalance += payment;
+      this.lastFundingSettledAt[position.symbol] = currentBoundary;
+
+      settlements.push({
+        symbol: position.symbol,
+        side: position.side,
+        rate,
+        periods,
+        payment,
+        markPrice,
+        settledAt: now,
+      });
+    }
+
+    if (settlements.length) this.recomputeTotals();
+    return settlements;
+  }
+
+  /**
+   * Force-close any position whose `margin + unrealizedPnl` has dropped to or
+   * below its maintenance-margin requirement, evaluated against each
+   * position's `lastMarkPrice`. A no-op unless `liquidationModel` is
+   * configured. The realized loss is capped at the position's isolated
+   * margin (never below its bankruptcy price) — matching Binance's isolated-
+   * margin guarantee that a single position can't take the wallet negative.
+   */
+  checkLiquidations(): PaperLiquidation[] {
+    if (!this.liquidationModel) return [];
+    const events: PaperLiquidation[] = [];
+
+    for (const position of Object.values(this.account.positions)) {
+      if (position.side === 'NONE' || position.quantity === 0) continue;
+      const markPrice = position.lastMarkPrice || position.entryPrice;
+
+      const mm = this.liquidationModel.maintenanceMarginFor({
+        symbol: position.symbol,
+        side: position.side,
+        entryPrice: position.entryPrice,
+        quantity: position.quantity,
+        margin: position.margin,
+        markPrice,
+      });
+      const notional = markPrice * position.quantity;
+      const maintenanceMargin = Math.max(0, notional * mm.rate - mm.amount);
+      const marginBalance = position.margin + position.unrealizedPnl;
+      if (marginBalance > maintenanceMargin) continue;
+
+      // Snapshot before reduceExposure mutates (and possibly zeroes) the position.
+      const { symbol, side, quantity, entryPrice, margin } = position;
+      const direction = side === 'LONG' ? 1 : -1;
+      // Price at which the loss exactly consumes the isolated margin (fees/funding ignored).
+      const bankruptcyPrice = entryPrice - (direction * margin) / quantity;
+      const closePrice = direction === 1 ? Math.max(markPrice, bankruptcyPrice) : Math.min(markPrice, bankruptcyPrice);
+      const realizedPnl = this.reduceExposure(position, quantity, closePrice);
+
+      events.push({
+        symbol,
+        side,
+        quantity,
+        entryPrice,
+        markPrice,
+        bankruptcyPrice,
+        maintenanceMargin,
+        lostMargin: margin,
+        realizedPnl,
+        liquidatedAt: Date.now(),
+      });
+    }
+
+    if (events.length) this.recomputeTotals();
+    return events;
   }
 
   getAccountInfo(): PaperAccount {
