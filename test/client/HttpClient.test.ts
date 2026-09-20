@@ -17,6 +17,39 @@ describe('HttpClient', () => {
     await expect(client.get<{ ok: boolean }>('/ping')).resolves.toEqual({ ok: true });
   });
 
+  it('preserves order/trade IDs above Number.MAX_SAFE_INTEGER as decimal strings', async () => {
+    // 2^53 + 1 — JSON.parse would silently round this to 9007199254740992.
+    // Built as a raw response body (not HttpResponse.json, which would itself
+    // round-trip through JSON.stringify/parse on a JS object and corrupt the
+    // value before it ever reaches the client under test).
+    const oversizedOrderId = '9007199254740993';
+    server.use(
+      http.get('https://api.example.com/order', () =>
+        new HttpResponse(`{"symbol":"BTCUSDT","orderId":${oversizedOrderId},"status":"FILLED"}`, {
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      ),
+    );
+
+    const client = new HttpClient({ baseURL: 'https://api.example.com' });
+    const order = await client.get<{ orderId: unknown }>('/order');
+    expect(order.orderId).toBe(oversizedOrderId);
+    expect(typeof order.orderId).toBe('string');
+  });
+
+  it('keeps safe-range integers as numbers (no schema-breaking change)', async () => {
+    server.use(
+      http.get('https://api.example.com/order-small', () =>
+        HttpResponse.json({ symbol: 'BTCUSDT', orderId: 123456789, status: 'FILLED' }),
+      ),
+    );
+
+    const client = new HttpClient({ baseURL: 'https://api.example.com' });
+    const order = await client.get<{ orderId: unknown }>('/order-small');
+    expect(order.orderId).toBe(123456789);
+    expect(typeof order.orderId).toBe('number');
+  });
+
   it('syncs server time and applies the offset to signed timestamps', async () => {
     const serverTime = Date.now() + 5000;
     server.use(http.get('https://api.example.com/time', () => HttpResponse.json({ serverTime })));

@@ -3,6 +3,7 @@ import Bottleneck from 'bottleneck';
 import { BinanceApiError, BinanceAuthError, NetworkError, RateLimitError } from '../errors/index.js';
 import type { EventBus } from '../core/events.js';
 import { contractFor, type HttpContractMeta } from '../contracts/index.js';
+import { parseJsonLossless } from '../core/json.js';
 import { RateLimitTracker, type RateLimitUsage } from './RateLimitTracker.js';
 import { Signer, type SignatureAlgorithm } from './Signer.js';
 import type { TradingPolicy } from './TradingPolicy.js';
@@ -142,6 +143,23 @@ export class HttpClient {
       timeout: this.timeoutMs,
       httpsAgent: options.httpsAgent,
       proxy: options.proxy,
+      // Binance returns order/trade/update IDs as bare JSON integers that can
+      // exceed Number.MAX_SAFE_INTEGER; the default JSON.parse silently
+      // corrupts those. Reuse the same lossless parser already applied to WS
+      // frames (src/core/json.ts) so REST and WS agree on representation:
+      // safe integers keep their existing `number` type (no schema changes
+      // needed), oversized ones surface as decimal strings instead of
+      // silently-wrong numbers.
+      transformResponse: [
+        (data: unknown) => {
+          if (typeof data !== 'string' || data.length === 0) return data;
+          try {
+            return parseJsonLossless(data);
+          } catch {
+            return data;
+          }
+        },
+      ],
     });
     this.limiter = new Bottleneck({ minTime: this.minTimeMs });
   }

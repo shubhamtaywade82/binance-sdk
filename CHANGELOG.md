@@ -5,6 +5,19 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **REST responses now preserve order/trade/update IDs above
+  `Number.MAX_SAFE_INTEGER`** — `HttpClient`'s axios instance parsed response
+  bodies with the default `JSON.parse`, which silently rounds any bare
+  integer literal above 2^53 (an active-account `orderId`/`tradeId` can reach
+  that range). WS frames already used `parseJsonLossless`
+  (`src/core/json.ts`) for exactly this reason; REST now goes through the
+  same parser via a custom `transformResponse`. Integers within the safe
+  range are unaffected (same `number` type, no Zod schema changes needed);
+  only oversized IDs now surface as decimal strings instead of
+  silently-corrupted numbers.
+
 ## [3.0.0] - 2026-09-16
 
 **v3 platform GA.** The six pillars the project's own roadmap
