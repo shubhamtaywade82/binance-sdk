@@ -1,0 +1,279 @@
+{
+  "catalogVersion": 1,
+  "generatedAt": "2026-09-20T17:02:39.238Z",
+  "description": "Coverage of this SDK's product surface against Binance's full official product catalog (26 connector packages, hand-verified snapshot — see this script's header for the source and why it cannot be derived automatically). Deliberately does not claim a \"% of Binance's total API\" per product -- there's no ground truth in this repo for that denominator; endpointCount/hasToolSurface are this SDK's own verifiable numbers.",
+  "totalOfficialProducts": 26,
+  "implementedProducts": 6,
+  "implementedPct": 23.1,
+  "toolCoverage": {
+    "checkedProducts": [
+      "spot",
+      "usdm"
+    ],
+    "totalCheckedEndpoints": 135,
+    "coveredEndpoints": 123,
+    "coveragePct": 91.1
+  },
+  "products": [
+    {
+      "officialProduct": "algo",
+      "npmPackage": "@binance/algo",
+      "title": "Algo Trading",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": "This SDK's usdm.trading algo orders (/fapi/v1/algoOrder — conditional/VP) are a futures-scoped feature, not Binance's standalone spot/margin Algo (TWAP/VP) product these endpoints cover."
+    },
+    {
+      "officialProduct": "alpha",
+      "npmPackage": "@binance/alpha",
+      "title": "Alpha",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "c2c",
+      "npmPackage": "@binance/c2c",
+      "title": "C2C",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "convert",
+      "npmPackage": "@binance/convert",
+      "title": "Convert",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": "This SDK's usdm.trading has futures-scoped Convert (quote/accept/status via /fapi/v1/convert), not the standalone Convert product these endpoints cover."
+    },
+    {
+      "officialProduct": "copy-trading",
+      "npmPackage": "@binance/copy-trading",
+      "title": "Copy Trading",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "crypto-loan",
+      "npmPackage": "@binance/crypto-loan",
+      "title": "Crypto Loan",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "derivatives-trading-coin-futures",
+      "npmPackage": "@binance/derivatives-trading-coin-futures",
+      "title": "COIN-M Futures",
+      "implemented": true,
+      "sdkProduct": "coinm",
+      "endpointCount": 40,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "derivatives-trading-options",
+      "npmPackage": "@binance/derivatives-trading-options",
+      "title": "Options",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "derivatives-trading-portfolio-margin",
+      "npmPackage": "@binance/derivatives-trading-portfolio-margin",
+      "title": "Portfolio Margin",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "derivatives-trading-portfolio-margin-pro",
+      "npmPackage": "@binance/derivatives-trading-portfolio-margin-pro",
+      "title": "Portfolio Margin Pro",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": "Distinct from account.pmAccountInfo (/fapi/v1/pmAccountInfo) in this SDK's usdm product, which is a single read-only PM balance/liability endpoint, not the standalone PM Pro product surface."
+    },
+    {
+      "officialProduct": "derivatives-trading-usds-futures",
+      "npmPackage": "@binance/derivatives-trading-usds-futures",
+      "title": "USDⓈ-M Futures",
+      "implemented": true,
+      "sdkProduct": "usdm",
+      "endpointCount": 98,
+      "hasToolSurface": true,
+      "note": null
+    },
+    {
+      "officialProduct": "dual-investment",
+      "npmPackage": "@binance/dual-investment",
+      "title": "Dual Investment",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "fiat",
+      "npmPackage": "@binance/fiat",
+      "title": "Fiat",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "gift-card",
+      "npmPackage": "@binance/giftcard",
+      "title": "Gift Card",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "margin-trading",
+      "npmPackage": "@binance/margin-trading",
+      "title": "Margin Trading",
+      "implemented": true,
+      "sdkProduct": "margin",
+      "endpointCount": 18,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "mining",
+      "npmPackage": "@binance/mining",
+      "title": "Mining",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "pay",
+      "npmPackage": "@binance/pay",
+      "title": "Pay",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "rebate",
+      "npmPackage": "@binance/rebate",
+      "title": "Rebate",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "simple-earn",
+      "npmPackage": "@binance/simple-earn",
+      "title": "Simple Earn",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "spot",
+      "npmPackage": "@binance/spot",
+      "title": "Spot Trading",
+      "implemented": true,
+      "sdkProduct": "spot",
+      "endpointCount": 37,
+      "hasToolSurface": true,
+      "note": null
+    },
+    {
+      "officialProduct": "staking",
+      "npmPackage": "@binance/staking",
+      "title": "Staking",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "stocks",
+      "npmPackage": "@binance/stocks",
+      "title": "Stocks",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "sub-account",
+      "npmPackage": "@binance/sub-account",
+      "title": "Sub Account",
+      "implemented": true,
+      "sdkProduct": "subaccount",
+      "endpointCount": 13,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "vip-loan",
+      "npmPackage": "@binance/vip-loan",
+      "title": "VIP Loan",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "w3w-prediction",
+      "npmPackage": "@binance/w3w-prediction",
+      "title": "W3W Prediction",
+      "implemented": false,
+      "sdkProduct": null,
+      "endpointCount": 0,
+      "hasToolSurface": false,
+      "note": null
+    },
+    {
+      "officialProduct": "wallet",
+      "npmPackage": "@binance/wallet",
+      "title": "Wallet",
+      "implemented": true,
+      "sdkProduct": "wallet",
+      "endpointCount": 14,
+      "hasToolSurface": false,
+      "note": null
+    }
+  ]
+}

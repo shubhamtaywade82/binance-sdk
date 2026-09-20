@@ -1,6 +1,6 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-09-20T07:57:39.910Z",
+  "generatedAt": "2026-09-20T17:02:37.730Z",
   "description": "Heuristic coverage of the LLM/agent tool layer (src/tools/*.tools.ts) against the endpoint registry — see this script's header for the matching method and its limits. Not a substitute for a schema-driven tool generator.",
   "checkedProducts": [
     "spot",

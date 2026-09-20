@@ -7,6 +7,27 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- **`contracts/product-coverage.json` + `npm run coverage:generate`** — the
+  formal coverage matrix an earlier review named directly: "nothing
+  computes '0% Options, 0% Portfolio Margin' the way the official
+  connector's product list implies." Result: **6 of Binance's 26 official
+  connector packages implemented** (Spot, USDⓈ-M, COIN-M, Margin, Wallet,
+  Sub-account — 23.1%); Options, Portfolio Margin (+ Pro), Copy Trading,
+  Crypto Loan, Simple Earn, Staking, Dual Investment, standalone
+  Convert/Algo, C2C, Fiat, Gift Card, Mining, Pay, Rebate, Stocks, VIP
+  Loan, Alpha and W3W Prediction have none. Two near-misses are flagged
+  explicitly rather than left to look like coverage they aren't: this
+  SDK's futures-scoped Convert and futures algo orders share a name with
+  Binance's standalone Convert/Algo products but are not the same API
+  surface. Unlike every other `contracts/*.json` generator, the official
+  26-product list can't be derived from this repository — it's a
+  hand-verified snapshot (source: `binance/binance-connector-js`'s
+  `clients/` directory, cross-checked against its README table) that
+  needs a manual refresh if Binance adds a product family; everything
+  else (which registry product maps to which official package,
+  endpoint/tool counts) is mechanical and CI-validated
+  (`test/contracts/product-coverage.test.ts`) against the live registry.
+
 - **Tool risk annotations (MCP `ToolAnnotations`)** — every one of the 159
   LLM/agent tools now carries `readOnlyHint`/`destructiveHint`/
   `idempotentHint`/`openWorldHint`, the standard MCP vocabulary

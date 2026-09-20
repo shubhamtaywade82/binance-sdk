@@ -515,9 +515,24 @@ everything to a logger with `forwardEventsToLogger(bus, logger)`.
   Deliberately scoped to tool *inputs*: a response schema per registry endpoint would need
   hand-curating ~220 associations with no mechanical way to keep them honest (see the generator
   script's header), so it isn't attempted.
+- **`contracts/product-coverage.json`** — this SDK's product surface against Binance's *full*
+  official product catalog, not just the six products this SDK already knows about: **6 of 26**
+  official connector packages implemented (Spot, USDⓈ-M, COIN-M, Margin, Wallet, Sub-account —
+  23.1%). Options, Portfolio Margin (+ Pro), Copy Trading, Crypto Loan, Simple Earn, Staking,
+  Dual Investment, Convert (standalone), Algo (standalone), C2C, Fiat, Gift Card, Mining, Pay,
+  Rebate, Stocks, VIP Loan, Alpha and W3W Prediction have **no coverage at all** today. A couple
+  of near-misses are called out explicitly rather than left implicit: this SDK's futures-scoped
+  Convert (`usdm.trading.convertGetQuote` et al.) and futures algo orders
+  (`usdm.trading.createAlgoOrder`) are **not** the same thing as Binance's standalone
+  Convert/Algo products, even though the names overlap. Generated with `npm run
+  coverage:generate`; the official-product list is a hand-verified snapshot (source and date in
+  the generator script's header) since there's no API to derive it from — everything else
+  (which registry product maps to which official package, endpoint/tool counts) is mechanical.
+  CI-validated (`test/contracts/product-coverage.test.ts`) against the live registry.
 - Regenerate everything from the registry with `npm run docs:generate` (the generator
   cross-checks the registry against the actual `http.<verb>()` calls in `src/resources`),
-  `npm run contracts:generate`, `npm run tools:coverage`, and `npm run schema:generate`.
+  `npm run contracts:generate`, `npm run tools:coverage`, `npm run schema:generate`, and
+  `npm run coverage:generate`.
 - `docs/architecture/v3-foundation.md` — the v3 platform architecture and migration plan.
 - `docs/architecture/v3-websocket.md` — the v3 WebSocket platform design (milestone 2).
 - `docs/architecture/v3-execution.md` — the v3 execution platform design (milestone 3).

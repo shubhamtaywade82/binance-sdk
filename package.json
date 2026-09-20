@@ -68,6 +68,7 @@
     "contracts:generate": "tsx scripts/generate-contract-catalog.ts",
     "tools:coverage": "tsx scripts/check-tool-coverage.ts",
     "schema:generate": "tsx scripts/generate-schema-catalog.ts",
+    "coverage:generate": "tsx scripts/generate-product-coverage.ts",
     "smoke": "tsx scripts/smoke-test.ts",
     "smoke:testnet": "tsx scripts/testnet-smoke.ts",
     "mcp": "tsx src/mcp/index.ts",
