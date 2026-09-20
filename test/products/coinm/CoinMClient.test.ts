@@ -15,10 +15,27 @@ describe('v3 CoinMClient (standalone product client)', () => {
 
   it('exposes the full COIN-M surface with stable identity', () => {
     const coinm = new CoinMClient(new CoreContext({ apiKey: 'k', apiSecret: 's' }));
-    for (const key of ['market', 'account', 'trading', 'userStream', 'ws', 'wsUser'] as const) {
+    for (const key of ['market', 'account', 'trading', 'execution', 'userStream', 'ws', 'wsUser'] as const) {
       expect(coinm[key]).toBeDefined();
       expect(coinm[key]).toBe(coinm[key]);
     }
+  });
+
+  it('execution is an idempotent ExecutionManager scoped to coinm', () => {
+    const coinm = new CoinMClient(new CoreContext({ apiKey: 'k', apiSecret: 's' }));
+    expect(coinm.execution.product).toBe('coinm');
+  });
+
+  it('executionPlatform and books are lazy, stable, and closed by close()', () => {
+    const coinm = new CoinMClient(new CoreContext({ apiKey: 'k', apiSecret: 's' }));
+    const platform = coinm.executionPlatform;
+    const books = coinm.books;
+    expect(platform).toBe(coinm.executionPlatform);
+    expect(books).toBe(coinm.books);
+    expect(platform.product).toBe('coinm');
+    expect(books.product).toBe('coinm');
+    expect(() => coinm.close()).not.toThrow();
+    expect(books.isClosed).toBe(true);
   });
 
   it('shares a caller-owned CoreContext (one bus, one transport pool)', () => {
@@ -46,5 +63,6 @@ describe('v3 CoinMClient (standalone product client)', () => {
     expect(client.coinm.market.constructor).toBe(coinm.market.constructor);
     expect(client.coinm.ws.constructor).toBe(coinm.ws.constructor);
     expect(client.coinm.trading.constructor).toBe(coinm.trading.constructor);
+    expect(client.coinm.execution.constructor).toBe(coinm.execution.constructor);
   });
 });

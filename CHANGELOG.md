@@ -7,6 +7,32 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
+- **COIN-M execution platform + state engine parity with USDⓈ-M/Spot** —
+  `CoinMClient` previously exposed only the raw REST/WS surface; the v3
+  platform layer (`ExecutionPlatform`, `BookEngine`) was wired for
+  `'usdm' | 'spot'` only, a gap this project's own `3.0.0` CHANGELOG named
+  as the next follow-up. Closed:
+  - **`CoinMExecutionAdapter`** (`src/execution/adapter.ts`) — the missing
+    third `ExecutionAdapter`, identical wire semantics to USDⓈ-M
+    (`ORDER_TRADE_UPDATE`, -2011/-2013 reconciliation) with the one real
+    field difference: COIN-M settles in the base asset, so REST order
+    responses carry `cumBase` where USDⓈ-M carries `cumQuote`.
+  - **`coinm.execution`** — idempotent order placement
+    (`newClientOrderId`-keyed, transport-failure reconciliation), same
+    envelope as `usdm.execution`/`spot.execution`.
+  - **`coinm.executionPlatform`** — managed listen-key session
+    (`/dapi/v1/listenKey`, `wsDapiUser`), live order/position trackers, and
+    REST reconciliation (`/dapi/v1/openOrders`, `/dapi/v1/positionRisk` —
+    the latter's field names already matched USDⓈ-M's exactly, so the
+    existing normalizer is reused unchanged).
+  - **`coinm.books`** — local L2 order books over the pooled WS platform's
+    existing `ws.coinm` family (already wired since the Milestone 2
+    WebSocket platform; only `BookEngine` itself needed the third product
+    branch) and the `dapi` REST snapshot host.
+  - `ExecutionPlatform`, `BookEngine`, `Reconciler` and
+    `createUserEventParser` all widen their product type from
+    `'usdm' | 'spot'` to `'usdm' | 'spot' | 'coinm'`.
+
 - **Funding and liquidation models for `PaperTradingEngine`** (`src/paper/models.ts`) —
   the paper engine could hold a leveraged position indefinitely with no funding carry
   cost and no liquidation risk, which silently overstated any strategy backtested

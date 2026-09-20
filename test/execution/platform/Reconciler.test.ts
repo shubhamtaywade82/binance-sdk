@@ -22,6 +22,8 @@ const OPEN_ORDERS = 'https://fapi.binance.com/fapi/v1/openOrders';
 const POSITION_RISK = 'https://fapi.binance.com/fapi/v2/positionRisk';
 const SPOT_OPEN_ORDERS = 'https://api.binance.com/api/v3/openOrders';
 const TICKER = 'https://fapi.binance.com/fapi/v1/ticker/price';
+const COINM_OPEN_ORDERS = 'https://dapi.binance.com/dapi/v1/openOrders';
+const COINM_POSITION_RISK = 'https://dapi.binance.com/dapi/v1/positionRisk';
 
 function usdmOpenOrderRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
@@ -142,6 +144,85 @@ describe('ExecutionPlatform.reconcile (live USDⓈ-M)', () => {
     const platform = new ExecutionPlatform({ product: 'usdm', core });
     await platform.reconcile({ symbols: ['BTCUSDT'] });
     expect(params[0].symbol).toBe('BTCUSDT');
+  });
+});
+
+function coinmOpenOrderRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    orderId: 800001,
+    symbol: 'BTCUSD_PERP',
+    status: 'NEW',
+    clientOrderId: 'ext-coinm-rest-1',
+    price: '42000',
+    avgPrice: '0',
+    origQty: '1',
+    executedQty: '0',
+    cumBase: '0',
+    time: 1700000000000,
+    updateTime: 1700000000000,
+    type: 'LIMIT',
+    side: 'BUY',
+    ...overrides,
+  };
+}
+
+describe('ExecutionPlatform.reconcile (live COIN-M)', () => {
+  it('folds REST open orders and position risk into the trackers (dapi host, cumBase field)', async () => {
+    server.use(
+      http.get(COINM_OPEN_ORDERS, () =>
+        HttpResponse.json([
+          coinmOpenOrderRow(),
+          coinmOpenOrderRow({
+            orderId: 800002,
+            symbol: 'ETHUSD_PERP',
+            clientOrderId: 'ext-coinm-rest-2',
+            cumBase: '0.05',
+            executedQty: '2',
+            status: 'FILLED',
+          }),
+        ]),
+      ),
+      http.get(COINM_POSITION_RISK, () =>
+        HttpResponse.json([
+          positionRiskRow({ symbol: 'BTCUSD_PERP' }),
+          positionRiskRow({ symbol: 'ETHUSD_PERP', positionAmt: '-3.5', entryPrice: '3000' }),
+        ]),
+      ),
+    );
+
+    const core = new CoreContext({ apiKey: 'k', apiSecret: 's' });
+    const platform = new ExecutionPlatform({ product: 'coinm', core });
+
+    const summary = await platform.reconcile();
+    expect(summary.orders).toBe(2);
+    expect(summary.positions).toBe(2);
+
+    const filled = platform.orders.get('ext-coinm-rest-2');
+    expect(filled).toBeDefined();
+    expect(filled?.symbol).toBe('ETHUSD_PERP');
+    expect(filled?.status).toBe('FILLED');
+    // cumBase (base-asset settlement) folds into the same slot cumQuote does elsewhere.
+    expect(filled?.cumulativeQuoteQuantity).toBe('0.05');
+
+    const ethShort = platform.positions.get('ETHUSD_PERP');
+    expect(ethShort?.positionAmount).toBe('-3.5');
+    expect(platform.positions.nonZero()).toHaveLength(2);
+  });
+
+  it('one symbol folds through the symbol param on the openOrders call', async () => {
+    const params: Record<string, string>[] = [];
+    server.use(
+      http.get(COINM_OPEN_ORDERS, ({ request }) => {
+        const url = new URL(request.url);
+        params.push(Object.fromEntries(url.searchParams.entries()));
+        return HttpResponse.json([coinmOpenOrderRow()]);
+      }),
+      http.get(COINM_POSITION_RISK, () => HttpResponse.json([positionRiskRow({ symbol: 'BTCUSD_PERP' })])),
+    );
+    const core = new CoreContext({ apiKey: 'k', apiSecret: 's' });
+    const platform = new ExecutionPlatform({ product: 'coinm', core });
+    await platform.reconcile({ symbols: ['BTCUSD_PERP'] });
+    expect(params[0].symbol).toBe('BTCUSD_PERP');
   });
 });
 

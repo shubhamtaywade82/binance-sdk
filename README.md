@@ -306,8 +306,8 @@ gateway.paperEngine.getAccountInfo();                    // simulation state
 Standalone single-product clients for focused integrations. v2 factories
 still ship for back-compat; the v3 first-class `ProductClient` classes
 (`SpotClient`, `USDMClient`, `CoinMClient`) own their own `CoreContext`,
-the v3 execution platform (Spot / USDⓈ-M) and the v3 state engine
-(Spot / USDⓈ-M):
+the v3 execution platform (Spot / USDⓈ-M / COIN-M) and the v3 state engine
+(Spot / USDⓈ-M / COIN-M):
 
 ```typescript
 import { createSpotClient, createUSDMClient } from '@nemesis-oss/binance-sdk';
@@ -323,6 +323,15 @@ const usdm = new USDMClient(core);
 await usdm.executionPlatform.startUserSession(); // managed listen-key + 30-min keep-alive
 const book = await usdm.books.watch('BTCUSDT');    // local L2 book, synced
 usdm.close();
+
+// COIN-M has the identical platform surface — execution, executionPlatform, books
+const coinm = new CoinMClient(core);
+const fill = await coinm.execution.placeOrder({
+  symbol: 'BTCUSD_PERP', side: 'BUY', type: 'MARKET', quantity: 1,
+});
+await coinm.executionPlatform.startUserSession();
+const coinmBook = await coinm.books.watch('BTCUSD_PERP');
+coinm.close();
 ```
 
 ### Local order books

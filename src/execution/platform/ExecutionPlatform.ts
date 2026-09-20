@@ -36,7 +36,7 @@ export type PlatformUserSession = UserStreamSession | PaperSession;
 /** Options for {@link ExecutionPlatform}. */
 export interface ExecutionPlatformOptions {
   /** Product the platform serves — decides listen-key REST routes and WS URL. */
-  product: 'usdm' | 'spot';
+  product: 'usdm' | 'spot' | 'coinm';
   /**
    * Shared runtime: REST hosts (listen-key calls), resolved endpoints (user
    * WS URL) and the observability bus. Same context every product client
@@ -97,7 +97,7 @@ export interface ExecutionPlatformOptions {
  * ```
  */
 export class ExecutionPlatform {
-  readonly product: 'usdm' | 'spot';
+  readonly product: 'usdm' | 'spot' | 'coinm';
   readonly orders: OrderTracker;
   readonly positions: PositionTracker;
 
@@ -167,7 +167,11 @@ export class ExecutionPlatform {
       product: this.product,
       listenKeyApi: createListenKeyApi(this.product, this.core),
       userStreamUrl:
-        this.product === 'spot' ? this.core.endpoints.wsSpotUser : this.core.endpoints.wsUser,
+        this.product === 'spot'
+          ? this.core.endpoints.wsSpotUser
+          : this.product === 'coinm'
+            ? this.core.endpoints.wsDapiUser
+            : this.core.endpoints.wsUser,
       events: this.core.events,
       parseEvent: createUserEventParser(this.product),
       keepAliveIntervalMs: tuning?.keepAliveIntervalMs,
@@ -247,15 +251,14 @@ export class ExecutionPlatform {
 /**
  * Build the product's listen-key REST API over a shared `HttpClient` — the
  * same hosts and security modes the v2 resources use (USDⓈ-M `/fapi/v1/listenKey`
- * on the fapi root, Spot `/api/v3/userDataStream`), so weight accounting and
- * observability stay unified.
+ * on the fapi root, COIN-M `/dapi/v1/listenKey` on the dapi root, Spot
+ * `/api/v3/userDataStream`), so weight accounting and observability stay
+ * unified.
  */
 function createListenKeyApi(
-  product: 'usdm' | 'spot',
+  product: 'usdm' | 'spot' | 'coinm',
   core: ExecutionPlatformOptions['core'],
 ): ListenKeyApi {
-  const http: HttpClient = product === 'spot' ? core.http('spot') : core.http('fapiRoot');
-
   const requireKey = (raw: unknown): string => {
     const key = (raw as { listenKey?: unknown })?.listenKey;
     if (typeof key !== 'string' || key === '') {
@@ -265,6 +268,7 @@ function createListenKeyApi(
   };
 
   if (product === 'spot') {
+    const http: HttpClient = core.http('spot');
     return {
       create: async () => requireKey(await http.post('/userDataStream', undefined, 'apiKey')),
       keepAlive: async (listenKey) => {
@@ -275,6 +279,19 @@ function createListenKeyApi(
       },
     };
   }
+  if (product === 'coinm') {
+    const http: HttpClient = core.http('dapiRoot');
+    return {
+      create: async () => requireKey(await http.post('/dapi/v1/listenKey', undefined, 'apiKey')),
+      keepAlive: async () => {
+        await http.put('/dapi/v1/listenKey', undefined, 'apiKey');
+      },
+      close: async () => {
+        await http.delete('/dapi/v1/listenKey', undefined, 'apiKey');
+      },
+    };
+  }
+  const http: HttpClient = core.http('fapiRoot');
   return {
     create: async () => requireKey(await http.post('/fapi/v1/listenKey', undefined, 'apiKey')),
     keepAlive: async () => {

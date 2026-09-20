@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { CoreContext } from '../../../src/core/context.js';
 import { BookEngine } from '../../../src/state/platform/BookEngine.js';
 import { USDMClient } from '../../../src/products/usdm/USDMClient.js';
+import { CoinMClient } from '../../../src/products/coinm/CoinMClient.js';
 import { startMockWsServer, type MockWsServer } from '../../ws/platform/helpers.js';
 
 const server = setupServer();
@@ -23,6 +24,7 @@ afterAll(() => server.close());
 
 const USDM_DEPTH = 'https://fapi.binance.com/fapi/v1/depth';
 const SPOT_DEPTH = 'https://api.binance.com/api/v3/depth';
+const COINM_DEPTH = 'https://dapi.binance.com/dapi/v1/depth';
 
 /** Futures-style depth frame for the combined stream. */
 function usdmDepthFrame(input: {
@@ -252,6 +254,83 @@ describe('BookEngine (spot family)', () => {
     await vi.waitFor(() => expect(book.state).toBe('live'), { timeout: 2000 });
     expect(book.lastUpdateId).toBe(62);
     engine.close();
+  });
+});
+
+describe('BookEngine (coinm family)', () => {
+  let ws: MockWsServer;
+  let core: CoreContext;
+
+  beforeEach(async () => {
+    ws = await startMockWsServer();
+    // wsDapiMarket has its own override key (wsDapiBase) — wsBase alone does
+    // not redirect it, unlike usdm/spot which both fall back to wsBase.
+    core = new CoreContext({ apiKey: 'k', apiSecret: 's', wsDapiBase: ws.url, maxRetries: 0 });
+  });
+  afterEach(() => {
+    core.closeWebSockets();
+    return ws.close();
+  });
+
+  it('coinm books ride the coinm family, independent of usdm/spot', async () => {
+    server.use(http.get(COINM_DEPTH, () => snapshotJson(100, [['42000', '5']], [['42200', '4']])));
+    const engine = new BookEngine({ product: 'coinm', core });
+    const book = await engine.watch('BTCUSD_PERP');
+
+    expect(book.state).toBe('live');
+    expect(book.bestBid).toEqual({ price: '42000', quantity: '5' });
+    expect(core.ws.coinm.getSubscription('btcusd_perp@depth@100ms')).toBeDefined();
+    expect(core.ws.usdm.activeStreams()).not.toContain('btcusd_perp@depth@100ms');
+
+    ws.emitStream('btcusd_perp@depth@100ms', {
+      e: 'depthUpdate',
+      E: Date.now(),
+      s: 'BTCUSD_PERP',
+      U: 101,
+      u: 105,
+      pu: 100,
+      b: [['42010', '6']] as [string, string][],
+      a: [],
+    });
+    await vi.waitFor(() => expect(book.bestBid).toEqual({ price: '42010', quantity: '6' }));
+
+    engine.close();
+    expect(book.state).toBe('closed');
+  });
+});
+
+describe('CoinMClient execution/books integration', () => {
+  let ws: MockWsServer;
+  let core: CoreContext;
+
+  beforeEach(async () => {
+    ws = await startMockWsServer();
+    core = new CoreContext({ apiKey: 'k', apiSecret: 's', wsDapiBase: ws.url, maxRetries: 0 });
+  });
+  afterEach(() => {
+    core.closeWebSockets();
+    return ws.close();
+  });
+
+  it('coinm.books is a lazy, stable BookEngine closed by client.close()', async () => {
+    const coinm = new CoinMClient(core);
+    expect(coinm.books).toBeInstanceOf(BookEngine);
+    expect(coinm.books).toBe(coinm.books); // stable identity
+
+    server.use(http.get(COINM_DEPTH, () => snapshotJson(100, [['42000', '5']], [['42200', '4']])));
+    const book = await coinm.books.watch('BTCUSD_PERP');
+    expect(book.state).toBe('live');
+
+    coinm.close();
+    expect(book.state).toBe('closed');
+    expect(coinm.books.isClosed).toBe(true);
+  });
+
+  it('coinm.executionPlatform is lazy, stable, and wired to coinm.execution', async () => {
+    const coinm = new CoinMClient(core);
+    expect(coinm.executionPlatform.product).toBe('coinm');
+    expect(coinm.executionPlatform).toBe(coinm.executionPlatform); // stable identity
+    coinm.close();
   });
 });
 

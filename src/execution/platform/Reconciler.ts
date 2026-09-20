@@ -20,9 +20,11 @@ import type { ReconciliationSummary } from './types.js';
  * the same way the execution manager does for single intents — by folding an
  * authoritative REST snapshot into the trackers:
  *
- *   - `GET /fapi/v1/openOrders` (USDⓈ-M, one call) / per-symbol Spot
- *     `GET /api/v3/openOrders` → `OrderTracker.applyOrderShape`
- *   - `GET /fapi/v2/positionRisk` (USDⓈ-M) → `PositionTracker.applyUpdate`
+ *   - `GET /fapi/v1/openOrders` (USDⓈ-M, one call) / `GET /dapi/v1/openOrders`
+ *     (COIN-M, one call) / per-symbol Spot `GET /api/v3/openOrders` →
+ *     `OrderTracker.applyOrderShape`
+ *   - `GET /fapi/v2/positionRisk` (USDⓈ-M) / `GET /dapi/v1/positionRisk`
+ *     (COIN-M) → `PositionTracker.applyUpdate`
  *
  * Paper mode reconciles against the simulator's own book instead — the same
  * fold, the same events, zero network. Every fold emits the identical
@@ -34,15 +36,15 @@ import type { ReconciliationSummary } from './types.js';
 export interface ReconcileOptions {
   /**
    * Restrict the pass to these symbols. Required for live Spot (its
-   * `openOrders` route needs a symbol); optional for USDⓈ-M (one call covers
-   * the whole account, and the position fold filters to these symbols).
+   * `openOrders` route needs a symbol); optional for USDⓈ-M/COIN-M (one call
+   * covers the whole account, and the position fold filters to these symbols).
    */
   symbols?: string[];
 }
 
 /** Everything a reconciliation pass needs, provided by the platform. */
 export interface ReconcileTarget {
-  product: 'usdm' | 'spot';
+  product: 'usdm' | 'spot' | 'coinm';
   /** Shared transports — the same hosts, weight budgets and mocks as always. */
   core: Pick<CoreContext, 'events' | 'http'>;
   /** Paper wiring; presence switches the pass to the simulator's book. */
@@ -92,6 +94,37 @@ export async function reconcileExecutionPlatform(
     }
     const positionRisk = (await fapiRoot.get(
       '/fapi/v2/positionRisk',
+      {},
+      'signed',
+    )) as Record<string, unknown>[];
+    for (const raw of positionRisk) {
+      const updates = positionUpdatesFromPositionRisk(raw, fetchedAt);
+      for (const update of updates) {
+        if (options.symbols && !options.symbols.includes(update.symbol)) continue;
+        target.positions.applyUpdate(update);
+        positionsFolded += 1;
+      }
+    }
+  } else if (target.product === 'coinm') {
+    const dapiRoot: HttpClient = target.core.http('dapiRoot');
+    const params: Record<string, unknown> = {};
+    if (options.symbols && options.symbols.length === 1) {
+      params.symbol = options.symbols[0].toUpperCase();
+    }
+    const openOrders = (await dapiRoot.get(
+      '/dapi/v1/openOrders',
+      params,
+      'signed',
+    )) as Record<string, unknown>[];
+    for (const raw of openOrders) {
+      target.orders.applyOrderShape(orderShapeFromCoinmOpenOrder(raw));
+      ordersFolded += 1;
+    }
+    // COIN-M's positionRisk shares USDⓈ-M's field names exactly (symbol,
+    // positionAmt, entryPrice, unRealizedProfit, marginType, isolatedMargin) —
+    // same normalizer, different host/path.
+    const positionRisk = (await dapiRoot.get(
+      '/dapi/v1/positionRisk',
       {},
       'signed',
     )) as Record<string, unknown>[];
@@ -187,6 +220,31 @@ export function positionUpdatesFromPositionRisk(
       raw,
     },
   ];
+}
+
+// ---------------------------------------------------------------------------
+// COIN-M REST normalizers
+// ---------------------------------------------------------------------------
+
+/**
+ * `GET /dapi/v1/openOrders` row → decimal-string {@link OrderShape}. Same
+ * shape as USDⓈ-M's except `cumBase` (COIN-M settles in the base asset)
+ * where USDⓈ-M carries `cumQuote`.
+ */
+export function orderShapeFromCoinmOpenOrder(raw: Record<string, unknown>): OrderShape {
+  return {
+    orderId: toNumber(raw.orderId),
+    clientOrderId: String(raw.clientOrderId ?? ''),
+    symbol: String(raw.symbol ?? ''),
+    side: String(raw.side ?? ''),
+    type: String(raw.type ?? ''),
+    status: String(raw.status ?? ''),
+    executedQty: toDecimalString(raw.executedQty),
+    cumQuote: toDecimalString(raw.cumBase ?? raw.cumQuote),
+    avgPrice: toDecimalString(raw.avgPrice),
+    updateTime: toNumber(raw.updateTime) ?? Date.now(),
+    fills: [],
+  };
 }
 
 // ---------------------------------------------------------------------------

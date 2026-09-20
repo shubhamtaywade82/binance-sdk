@@ -1,4 +1,6 @@
 import type { CoreContext } from '../../core/context.js';
+import { ExecutionPlatform } from '../../execution/platform/ExecutionPlatform.js';
+import { BookEngine } from '../../state/platform/BookEngine.js';
 import type { ProductClient } from '../types.js';
 import { buildCoinmSurface, type CoinMSurface } from './surface.js';
 
@@ -12,7 +14,9 @@ import { buildCoinmSurface, type CoinMSurface } from './surface.js';
  * ```ts
  * const coinm = new CoinMClient(new CoreContext({ apiKey, apiSecret }));
  * await coinm.core.syncTime();                  // shared clock sync
- * const quote = await coinm.market.markPrice('BTCUSD_PERP');
+ * const fill = await coinm.execution.placeOrder({
+ *   symbol: 'BTCUSD_PERP', side: 'BUY', type: 'MARKET', quantity: 1,
+ * });
  * coinm.ws.bookTicker('BTCUSD_PERP', handler);   // product WS surface
  * coinm.close();                                 // product-scoped cleanup
  * ```
@@ -21,15 +25,6 @@ import { buildCoinmSurface, type CoinMSurface } from './surface.js';
  * core context is caller-visible (`coinm.core`) — transports, credentials
  * and the event bus are reachable without globals, and two product clients
  * can share one context (one weight budget, one observability stream).
- *
- * **Note on the v3 execution platform / state engine:** COIN-M does not yet
- * have its own `ExecutionPlatform` or `BookEngine` — those modules are
- * currently wired for `'usdm' | 'spot'` only. The full surface (`market`,
- * `account`, `trading`, `execution`, `userStream`, `ws`, `wsUser`) is here
- * and runs over the shared transports; the managed user-data session and
- * the L2 book engine for COIN-M are the next follow-up. Until then, the
- * manual `startUserStream()` path (listen key + 30-minute keep-alive +
- * user WS) is the way to consume COIN-M user data through this client.
  */
 export class CoinMClient implements ProductClient {
   readonly product = 'coinm' as const;
@@ -38,6 +33,8 @@ export class CoinMClient implements ProductClient {
   private readonly surface: CoinMSurface;
   private listenKeyValue: string | null = null;
   private keepAliveInterval: ReturnType<typeof setInterval> | null = null;
+  private executionPlatformValue: ExecutionPlatform | undefined;
+  private bookEngineValue: BookEngine | undefined;
   private closed = false;
 
   constructor(core: CoreContext) {
@@ -57,6 +54,11 @@ export class CoinMClient implements ProductClient {
     return this.surface.trading;
   }
 
+  /** Idempotent order placement with transport-failure reconciliation. */
+  get execution(): CoinMSurface['execution'] {
+    return this.surface.execution;
+  }
+
   get userStream(): CoinMSurface['userStream'] {
     return this.surface.userStream;
   }
@@ -67,6 +69,47 @@ export class CoinMClient implements ProductClient {
 
   get wsUser(): CoinMSurface['wsUser'] {
     return this.surface.wsUser;
+  }
+
+  /**
+   * The v3 execution platform: managed user-data stream session, live
+   * order/position feeds, and semantic retry classification. Lazily built —
+   * a REST-only caller never pays for it.
+   *
+   * ```ts
+   * await coinm.executionPlatform.startUserSession();
+   * coinm.executionPlatform.orders.get('nbsdk-…');
+   * coinm.executionPlatform.positions.get('BTCUSD_PERP');
+   * ```
+   */
+  get executionPlatform(): ExecutionPlatform {
+    if (!this.executionPlatformValue) {
+      this.executionPlatformValue = new ExecutionPlatform({
+        product: 'coinm',
+        core: this.core,
+        executionManager: this.surface.execution,
+      });
+    }
+    return this.executionPlatformValue;
+  }
+
+  /**
+   * The v3 state platform for COIN-M: managed local L2 books over the pooled
+   * WS platform + shared REST snapshot transports. Lazily built — a
+   * stream-only or REST-only caller never pays for it.
+   *
+   * ```ts
+   * const book = await coinm.books.watch('BTCUSD_PERP');  // resolves once synced
+   * book.bestBid;                                          // exact decimal strings
+   * book.metrics();                                        // spread, imbalance, …
+   * await coinm.books.unwatch('BTCUSD_PERP');
+   * ```
+   */
+  get books(): BookEngine {
+    if (!this.bookEngineValue) {
+      this.bookEngineValue = new BookEngine({ product: 'coinm', core: this.core });
+    }
+    return this.bookEngineValue;
   }
 
   /**
@@ -101,6 +144,8 @@ export class CoinMClient implements ProductClient {
   close(): void {
     if (this.closed) return;
     this.closed = true;
+    this.executionPlatformValue?.close();
+    this.bookEngineValue?.close();
     this.closeUserStream();
     this.surface.ws.close();
     this.surface.wsUser.close();

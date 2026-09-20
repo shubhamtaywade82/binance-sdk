@@ -46,7 +46,12 @@ export { ExecutionManager } from './execution/ExecutionManager.js';
 export type { ExecutionManagerOptions } from './execution/types.js';
 export type { Execution, ExecutionFill, ReconciliationState } from './execution/types.js';
 export { ExecutionUnknownError } from './execution/types.js';
-export { FuturesExecutionAdapter, SpotExecutionAdapter, isExecutionAdapter } from './execution/adapter.js';
+export {
+  FuturesExecutionAdapter,
+  SpotExecutionAdapter,
+  CoinMExecutionAdapter,
+  isExecutionAdapter,
+} from './execution/adapter.js';
 export type {
   ExecutionAdapter,
   ExecutionReportShape,

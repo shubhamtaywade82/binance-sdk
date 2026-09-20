@@ -231,7 +231,7 @@ export function orderRecordFromUpdate(update: OrderUpdate): OrderRecord {
  * types (new Binance events, e.g. `TRADE_LITE`) pass through unvalidated;
  * shapeless frames throw and the session surfaces them as errors.
  */
-export function createUserEventParser(product: 'usdm' | 'spot'): UserEventParser {
+export function createUserEventParser(product: 'usdm' | 'spot' | 'coinm'): UserEventParser {
   if (product === 'spot') {
     return (raw: unknown): unknown => {
       try {
@@ -242,6 +242,10 @@ export function createUserEventParser(product: 'usdm' | 'spot'): UserEventParser
       return raw;
     };
   }
+  // COIN-M's ORDER_TRADE_UPDATE/ACCOUNT_UPDATE/MARGIN_CALL envelopes carry the
+  // same field letters as USDⓈ-M's; parseUserDataEvent validates by `e` type,
+  // and any COIN-M-only field it doesn't know about just falls outside the
+  // schema's `.loose()` allowance — never rejects a genuinely valid frame.
   return (raw: unknown): unknown => {
     try {
       parseUserDataEvent(raw);

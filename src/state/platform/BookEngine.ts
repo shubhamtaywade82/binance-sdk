@@ -35,7 +35,7 @@ import { ManagedBook, type ManagedBookOptions } from './ManagedBook.js';
 
 /** Options for {@link BookEngine}. */
 export interface BookEngineOptions {
-  product: 'usdm' | 'spot';
+  product: 'usdm' | 'spot' | 'coinm';
   /** Shared runtime: pooled WS subscriptions + REST snapshot transports. */
   core: Pick<CoreContext, 'http' | 'events' | 'ws'>;
   /** Diff update speed; default `100ms`. */
@@ -70,7 +70,7 @@ const DEFAULT_RESYNC_DELAY_MS = 1000;
  * connections with everything else the context runs.
  */
 export class BookEngine {
-  readonly product: 'usdm' | 'spot';
+  readonly product: 'usdm' | 'spot' | 'coinm';
   private readonly core: BookEngineOptions['core'];
   private readonly updateSpeed: '100ms' | '500ms';
   private readonly snapshotLimit: number;
@@ -179,12 +179,19 @@ export class BookEngine {
   /** The pooled stream family this product's depth streams ride on. */
   private family(): WsFamilyStreams {
     const ws = this.core.ws;
-    return this.product === 'usdm' ? ws.usdm : ws.spot;
+    if (this.product === 'usdm') return ws.usdm;
+    if (this.product === 'coinm') return ws.coinm;
+    return ws.spot;
   }
 
-  /** Snapshot host: `fapi` (USDⓈ-M `/fapi/v1/depth`) or `spot` (`/api/v3/depth`). */
+  /**
+   * Snapshot host: `fapi` (USDⓈ-M `/fapi/v1/depth`), `dapi` (COIN-M
+   * `/dapi/v1/depth`), or `spot` (`/api/v3/depth`).
+   */
   private snapshotHttp(): HttpClient {
-    return this.core.http(this.product === 'usdm' ? 'fapi' : 'spot');
+    if (this.product === 'usdm') return this.core.http('fapi');
+    if (this.product === 'coinm') return this.core.http('dapi');
+    return this.core.http('spot');
   }
 
   /** Fetch + apply one REST snapshot for a symbol. */

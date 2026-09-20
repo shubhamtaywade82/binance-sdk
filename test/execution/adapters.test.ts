@@ -3,6 +3,7 @@ import { ExecutionManager } from '../../src/execution/ExecutionManager.js';
 import {
   SpotExecutionAdapter,
   FuturesExecutionAdapter,
+  CoinMExecutionAdapter,
   isExecutionAdapter,
 } from '../../src/execution/adapter.js';
 import { PaperExecutionAdapter } from '../../src/execution/paper.js';
@@ -10,6 +11,7 @@ import { ExecutionGateway } from '../../src/execution/Gateway.js';
 import { PaperTradingEngine } from '../../src/paper/PaperTradingEngine.js';
 import type { FuturesMarket } from '../../src/resources/FuturesMarket.js';
 import type { SpotTrading } from '../../src/resources/SpotTrading.js';
+import type { CoinMTrading } from '../../src/resources/CoinMTrading.js';
 import { BinanceApiError, NetworkError } from '../../src/errors/index.js';
 
 // ---------------------------------------------------------------------------
@@ -141,6 +143,158 @@ describe('SpotExecutionAdapter', () => {
       BinanceApiError,
     );
     expect(manager.getExecution('s-4')?.reconciliationState).toBe('rejected');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// COIN-M adapter: identical to USDⓈ-M except cumBase (base-asset settlement)
+// ---------------------------------------------------------------------------
+
+/** COIN-M order payload as CoinMOrderResponseSchema.parse would produce. */
+function coinmOrder(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    orderId: 777,
+    symbol: 'BTCUSD_PERP',
+    status: 'NEW',
+    clientOrderId: 'coinm-1',
+    price: '50000',
+    avgPrice: '0',
+    origQty: '1',
+    executedQty: '0',
+    cumBase: '0',
+    type: 'LIMIT',
+    reduceOnly: false,
+    side: 'BUY',
+    positionSide: 'BOTH',
+    time: 1,
+    updateTime: 1,
+    ...overrides,
+  };
+}
+
+function mockCoinMTrading(): CoinMTrading {
+  return {
+    createOrder: vi.fn(),
+    getOrder: vi.fn(),
+    cancelOrder: vi.fn(),
+  } as unknown as CoinMTrading;
+}
+
+const COINM_ORDER = {
+  symbol: 'BTCUSD_PERP',
+  side: 'BUY' as const,
+  type: 'LIMIT' as const,
+  quantity: 1,
+  price: 50000,
+};
+
+describe('CoinMExecutionAdapter', () => {
+  it('normalizes cumBase (base-asset settlement) into the Execution envelope', async () => {
+    const trading = mockCoinMTrading();
+    vi.mocked(trading.createOrder).mockResolvedValue(
+      coinmOrder({ status: 'FILLED', executedQty: '1', cumBase: '0.00002' }) as never,
+    );
+    const manager = new ExecutionManager(new CoinMExecutionAdapter(trading));
+
+    const execution = await manager.placeOrder({ ...COINM_ORDER, intentId: 'c-1' });
+
+    expect(execution.reconciliationState).toBe('acked');
+    expect(execution.status).toBe('FILLED');
+    expect(execution.executedQuantity).toBe('1');
+    // cumBase feeds the same cumulativeQuoteQuantity slot cumQuote does for USDⓈ-M/Spot.
+    expect(execution.cumulativeQuoteQuantity).toBe('0.00002');
+    expect(execution.exchangeOrderId).toBe(777);
+    expect(manager.product).toBe('coinm');
+  });
+
+  it('falls back to cumQuote when cumBase is absent (defensive, matches other products)', async () => {
+    const trading = mockCoinMTrading();
+    vi.mocked(trading.createOrder).mockResolvedValue(
+      coinmOrder({ status: 'FILLED', executedQty: '1', cumBase: undefined, cumQuote: '0.00003' }) as never,
+    );
+    const manager = new ExecutionManager(new CoinMExecutionAdapter(trading));
+
+    const execution = await manager.placeOrder({ ...COINM_ORDER, intentId: 'c-fallback' });
+    expect(execution.cumulativeQuoteQuantity).toBe('0.00003');
+  });
+
+  it('reconciles COIN-M orders by origClientOrderId after a transport failure', async () => {
+    const trading = mockCoinMTrading();
+    vi.mocked(trading.createOrder).mockRejectedValueOnce(new NetworkError('reset'));
+    vi.mocked(trading.getOrder).mockResolvedValue(
+      coinmOrder({ status: 'FILLED', executedQty: '1', cumBase: '0.00002' }) as never,
+    );
+    const manager = new ExecutionManager(new CoinMExecutionAdapter(trading), {
+      reconcilePollDelayMs: 1,
+    });
+
+    const execution = await manager.placeOrder({ ...COINM_ORDER, intentId: 'c-2' });
+
+    expect(execution.reconciliationState).toBe('reconciled');
+    expect(vi.mocked(trading.getOrder).mock.calls[0][1]?.origClientOrderId).toMatch(/^nbsdk-/);
+  });
+
+  it('streams ORDER_TRADE_UPDATE events into the ledger (same envelope as USDⓈ-M)', async () => {
+    const trading = mockCoinMTrading();
+    vi.mocked(trading.createOrder).mockResolvedValue(coinmOrder() as never);
+    const manager = new ExecutionManager(new CoinMExecutionAdapter(trading));
+    const execution = await manager.placeOrder({ ...COINM_ORDER, intentId: 'c-3' });
+
+    const listeners: Array<(event: unknown) => void> = [];
+    const fakeUserStream = {
+      on: vi.fn((_e: string, handler: (event: unknown) => void) => {
+        listeners.push(handler);
+      }),
+      off: vi.fn(),
+    };
+    manager.setUserStream(fakeUserStream as never);
+
+    for (const listener of listeners) {
+      listener({
+        e: 'ORDER_TRADE_UPDATE',
+        E: 2000,
+        o: {
+          s: 'BTCUSD_PERP',
+          c: execution.clientOrderId,
+          i: 777,
+          X: 'FILLED',
+          x: 'TRADE',
+          l: '1',
+          L: '50500',
+          z: '1',
+          ap: '50500',
+          n: '0.00000001',
+          N: 'BTC',
+          t: 9,
+          T: 2000,
+        },
+      });
+    }
+
+    const updated = manager.getExecution('c-3');
+    expect(updated?.status).toBe('FILLED');
+    expect(updated?.executedQuantity).toBe('1');
+    expect(updated?.fills).toHaveLength(1);
+    expect(updated?.fills[0]).toEqual({
+      price: '50500',
+      quantity: '1',
+      commission: '0.00000001',
+      commissionAsset: 'BTC',
+      tradeId: 9,
+    });
+  });
+
+  it('exchange rejections flow through identically', async () => {
+    const trading = mockCoinMTrading();
+    vi.mocked(trading.createOrder).mockRejectedValue(
+      new BinanceApiError('Account has insufficient balance', -2010, 400, {}),
+    );
+    const manager = new ExecutionManager(new CoinMExecutionAdapter(trading));
+
+    await expect(manager.placeOrder({ ...COINM_ORDER, intentId: 'c-4' })).rejects.toBeInstanceOf(
+      BinanceApiError,
+    );
+    expect(manager.getExecution('c-4')?.reconciliationState).toBe('rejected');
   });
 });
 
@@ -375,10 +529,12 @@ describe('isExecutionAdapter', () => {
       getOrder: vi.fn(),
       cancelOrder: vi.fn(),
     } as never);
+    const coinm = new CoinMExecutionAdapter(mockCoinMTrading());
 
     expect(isExecutionAdapter(paper)).toBe(true);
     expect(isExecutionAdapter(spot)).toBe(true);
     expect(isExecutionAdapter(futures)).toBe(true);
+    expect(isExecutionAdapter(coinm)).toBe(true);
 
     // A raw FuturesTrading-like object (the legacy constructor form) is not.
     expect(isExecutionAdapter(mockSpotTrading())).toBe(false);

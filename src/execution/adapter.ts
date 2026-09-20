@@ -2,6 +2,8 @@ import { Decimal } from '../core/decimal.js';
 import type { CreateOrderParams } from '../types/trading.types.js';
 import type { FuturesTrading } from '../resources/FuturesTrading.js';
 import type { SpotTrading } from '../resources/SpotTrading.js';
+import type { CoinMTrading } from '../resources/CoinMTrading.js';
+import type { CoinMCreateOrderParams } from '../types/coinm.types.js';
 import type { ExecutionFill } from './types.js';
 
 /**
@@ -370,6 +372,104 @@ export class SpotExecutionAdapter implements ExecutionAdapter {
       });
       if (report) this.reportHandler?.(report);
     };
+    if (this.userStream && this.userDataListener) {
+      this.userStream.on('userData', this.userDataListener);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// COIN-M futures adapter
+// ---------------------------------------------------------------------------
+
+/**
+ * Binance COIN-M (dapi) execution adapter: identical wire shape to USDⓈ-M
+ * (`ORDER_TRADE_UPDATE` report, -2011/-2013 semantics) with the one real
+ * field difference — COIN-M contracts settle in the base asset, so REST order
+ * responses carry `cumBase` where USDⓈ-M carries `cumQuote`.
+ */
+export class CoinMExecutionAdapter implements ExecutionAdapter {
+  readonly product = 'coinm';
+  private reportHandler: ((report: ExecutionReportShape) => void) | null = null;
+  private userDataListener: UserDataListener | null = null;
+  private userStream: UserStreamLike | null = null;
+
+  constructor(private readonly trading: CoinMTrading) {}
+
+  async createOrder(submission: CreateOrderParams): Promise<Record<string, unknown>> {
+    return (await this.trading.createOrder(
+      submission as unknown as CoinMCreateOrderParams,
+    )) as unknown as Record<string, unknown>;
+  }
+
+  async fetchOrder(symbol: string, key: OrderKey): Promise<Record<string, unknown>> {
+    return (await this.trading.getOrder(symbol, {
+      orderId: key.orderId,
+      origClientOrderId: key.origClientOrderId,
+    })) as unknown as Record<string, unknown>;
+  }
+
+  async cancelOrder(symbol: string, key: OrderKey): Promise<Record<string, unknown>> {
+    return (await this.trading.cancelOrder(symbol, {
+      orderId: key.orderId,
+      origClientOrderId: key.origClientOrderId,
+    })) as unknown as Record<string, unknown>;
+  }
+
+  toOrderShape(raw: Record<string, unknown>): OrderShape {
+    return {
+      orderId: raw.orderId !== undefined ? numOr(raw.orderId, 0) : undefined,
+      clientOrderId: String(raw.clientOrderId ?? ''),
+      symbol: String(raw.symbol ?? ''),
+      side: String(raw.side ?? ''),
+      type: String(raw.type ?? ''),
+      status: String(raw.status ?? ''),
+      executedQty: str(raw.executedQty),
+      // COIN-M settles in the base asset: `cumBase`, not `cumQuote`.
+      cumQuote: str(raw.cumBase ?? raw.cumQuote),
+      avgPrice: str(raw.avgPrice),
+      updateTime: raw.updateTime !== undefined ? numOr(raw.updateTime, Date.now()) : Date.now(),
+      fills: rawFills(raw),
+    };
+  }
+
+  setUserStream(ws: UserStreamLike | null): void {
+    if (this.userStream && this.userDataListener) {
+      this.userStream.off('userData', this.userDataListener);
+    }
+    this.userStream = ws;
+    if (ws && this.userDataListener) {
+      ws.on('userData', this.userDataListener);
+    }
+  }
+
+  onReport(handler: (report: ExecutionReportShape) => void): void {
+    this.reportHandler = handler;
+    this.userDataListener = (event: unknown): void => {
+      if (
+        event === null ||
+        typeof event !== 'object' ||
+        (event as { e?: string }).e !== 'ORDER_TRADE_UPDATE'
+      ) {
+        return;
+      }
+      const order = (event as { o?: Record<string, unknown> }).o;
+      if (!order || typeof order !== 'object') return;
+      const report = reportFrom(order, {
+        clientOrderId: 'c',
+        orderId: 'i',
+        status: 'X',
+        lastPrice: 'L',
+        lastQty: 'l',
+        commission: 'n',
+        commissionAsset: 'N',
+        executedQty: 'z',
+        avgPrice: 'ap',
+        tradeId: 't',
+      });
+      if (report) this.reportHandler?.(report);
+    };
+    // Late registration (manager attaches after construction): wire now.
     if (this.userStream && this.userDataListener) {
       this.userStream.on('userData', this.userDataListener);
     }
