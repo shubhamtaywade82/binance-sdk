@@ -224,10 +224,9 @@ export function marketDataTools(client: BinanceClient): ToolDefinition[] {
     },
     {
       name: 'futures_insurance_balance',
-      description: 'Get insurance fund balance snapshots for a symbol.',
-      inputSchema: z.object({ symbol: z.string().min(1).describe('USD-M pair, e.g. BNBUSDT'), limit: limitDefault.default(100), startTime, endTime }),
-      handler: async ({ symbol, limit, startTime, endTime }) =>
-        textResult(await d.insuranceFundBalance({ symbol: normalizeSymbol(symbol), limit: Number(limit), startTime, endTime })),
+      description: 'Get the insurance fund balance snapshot (GET /fapi/v1/insuranceBalance) for one symbol or all symbols.',
+      inputSchema: z.object({ symbol: optSymbol }),
+      handler: async ({ symbol }) => textResult(await d.insuranceFundBalance({ symbol: symbol ? normalizeSymbol(symbol) : undefined })),
     },
     {
       name: 'futures_index_price_constituents',
@@ -256,7 +255,7 @@ export function marketDataTools(client: BinanceClient): ToolDefinition[] {
     },
     {
       name: 'futures_symbol_adl_risk',
-      description: 'Get the auto-deleveraging (ADL) risk level for one symbol or all symbols on the account (signed).',
+      description: 'Get the auto-deleveraging (ADL) risk level for one symbol or all symbols (public).',
       inputSchema: z.object({ symbol: optSymbol }),
       handler: async ({ symbol }) => textResult(await d.symbolAdlRisk(symbol ? normalizeSymbol(symbol) : undefined)),
     },

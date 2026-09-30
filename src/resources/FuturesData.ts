@@ -162,13 +162,9 @@ export class FuturesData {
     );
   }
 
-  async insuranceFundBalance(options?: { symbol?: string; startTime?: number; endTime?: number; limit?: number }): Promise<unknown[]> {
-    return this.dataHttp.get('/insuranceBalance', {
-      symbol: options?.symbol,
-      startTime: options?.startTime,
-      endTime: options?.endTime,
-      limit: options?.limit,
-    });
+  /** Insurance fund balance snapshot — `GET /fapi/v1/insuranceBalance` (public; `symbol` optional). */
+  async insuranceFundBalance(options?: { symbol?: string }): Promise<unknown[]> {
+    return this.http.get('/insuranceBalance', { symbol: options?.symbol });
   }
 
   async pmExchangeInfo(): Promise<unknown> {
@@ -182,7 +178,7 @@ export class FuturesData {
 
   async symbolAdlRisk(symbol?: string): Promise<unknown[]> {
     const params = symbol ? { symbol } : {};
-    return this.http.get('/symbolAdlRisk', params, 'signed');
+    return this.http.get('/symbolAdlRisk', params);
   }
 
   async deliveryPrice(pair: string): Promise<{ deliveryTime: number; deliveryPrice: number }[]> {

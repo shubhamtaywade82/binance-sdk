@@ -1,6 +1,6 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-09-09T03:27:17.394Z",
+  "generatedAt": "2026-09-30T17:46:57.462Z",
   "products": {
     "coinm": {
       "public": 17,
@@ -27,10 +27,10 @@
       "total": 13
     },
     "usdm": {
-      "public": 37,
+      "public": 39,
       "apiKey": 4,
-      "signed": 57,
-      "total": 98
+      "signed": 56,
+      "total": 99
     },
     "wallet": {
       "public": 0,

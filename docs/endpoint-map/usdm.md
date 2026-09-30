@@ -2,7 +2,7 @@
 
 > Generated from `src/registry/*.endpoints.ts` by `npm run docs:generate` — do not edit by hand.
 
-98 implemented endpoints.
+99 implemented endpoints.
 
 | Operation | Method | Path | Auth | SDK surface |
 |---|---|---|---|---|
@@ -23,6 +23,7 @@
 | `market.premiumIndexKlines` | GET | `/fapi/v1/premiumIndexKlines` | PUBLIC | `futures.market.premiumIndexKlines` |
 | `market.rpiDepth` | GET | `/fapi/v1/rpiDepth` | PUBLIC | `futures.market.rpiDepth` |
 | `market.tradingDayTicker` | GET | `/fapi/v1/tradingDayTicker` | PUBLIC | `futures.market.tradingDayTicker` |
+| `market.tradingSchedule` | GET | `/fapi/v1/tradingSchedule` | PUBLIC | `futures.market.tradingSchedule` |
 | `market.tickerPriceV2` | GET | `/fapi/v2/ticker/price` | PUBLIC | `futures.market.tickerPriceV2` |
 | `market.bookTickerV2` | GET | `/fapi/v2/ticker/bookTicker` | PUBLIC | `futures.market.bookTickerV2` |
 | `data.fundingRateHistory` | GET | `/fapi/v1/fundingRate` | PUBLIC | `futures.data.fundingRateHistory` |
@@ -34,7 +35,7 @@
 | `data.globalLongShortAccountRatio` | GET | `/futures/data/globalLongShortAccountRatio` | PUBLIC | `futures.data.globalLongShortAccountRatio` |
 | `data.takerLongShortRatio` | GET | `/futures/data/takerlongshortRatio` | PUBLIC | `futures.data.takerLongShortRatio` |
 | `data.basis` | GET | `/futures/data/basis` | PUBLIC | `futures.data.basis` |
-| `data.insuranceBalance` | GET | `/futures/data/insuranceBalance` | PUBLIC | `futures.data.insuranceFundBalance` |
+| `data.insuranceBalance` | GET | `/fapi/v1/insuranceBalance` | PUBLIC | `futures.data.insuranceFundBalance` |
 | `data.deliveryPrice` | GET | `/futures/data/delivery-price` | PUBLIC | `futures.data.deliveryPrice` |
 | `data.fundingInfo` | GET | `/fapi/v1/fundingInfo` | PUBLIC | `futures.data.fundingInfo` |
 | `data.assetIndex` | GET | `/fapi/v1/assetIndex` | PUBLIC | `futures.data.assetIndex` |
@@ -46,7 +47,7 @@
 | `data.forceOrders` | GET | `/fapi/v1/forceOrders` | SIGNED | `futures.data.forceOrders` |
 | `data.pmExchangeInfo` | GET | `/fapi/v1/pmExchangeInfo` | PUBLIC | `futures.data.pmExchangeInfo` |
 | `data.delistSchedule` | GET | `/fapi/v1/delistSchedule` | PUBLIC | `futures.data.delistSchedule` |
-| `data.symbolAdlRisk` | GET | `/fapi/v1/symbolAdlRisk` | SIGNED | `futures.data.symbolAdlRisk` |
+| `data.symbolAdlRisk` | GET | `/fapi/v1/symbolAdlRisk` | PUBLIC | `futures.data.symbolAdlRisk` |
 | `account.balanceV2` | GET | `/fapi/v2/balance` | SIGNED | `futures.account.balance` |
 | `account.accountV2` | GET | `/fapi/v2/account` | SIGNED | `futures.account.account` |
 | `account.positionRiskV2` | GET | `/fapi/v2/positionRisk` | SIGNED | `futures.account.positionRisk` |

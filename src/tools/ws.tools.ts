@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { BinanceClient } from '../client/BinanceClient.js';
+import { futuresStreamRoute } from '../ws/FuturesMarketWS.js';
 import type { ToolDefinition } from './types.js';
 import { textResult, normalizeSymbol } from './types.js';
 
@@ -16,10 +17,12 @@ function bufferFor(client: BinanceClient): WsBuffer {
   if (!buffer) {
     buffer = { subscriptions: new Set(), events: [] };
     buffers.set(client, buffer);
-    client.futures.ws.on('message', (stream: string, payload: unknown) => {
+    const onMessage = (stream: string, payload: unknown): void => {
       buffer!.events.push({ stream, payload, ts: Date.now() });
       if (buffer!.events.length > MAX_BUFFER) buffer!.events.splice(0, buffer!.events.length - MAX_BUFFER);
-    });
+    };
+    client.futures.ws.on('message', onMessage);
+    client.futures.wsPublic.on('message', onMessage);
   }
   return buffer;
 }
@@ -30,6 +33,11 @@ export function getBufferedWsEvents(client: BinanceClient, limit = 50): unknown[
 
 export function clearBufferedWsEvents(client: BinanceClient): void {
   bufferFor(client).events = [];
+}
+
+/** USDⓈ-M streams are split across the `/public` (order book) and `/market` connections. */
+function connectionFor(client: BinanceClient, stream: string) {
+  return futuresStreamRoute(stream) === 'public' ? client.futures.wsPublic : client.futures.ws;
 }
 
 export function wsTools(client: BinanceClient): ToolDefinition[] {
@@ -45,7 +53,7 @@ export function wsTools(client: BinanceClient): ToolDefinition[] {
       }),
       handler: async ({ topics }) => {
         const normalized = topics.map((t: string) => t.trim().toLowerCase());
-        client.futures.ws.subscribe(normalized);
+        for (const topic of normalized) void connectionFor(client, topic).subscribe([topic]);
         normalized.forEach((t: string) => buffer.subscriptions.add(t));
         return textResult({ subscribed: normalized, active: [...buffer.subscriptions] });
       },
@@ -56,7 +64,7 @@ export function wsTools(client: BinanceClient): ToolDefinition[] {
       inputSchema: z.object({ topics: z.array(z.string().min(1)).min(1) }),
       handler: async ({ topics }) => {
         const normalized = topics.map((t: string) => t.trim().toLowerCase());
-        client.futures.ws.unsubscribe(normalized);
+        for (const topic of normalized) void connectionFor(client, topic).unsubscribe([topic]);
         normalized.forEach((t: string) => buffer.subscriptions.delete(t));
         return textResult({ unsubscribed: normalized, active: [...buffer.subscriptions] });
       },

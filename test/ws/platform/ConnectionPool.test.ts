@@ -14,6 +14,21 @@ describe('FamilyConnectionPool (capacity-aware pooling)', () => {
     vi.restoreAllMocks();
   });
 
+  it('keeps /public (order-book) and /market streams on separate USDⓈ-M connections', () => {
+    const pool = new FamilyConnectionPool({
+      family: 'usdm',
+      baseStreamUrl: `${server.url}/market/stream`,
+      publicStreamUrl: `${server.url}/public/stream`,
+    });
+    const market = pool.selectOrCreate(['btcusdt@aggTrade']);
+    const pub = pool.selectOrCreate(['btcusdt@depth@100ms']);
+    expect(pub).not.toBe(market);
+    expect(pool.selectOrCreate(['ethusdt@kline_1m'])).toBe(market);
+    expect(pool.selectOrCreate(['!bookTicker'])).toBe(pub);
+    expect(pool.selectOrCreate(['btcusdt@rpiDepth@500ms'])).toBe(pub);
+    expect(pool.size()).toBe(2);
+  });
+
   it('packs streams onto the least-loaded connection with capacity', () => {
     const pool = new FamilyConnectionPool({ family: 'usdm', baseStreamUrl: server.url });
     const first = pool.selectOrCreate(['a@trade']);

@@ -65,6 +65,24 @@ describe('FuturesMarket', () => {
     expect((ticker[0] as { symbol: string }).symbol).toBe('BTCUSDT');
   });
 
+  it('fetches the trading schedule from /fapi/v1/tradingSchedule (public, no params)', async () => {
+    let url: URL | undefined;
+    let apiKey: string | null = null;
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/tradingSchedule', ({ request }) => {
+        url = new URL(request.url);
+        apiKey = request.headers.get('X-MBX-APIKEY');
+        return HttpResponse.json({ updateTime: 1, marketSchedules: { EQUITY: { sessions: [] } } });
+      }),
+    );
+
+    const market = new FuturesMarket();
+    const schedule = (await market.tradingSchedule()) as { updateTime: number };
+    expect(schedule.updateTime).toBe(1);
+    expect(url?.search).toBe('');
+    expect(apiKey).toBeNull();
+  });
+
   it('fetches v2 ticker price', async () => {
     server.use(
       http.get('https://fapi.binance.com/fapi/v2/ticker/price', () =>

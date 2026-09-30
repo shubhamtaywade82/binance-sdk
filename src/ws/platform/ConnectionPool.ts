@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import type { EventBus } from '../../core/events.js';
 import { BaseWS } from '../BaseWS.js';
-import { FuturesMarketWS } from '../FuturesMarketWS.js';
+import { FuturesMarketWS, futuresStreamRoute, type FuturesStreamRoute } from '../FuturesMarketWS.js';
 import { SpotMarketWS } from '../SpotMarketWS.js';
 import { CoinMMarketWS } from '../CoinMMarketWS.js';
 import { exponentialBackoff } from './ReconnectPolicy.js';
@@ -14,6 +14,11 @@ export interface FamilyConnectionPoolOptions {
   family: WsFamily;
   /** Combined-stream base URL for the family (from core.endpoints). */
   baseStreamUrl: string;
+  /**
+   * USDⓈ-M only: URL of the `/public` path (book tickers, depth, RPI depth).
+   * `baseStreamUrl` is then the `/market` path; each stream is routed by name.
+   */
+  publicStreamUrl?: string;
   /** Cap on pooled connections; default is the family's documented default. */
   maxConnections?: number;
   /** Reconnect backoff; default jittered exponential. */
@@ -52,18 +57,22 @@ export interface FamilyConnectionPoolOptions {
 export class FamilyConnectionPool {
   readonly family: WsFamily;
   private readonly baseStreamUrl: string;
+  private readonly publicStreamUrl?: string;
+  /** Route each pooled connection was opened for (USDⓈ-M only). */
+  private readonly routes = new Map<PooledConnection, FuturesStreamRoute>();
   private readonly maxConnections: number;
   private readonly maxStreamsPerConnection: number;
   private readonly events?: EventBus;
   private readonly socketFactory?: (url: string) => WebSocket;
   private readonly requestTimeoutMs: number;
   private readonly onConnection?: (name: string, conn: PooledConnection) => void;
-  private readonly createConnection: () => PooledConnection;
+  private readonly createConnection: (route: FuturesStreamRoute) => PooledConnection;
   private readonly pool: PooledConnection[] = [];
 
   constructor(options: FamilyConnectionPoolOptions) {
     this.family = options.family;
     this.baseStreamUrl = options.baseStreamUrl;
+    this.publicStreamUrl = options.family === 'usdm' ? options.publicStreamUrl : undefined;
     this.maxConnections = options.maxConnections ?? WS_FAMILY_LIMITS[options.family].defaultMaxConnections;
     this.maxStreamsPerConnection = WS_FAMILY_LIMITS[options.family].maxStreamsPerConnection;
     this.events = options.events;
@@ -85,7 +94,11 @@ export class FamilyConnectionPool {
 
     switch (family) {
       case 'usdm':
-        this.createConnection = () => new FuturesMarketWS(this.baseStreamUrl, { ...buildOptions, name: this.nextName() });
+        this.createConnection = (route) =>
+          new FuturesMarketWS(route === 'public' && this.publicStreamUrl ? this.publicStreamUrl : this.baseStreamUrl, {
+            ...buildOptions,
+            name: this.nextName(),
+          });
         break;
       case 'spot':
         this.createConnection = () => new SpotMarketWS(this.baseStreamUrl, { ...buildOptions, name: this.nextName() });
@@ -106,10 +119,12 @@ export class FamilyConnectionPool {
    * capacity and must raise the cap.
    */
   selectOrCreate(newStreams: readonly string[]): PooledConnection {
+    const route = this.routeFor(newStreams);
     if (newStreams.length > 0) {
       let candidate: PooledConnection | null = null;
       let candidateLoad = Number.POSITIVE_INFINITY;
       for (const conn of this.pool) {
+        if (this.routes.get(conn) !== route) continue;
         const load = conn.getSubscribedStreams().length;
         if (load + newStreams.length <= this.maxStreamsPerConnection && load < candidateLoad) {
           candidate = conn;
@@ -124,7 +139,8 @@ export class FamilyConnectionPool {
           `${this.maxStreamsPerConnection} streams each. Raise the ws platform's maxConnections for this family.`,
       );
     }
-    const conn = this.createConnection();
+    const conn = this.createConnection(route);
+    this.routes.set(conn, route);
     this.pool.push(conn);
     this.onConnection?.(conn.name, conn);
     this.events?.emit('ws.pool.connection.created', {
@@ -133,6 +149,12 @@ export class FamilyConnectionPool {
       connections: this.pool.length,
     });
     return conn;
+  }
+
+  /** Route for a selection: USDⓈ-M order-book streams go to `/public`; everything else `/market`. */
+  private routeFor(streams: readonly string[]): FuturesStreamRoute {
+    if (this.family !== 'usdm' || !this.publicStreamUrl || streams.length === 0) return 'market';
+    return futuresStreamRoute(streams[0]);
   }
 
   /** Live pooled connections (copy). */
@@ -163,6 +185,7 @@ export class FamilyConnectionPool {
   closeAll(): void {
     for (const conn of this.pool) conn.close();
     this.pool.length = 0;
+    this.routes.clear();
   }
 
   /** Next pool-assigned connection name, e.g. `usdmMarket[3]`. */

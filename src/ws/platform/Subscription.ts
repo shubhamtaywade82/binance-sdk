@@ -108,7 +108,7 @@ export class Subscription extends EventEmitter {
 
   /** Internal: deliver one parsed payload (already losslessly parsed). */
   /** @internal */
-  dispatch(payload: WsStreamPayload): void {
+  dispatch(payload: WsStreamPayload | WsStreamPayload[]): void {
     if (this.closed) return;
     this.emit('message', payload);
   }

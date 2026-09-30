@@ -184,6 +184,60 @@ export const WsSpotAvgPricePayloadSchema = z.object({
 });
 export type WsSpotAvgPricePayload = z.infer<typeof WsSpotAvgPricePayloadSchema>;
 
+/**
+ * RPI diff. book depth (`<symbol>@rpiDepth@500ms`). The event-type literal is
+ * not pinned (Binance documents it as a plain string).
+ */
+export const WsRpiDepthUpdatePayloadSchema = z.object({
+  e: z.string(),
+  E: z.number(),
+  T: z.number().optional(),
+  s: z.string(),
+  U: z.number(),
+  u: z.number(),
+  pu: z.number().optional(),
+  b: z.array(z.tuple([z.string(), z.string()])),
+  a: z.array(z.tuple([z.string(), z.string()])),
+  ps: z.string().optional(),
+});
+export type WsRpiDepthUpdatePayload = z.infer<typeof WsRpiDepthUpdatePayloadSchema>;
+
+/** `!contractInfo` — symbol/contract information updates (leverage bracket list in `bks`). */
+export const WsContractInfoPayloadSchema = z.object({
+  e: z.string(),
+  E: z.number(),
+  s: z.string(),
+  ct: z.string().optional(),
+  dt: z.number().optional(),
+  ot: z.number().optional(),
+  cs: z.string().optional(),
+  bks: z
+    .array(
+      z.looseObject({
+        bs: z.number().optional(),
+        bnf: z.number().optional(),
+        bnc: z.number().optional(),
+        mmr: z.number().optional(),
+        cf: z.number().optional(),
+        mi: z.number().optional(),
+        ma: z.number().optional(),
+      }),
+    )
+    .optional(),
+  st: z.number().optional(),
+});
+export type WsContractInfoPayload = z.infer<typeof WsContractInfoPayloadSchema>;
+
+/** `tradingSession` — session transition events (`t`/`T` = start/end time, `S` = session). */
+export const WsTradingSessionPayloadSchema = z.object({
+  e: z.string(),
+  E: z.number(),
+  t: z.number().optional(),
+  T: z.number().optional(),
+  S: z.string().optional(),
+});
+export type WsTradingSessionPayload = z.infer<typeof WsTradingSessionPayloadSchema>;
+
 export type WsStreamPayload =
   | WsKlinePayload
   | WsAggTradePayload
@@ -197,9 +251,35 @@ export type WsStreamPayload =
   | WsCompositeIndexPayload
   | WsAssetIndexPayload
   | WsRollingWindowTickerPayload
-  | WsSpotAvgPricePayload;
+  | WsSpotAvgPricePayload
+  | WsRpiDepthUpdatePayload
+  | WsContractInfoPayload
+  | WsTradingSessionPayload;
 
-export function parseWsPayload(streamName: string, raw: unknown): WsStreamPayload {
+/**
+ * Parse one combined-stream frame. All-market streams (`!…@arr`, `!bookTicker`)
+ * are parsed element-wise when Binance delivers an array (`!markPrice@arr`,
+ * `!ticker@arr`, `!miniTicker@arr`, `!assetIndex@arr`, …), so those return an
+ * array of typed payloads.
+ */
+export function parseWsPayload(streamName: string, raw: unknown): WsStreamPayload | WsStreamPayload[] {
+  if (Array.isArray(raw)) {
+    const elementStream = allMarketElementStream(streamName);
+    return raw.map((item) => parseSingleWsPayload(elementStream, item));
+  }
+  return parseSingleWsPayload(allMarketElementStream(streamName), raw);
+}
+
+/** `!markPrice@arr@1s` → `all@markPrice@1s`, `!bookTicker` → `all@bookTicker` (per-element stream key). */
+function allMarketElementStream(streamName: string): string {
+  if (!streamName.startsWith('!')) return streamName;
+  return `all@${streamName.slice(1).replace('@arr', '')}`;
+}
+
+function parseSingleWsPayload(streamName: string, raw: unknown): WsStreamPayload {
+  if (streamName === 'all@contractInfo') return WsContractInfoPayloadSchema.parse(raw);
+  if (streamName === 'tradingSession') return WsTradingSessionPayloadSchema.parse(raw);
+  if (streamName.includes('@rpiDepth')) return WsRpiDepthUpdatePayloadSchema.parse(raw);
   if (streamName.includes('@kline_')) return WsKlinePayloadSchema.parse(raw);
   if (streamName.includes('@continuousKline_') || streamName.includes('@indexPriceKline_') || streamName.includes('@markPriceKline_')) {
     return WsKlinePayloadSchema.parse(raw);

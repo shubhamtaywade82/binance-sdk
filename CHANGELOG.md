@@ -5,6 +5,17 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- **USDⓈ-M WebSocket routing (breaking for custom `wsBase` users).** Market streams now connect over `…/market/stream` and order-book streams (`bookTicker`, `!bookTicker`, `depth*`, `rpiDepth`) over `…/public/stream`; the legacy `…/stream` URL was decommissioned by Binance on 2026-04-23. `Endpoints` gains `wsPublic`, `BinanceClient` options gain `wsPublicBase`, `client.futures.wsPublic` is the `/public` connection, and `client.ws.usdm` (pooled platform) routes each stream automatically. `client.futures.ws` (`/market`) now rejects order-book streams with a clear error — subscribe those on `client.futures.wsPublic`. `OrderBookEngine` via `createFuturesOrderBookEngine` and the MCP `futures_ws_*` tools route automatically. **Not verified:** whether testnet/demo hosts serve the new paths; override with `wsBase`/`wsPublicBase` if they do not.
+- `FuturesMarketWS.continuousKline` built `<symbol>@continuousKline_<type>_<interval>`; the correct stream is `<pair>_<contractType>@continuousKline_<interval>`.
+- `futures.data.insuranceFundBalance` now calls `GET /fapi/v1/insuranceBalance` (was `/futures/data/insuranceBalance`); only the documented `symbol` parameter is sent.
+- `futures.data.symbolAdlRisk` is a public endpoint (was sent signed).
+- `parseWsPayload` no longer throws on array payloads (`!markPrice@arr`, `!ticker@arr`, `!miniTicker@arr`, `!assetIndex@arr`) and on `!bookTicker`; array frames yield arrays of typed payloads.
+
+### Added
+- `futures.market.tradingSchedule()` — `GET /fapi/v1/tradingSchedule`.
+- Stream builders `allMarkPrices('1s')` (`!markPrice@arr@1s`), `rpiDepth()`, `contractInfo()`, `tradingSession()`, plus `futuresStreamRoute()`; typed schemas for RPI depth, contract info and trading session payloads.
+
 ## [3.0.0] - 2026-09-16
 
 **v3 platform GA.** The six pillars the project's own roadmap

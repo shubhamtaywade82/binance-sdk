@@ -7,7 +7,12 @@ async function main(): Promise<void> {
     // Tainted `stream` must not flow into the format-string (first) argument.
     console.log('[%s] %s:', new Date().toISOString(), stream, JSON.stringify(payload));
   });
-  client.futures.ws.subscribe(['btcusdt@aggTrade', 'btcusdt@markPrice@1s', 'btcusdt@depth20']);
+  client.futures.ws.subscribe(['btcusdt@aggTrade', 'btcusdt@markPrice@1s']);
+  // Order-book streams (depth, bookTicker) are served on the separate /public path.
+  client.futures.wsPublic.on('message', (stream: string, payload: unknown) => {
+    console.log('[%s] %s:', new Date().toISOString(), stream, JSON.stringify(payload));
+  });
+  client.futures.wsPublic.subscribe(['btcusdt@depth20']);
 
   client.futures.wsUser.on('message', (event: unknown) => {
     console.log('user event:', JSON.stringify(event));

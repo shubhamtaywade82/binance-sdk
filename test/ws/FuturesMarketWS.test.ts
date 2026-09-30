@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FuturesMarketWS } from '../../src/ws/FuturesMarketWS.js';
+import { FuturesMarketWS, futuresStreamRoute } from '../../src/ws/FuturesMarketWS.js';
 
 describe('FuturesMarketWS', () => {
   it('builds correct stream names', () => {
@@ -13,7 +13,7 @@ describe('FuturesMarketWS', () => {
     expect(ws.depthDiffSpeed('SOLUSDT', '500ms')).toBe('solusdt@depth@500ms');
     expect(ws.depthDiffSpeed('SOLUSDT', '100ms')).toBe('solusdt@depth@100ms');
     expect(ws.ticker('SOLUSDT')).toBe('solusdt@ticker');
-    expect(ws.continuousKline('SOLUSDT', 'perpetual', '5m')).toBe('solusdt@continuousKline_perpetual_5m');
+    expect(ws.continuousKline('SOLUSDT', 'perpetual', '5m')).toBe('solusdt_perpetual@continuousKline_5m');
     expect(ws.rollingWindowTicker('SOLUSDT', '4h')).toBe('solusdt@ticker_4h');
     expect(ws.allRollingWindowTickers('1h')).toBe('!ticker_1h@arr');
     expect(ws.allRollingWindowTickers('1d')).toBe('!ticker_1d@arr');
@@ -29,5 +29,34 @@ describe('FuturesMarketWS', () => {
     expect(ws.allAssetIndices()).toBe('!assetIndex@arr');
     expect(ws.bookTicker('SOLUSDT')).toBe('solusdt@bookTicker');
     ws.close();
+  });
+
+  it('builds the 2026 stream additions', () => {
+    const ws = new FuturesMarketWS();
+    expect(ws.allMarkPrices()).toBe('!markPrice@arr');
+    expect(ws.allMarkPrices('3s')).toBe('!markPrice@arr');
+    expect(ws.allMarkPrices('1s')).toBe('!markPrice@arr@1s');
+    expect(ws.contractInfo()).toBe('!contractInfo');
+    expect(ws.rpiDepth('BTCUSDT')).toBe('btcusdt@rpiDepth@500ms');
+    expect(ws.tradingSession()).toBe('tradingSession');
+    ws.close();
+  });
+
+  it('routes order-book streams to /public and everything else to /market', () => {
+    for (const s of ['btcusdt@depth', 'btcusdt@depth5', 'btcusdt@depth20@100ms', 'btcusdt@depth@500ms', 'btcusdt@bookTicker', '!bookTicker', 'btcusdt@rpiDepth@500ms']) {
+      expect(futuresStreamRoute(s), s).toBe('public');
+    }
+    for (const s of ['btcusdt@aggTrade', 'btcusdt@trade', 'btcusdt@kline_1m', 'btcusdt@markPrice@1s', '!markPrice@arr@1s', '!ticker@arr', 'btcusdt@miniTicker', '!forceOrder@arr', '!contractInfo', 'tradingSession', 'btcusdt_perpetual@continuousKline_1m', '!assetIndex@arr', 'btcusdt@compositeIndex']) {
+      expect(futuresStreamRoute(s), s).toBe('market');
+    }
+  });
+
+  it('defaults to the /market path and rejects streams that belong to /public', async () => {
+    const market = new FuturesMarketWS();
+    await expect(market.subscribe(['btcusdt@depth5'])).rejects.toThrow(/not served on the \/market/);
+    market.close();
+    const pub = new FuturesMarketWS('wss://fstream.binance.com/public/stream');
+    await expect(pub.subscribe(['btcusdt@aggTrade'])).rejects.toThrow(/not served on the \/public/);
+    pub.close();
   });
 });

@@ -1,6 +1,6 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-09-09T03:27:17.394Z",
+  "generatedAt": "2026-09-30T17:46:57.462Z",
   "endpoints": [
     {
       "product": "spot",
@@ -544,6 +544,16 @@
     },
     {
       "product": "usdm",
+      "operation": "market.tradingSchedule",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/fapi/v1/tradingSchedule",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "futures.market.tradingSchedule"
+    },
+    {
+      "product": "usdm",
       "operation": "market.tickerPriceV2",
       "transport": "rest",
       "method": "GET",
@@ -657,7 +667,7 @@
       "operation": "data.insuranceBalance",
       "transport": "rest",
       "method": "GET",
-      "path": "/futures/data/insuranceBalance",
+      "path": "/fapi/v1/insuranceBalance",
       "security": "PUBLIC",
       "weight": null,
       "implementedBy": "futures.data.insuranceFundBalance"
@@ -778,7 +788,7 @@
       "transport": "rest",
       "method": "GET",
       "path": "/fapi/v1/symbolAdlRisk",
-      "security": "SIGNED",
+      "security": "PUBLIC",
       "weight": null,
       "implementedBy": "futures.data.symbolAdlRisk"
     },

@@ -93,6 +93,11 @@ export class FuturesMarket extends MarketDataBase {
     return this.http.get('/tradingDayTicker', params);
   }
 
+  /** Trading session schedule — `GET /fapi/v1/tradingSchedule` (public, no parameters). */
+  async tradingSchedule(): Promise<unknown> {
+    return this.http.get('/tradingSchedule');
+  }
+
   async tickerPriceV2(symbol?: string): Promise<TickerPrice[] | TickerPrice> {
     const params = symbol ? { symbol } : {};
     return TickerPriceSchema.parse(await this.rootHttp.get('/fapi/v2/ticker/price', params));

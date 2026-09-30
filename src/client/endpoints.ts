@@ -8,7 +8,10 @@ export interface Endpoints {
   restApiRoot: string;
   restDapiRoot: string;
   restDapi: string;
+  /** USDⓈ-M `/market` combined-stream URL (trades, klines, tickers, mark price, …). */
   wsMarket: string;
+  /** USDⓈ-M `/public` combined-stream URL (book tickers and depth / RPI depth). */
+  wsPublic: string;
   wsUser: string;
   wsApi: string;
   wsSpotMarket: string;
@@ -23,6 +26,8 @@ export function resolveEnvironment(options?: {
   demo?: boolean;
   apiBase?: string;
   wsBase?: string;
+  /** Override for the USDⓈ-M `/public` stream URL (defaults to `wsBase` with `/market/` swapped for `/public/`). */
+  wsPublicBase?: string;
   wsUserBase?: string;
   wsApiBase?: string;
   dapiBase?: string;
@@ -39,13 +44,18 @@ export function resolveEnvironment(options?: {
         ? 'https://testnet.binancefuture.com'
         : 'https://fapi.binance.com');
 
-  const wsMarketHost =
-    options?.wsBase ??
-    (env === 'demo'
-      ? 'wss://demo-fstream.binance.com/stream'
+  // USDⓈ-M market streams are routed over `/market` and `/public` (legacy
+  // `/stream` was decommissioned 2026-04-23); user data stays on `/ws`.
+  const wsFuturesRoot =
+    env === 'demo'
+      ? 'wss://demo-fstream.binance.com'
       : env === 'testnet'
-        ? 'wss://fstream.binancefuture.com/stream'
-        : 'wss://fstream.binance.com/stream');
+        ? 'wss://fstream.binancefuture.com'
+        : 'wss://fstream.binance.com';
+  const wsMarketHost = options?.wsBase ?? `${wsFuturesRoot}/market/stream`;
+  const wsPublicHost =
+    options?.wsPublicBase ??
+    (options?.wsBase ? options.wsBase.replace(/\/market(\/|$)/, '/public$1') : `${wsFuturesRoot}/public/stream`);
 
   const wsUserHost =
     options?.wsUserBase ??
@@ -98,6 +108,7 @@ export function resolveEnvironment(options?: {
       restDapiRoot: restDapiHost,
       restDapi: `${restDapiHost}/dapi/v1`,
       wsMarket: wsMarketHost,
+      wsPublic: wsPublicHost,
       wsUser: wsUserHost,
       wsApi: wsApiHost,
       wsSpotMarket: wsSpotMarketHost,
