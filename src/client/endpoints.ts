@@ -8,7 +8,18 @@ export interface Endpoints {
   restApiRoot: string;
   restDapiRoot: string;
   restDapi: string;
+  /**
+   * USDⓈ-M combined market-stream socket (per-symbol streams). Binance migrated
+   * USDⓈ-M futures market routing to the new `/market` URL path; the legacy
+   * `/stream` path is being shut down on April 23, 2026.
+   */
   wsMarket: string;
+  /**
+   * USDⓈ-M public all-market socket (aggregate streams like `!ticker@arr`,
+   * `!bookTicker`, `!contractInfo`). New `/public` URL path introduced in the
+   * 2026 USDⓈ-M WS routing migration.
+   */
+  wsMarketPublic: string;
   wsUser: string;
   wsApi: string;
   wsSpotMarket: string;
@@ -23,6 +34,7 @@ export function resolveEnvironment(options?: {
   demo?: boolean;
   apiBase?: string;
   wsBase?: string;
+  wsMarketPublicBase?: string;
   wsUserBase?: string;
   wsApiBase?: string;
   dapiBase?: string;
@@ -42,18 +54,26 @@ export function resolveEnvironment(options?: {
   const wsMarketHost =
     options?.wsBase ??
     (env === 'demo'
-      ? 'wss://demo-fstream.binance.com/stream'
+      ? 'wss://demo-fstream.binance.com/market/stream'
       : env === 'testnet'
-        ? 'wss://fstream.binancefuture.com/stream'
-        : 'wss://fstream.binance.com/stream');
+        ? 'wss://fstream.binancefuture.com/market/stream'
+        : 'wss://fstream.binance.com/market/stream');
+
+  const wsMarketPublicHost =
+    options?.wsMarketPublicBase ??
+    (env === 'demo'
+      ? 'wss://demo-fstream.binance.com/public/stream'
+      : env === 'testnet'
+        ? 'wss://fstream.binancefuture.com/public/stream'
+        : 'wss://fstream.binance.com/public/stream');
 
   const wsUserHost =
     options?.wsUserBase ??
     (env === 'demo'
-      ? 'wss://demo-fstream.binance.com/ws'
+      ? 'wss://demo-fstream.binance.com/public/ws'
       : env === 'testnet'
-        ? 'wss://fstream.binancefuture.com/ws'
-        : 'wss://fstream.binance.com/ws');
+        ? 'wss://fstream.binancefuture.com/public/ws'
+        : 'wss://fstream.binance.com/public/ws');
 
   const wsApiHost =
     options?.wsApiBase ??
@@ -98,6 +118,7 @@ export function resolveEnvironment(options?: {
       restDapiRoot: restDapiHost,
       restDapi: `${restDapiHost}/dapi/v1`,
       wsMarket: wsMarketHost,
+      wsMarketPublic: wsMarketPublicHost,
       wsUser: wsUserHost,
       wsApi: wsApiHost,
       wsSpotMarket: wsSpotMarketHost,

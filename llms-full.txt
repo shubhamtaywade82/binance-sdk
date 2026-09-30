@@ -70,7 +70,7 @@
 - GET /futures/data/globalLongShortAccountRatio (PUBLIC) → futures.data.globalLongShortAccountRatio
 - GET /futures/data/takerlongshortRatio (PUBLIC) → futures.data.takerLongShortRatio
 - GET /futures/data/basis (PUBLIC) → futures.data.basis
-- GET /futures/data/insuranceBalance (PUBLIC) → futures.data.insuranceFundBalance
+- GET /fapi/v1/insuranceBalance (PUBLIC) → futures.data.insuranceFundBalance
 - GET /futures/data/delivery-price (PUBLIC) → futures.data.deliveryPrice
 - GET /fapi/v1/fundingInfo (PUBLIC) → futures.data.fundingInfo
 - GET /fapi/v1/assetIndex (PUBLIC) → futures.data.assetIndex
@@ -82,7 +82,8 @@
 - GET /fapi/v1/forceOrders (SIGNED) → futures.data.forceOrders
 - GET /fapi/v1/pmExchangeInfo (PUBLIC) → futures.data.pmExchangeInfo
 - GET /fapi/v1/delistSchedule (PUBLIC) → futures.data.delistSchedule
-- GET /fapi/v1/symbolAdlRisk (SIGNED) → futures.data.symbolAdlRisk
+- GET /fapi/v1/symbolAdlRisk (PUBLIC) → futures.data.symbolAdlRisk
+- GET /fapi/v1/tradingSchedule (PUBLIC) → futures.market.tradingSchedule
 - GET /fapi/v2/balance (SIGNED) → futures.account.balance
 - GET /fapi/v2/account (SIGNED) → futures.account.account
 - GET /fapi/v2/positionRisk (SIGNED) → futures.account.positionRisk

@@ -163,7 +163,10 @@ export class FuturesData {
   }
 
   async insuranceFundBalance(options?: { symbol?: string; startTime?: number; endTime?: number; limit?: number }): Promise<unknown[]> {
-    return this.dataHttp.get('/insuranceBalance', {
+    // Binance moved the insurance fund balance endpoint to /fapi/v1/insuranceBalance
+    // (the legacy /futures/data/insuranceBalance path now 404s). It is served
+    // from the same fapi/v1 base as the rest of FuturesData's market analytics.
+    return this.http.get('/insuranceBalance', {
       symbol: options?.symbol,
       startTime: options?.startTime,
       endTime: options?.endTime,
@@ -181,8 +184,10 @@ export class FuturesData {
   }
 
   async symbolAdlRisk(symbol?: string): Promise<unknown[]> {
+    // /fapi/v1/symbolAdlRisk is a public market-data endpoint per Binance's
+    // current USDⓈ-M REST documentation — no API key or signature required.
     const params = symbol ? { symbol } : {};
-    return this.http.get('/symbolAdlRisk', params, 'signed');
+    return this.http.get('/symbolAdlRisk', params);
   }
 
   async deliveryPrice(pair: string): Promise<{ deliveryTime: number; deliveryPrice: number }[]> {

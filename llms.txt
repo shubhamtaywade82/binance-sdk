@@ -22,7 +22,7 @@
 ## Endpoint maps
 
 - [Spot](docs/endpoint-map/spot.md): 37 endpoints
-- [USDⓈ-M Futures](docs/endpoint-map/usdm.md): 98 endpoints
+- [USDⓈ-M Futures](docs/endpoint-map/usdm.md): 99 endpoints
 - [COIN-M Futures](docs/endpoint-map/coinm.md): 40 endpoints
 - [Margin](docs/endpoint-map/margin.md): 18 endpoints
 - [Wallet](docs/endpoint-map/wallet.md): 14 endpoints

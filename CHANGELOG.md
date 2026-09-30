@@ -5,6 +5,60 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed (USDⓈ-M REST audit remediation)
+
+- **`/fapi/v1/insuranceBalance`** — `FuturesData.insuranceFundBalance()` and the
+  registry entry previously pointed at `/futures/data/insuranceBalance`, which
+  404s against the live host. The canonical endpoint is `/fapi/v1/insuranceBalance`
+  on the same fapi/v1 base as the rest of the market-analytics surface; the
+  method now routes through `this.http` and the registry/catalog/docs reflect
+  the corrected path.
+- **`/fapi/v1/symbolAdlRisk` auth classification** — the registry classified
+  this endpoint as `signed`, but Binance's current USDⓈ-M REST documentation
+  treats it as public market data. `FuturesData.symbolAdlRisk()` no longer
+  passes `'signed'` mode and the registry/catalog/docs reflect `public`.
+  Read-only market-data clients (no API key) can now consume ADL risk.
+
+### Added (USDⓈ-M REST audit remediation)
+
+- **`/fapi/v1/tradingSchedule`** — new public market-data endpoint
+  introduced by Binance in December 2025. Exposed as `FuturesMarket.tradingSchedule()`
+  and registered as `market.tradingSchedule`.
+
+### Fixed (USDⓈ-M WebSocket audit remediation)
+
+- **WebSocket base URL architecture** — Binance migrated USDⓈ-M market
+  routing to new `/public` and `/market` URL paths; the legacy
+  `/stream` and `/ws` paths are being shut down on April 23, 2026.
+  `resolveEnvironment()` now emits three distinct USDⓈ-M WS URLs:
+  `wsMarket` (`/market/stream`), `wsMarketPublic` (`/public/stream`),
+  and `wsUser` (`/public/ws`). `FuturesMarketWS`'s default URL is
+  `wss://fstream.binance.com/market/stream`. The `BinanceClientOptions`
+  surface gains `wsMarketPublicBase`.
+- **`continuousKline` stream-name format** — the previous implementation
+  emitted `<symbol>@continuousKline_<type>_<interval>`, which Binance does
+  not route. The correct format (now produced) is
+  `<symbol>_<type>@continuousKline_<interval>`. The existing test that
+  encoded the wrong format as expected behavior has been corrected.
+
+### Added (USDⓈ-M WebSocket audit remediation)
+
+- **`!contractInfo` stream builder** — `FuturesMarketWS.contractInfo()`
+  returns the all-market contract-info stream name. Typed schema
+  `WsContractInfoPayloadSchema` and `parseWsPayload` routing added.
+- **`<symbol>@rpiDepth@500ms` stream builder** — `FuturesMarketWS.rpiDepth(symbol)`
+  returns the RPI order-book diff stream name. Typed schema
+  `WsRpiDepthPayloadSchema` and `parseWsPayload` routing added.
+- **`tradingSession` stream builder** — `FuturesMarketWS.tradingSession()`
+  returns the platform session-phase stream name introduced alongside
+  `/fapi/v1/tradingSchedule`. Typed schema `WsTradingSessionPayloadSchema`
+  and `parseWsPayload` routing added.
+- **`!markPrice@arr@1s` stream builder + array schema** —
+  `FuturesMarketWS.allMarkPrices1s()` returns the 1s-cadence aggregate
+  mark-price stream name. The aggregate `!markPrice@arr*` payloads are
+  now parsed as arrays via `WsMarkPriceArrayPayloadSchema` (the previous
+  schema only described the per-symbol single-object form).
+
 ## [3.0.0] - 2026-09-16
 
 **v3 platform GA.** The six pillars the project's own roadmap

@@ -38,6 +38,7 @@ export interface BinanceClientOptions {
   recvWindow?: number;
   apiBase?: string;
   wsBase?: string;
+  wsMarketPublicBase?: string;
   wsUserBase?: string;
   wsApiBase?: string;
   dapiBase?: string;

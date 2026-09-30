@@ -5,7 +5,10 @@ export type ContractType = 'perpetual' | 'current_quarter' | 'next_quarter';
 export type MarkPriceSpeed = '1s' | '3s';
 
 export class FuturesMarketWS extends BaseWS {
-  constructor(baseStreamUrl = 'wss://fstream.binance.com/stream', options?: Omit<BaseWSOptions, 'baseStreamUrl'>) {
+  constructor(
+    baseStreamUrl = 'wss://fstream.binance.com/market/stream',
+    options?: Omit<BaseWSOptions, 'baseStreamUrl'>,
+  ) {
     super({ baseStreamUrl, ...options, name: options?.name ?? 'futuresMarket' });
   }
 
@@ -13,8 +16,16 @@ export class FuturesMarketWS extends BaseWS {
     return `${symbol.toLowerCase()}@kline_${interval}`;
   }
 
+  /**
+   * Continuous contract kline stream.
+   *
+   * Binance's USDⓈ-M stream-name format places the contract type *between* the
+   * symbol and the stream kind: `<symbol>_<contractType>@continuousKline_<interval>`.
+   * The previous implementation emitted `<symbol>@continuousKline_<contractType>_<interval>`,
+   * which Binance does not route — see https://binance-docs.github.io/apidocs/futures/en/#continuous-contract-kline-streams
+   */
   continuousKline(symbol: string, contractType: ContractType, interval: KlineInterval): string {
-    return `${symbol.toLowerCase()}@continuousKline_${contractType}_${interval}`;
+    return `${symbol.toLowerCase()}_${contractType}@continuousKline_${interval}`;
   }
 
   indexPriceKline(symbol: string, interval: KlineInterval): string {
@@ -77,8 +88,14 @@ export class FuturesMarketWS extends BaseWS {
     return `${symbol.toLowerCase()}@markPrice@${updateSpeed}`;
   }
 
+  /** All-symbols mark price stream, default 3s update speed. */
   allMarkPrices(): string {
     return '!markPrice@arr';
+  }
+
+  /** All-symbols mark price stream at the 1s update speed (Binance 2026 addition). */
+  allMarkPrices1s(): string {
+    return '!markPrice@arr@1s';
   }
 
   bookTicker(symbol: string): string {
@@ -103,5 +120,30 @@ export class FuturesMarketWS extends BaseWS {
 
   allAssetIndices(): string {
     return '!assetIndex@arr';
+  }
+
+  /**
+   * Contract info stream — fires on symbol listing/delisting, contract parameter
+   * updates (leverage bracket, lot size, price precision). All-market stream.
+   */
+  contractInfo(): string {
+    return '!contractInfo';
+  }
+
+  /**
+   * RPI (Retail Price Improvement) order-book depth stream, 500ms diff updates.
+   * Complements the REST `/fapi/v1/rpiDepth` endpoint.
+   */
+  rpiDepth(symbol: string): string {
+    return `${symbol.toLowerCase()}@rpiDepth@500ms`;
+  }
+
+  /**
+   * Trading session stream — emits session open/close and phase transitions
+   * (introduced by Binance in December 2025 alongside `/fapi/v1/tradingSchedule`).
+   * No symbol prefix: the stream reports the platform-wide session state.
+   */
+  tradingSession(): string {
+    return 'tradingSession';
   }
 }
