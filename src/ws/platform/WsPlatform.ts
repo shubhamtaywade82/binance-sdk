@@ -169,7 +169,7 @@ export class WsPlatform {
       return streams;
     };
 
-    this.usdm = wire('usdm', core.endpoints.wsMarket, core.endpoints.wsPublic);
+    this.usdm = wire('usdm', core.endpoints.wsMarket, core.endpoints.wsMarketPublic);
     this.spot = wire('spot', core.endpoints.wsSpotMarket);
     this.coinm = wire('coinm', core.endpoints.wsDapiMarket);
 

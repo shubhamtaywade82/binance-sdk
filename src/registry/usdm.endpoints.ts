@@ -29,7 +29,6 @@ const rows: Row[] = [
   ['market.premiumIndexKlines', 'GET', '/fapi/v1/premiumIndexKlines', 'public', 'futures.market.premiumIndexKlines'],
   ['market.rpiDepth', 'GET', '/fapi/v1/rpiDepth', 'public', 'futures.market.rpiDepth'],
   ['market.tradingDayTicker', 'GET', '/fapi/v1/tradingDayTicker', 'public', 'futures.market.tradingDayTicker'],
-  ['market.tradingSchedule', 'GET', '/fapi/v1/tradingSchedule', 'public', 'futures.market.tradingSchedule'],
   ['market.tickerPriceV2', 'GET', '/fapi/v2/ticker/price', 'public', 'futures.market.tickerPriceV2'],
   ['market.bookTickerV2', 'GET', '/fapi/v2/ticker/bookTicker', 'public', 'futures.market.bookTickerV2'],
 
@@ -55,7 +54,15 @@ const rows: Row[] = [
   ['data.forceOrders', 'GET', '/fapi/v1/forceOrders', 'signed', 'futures.data.forceOrders'],
   ['data.pmExchangeInfo', 'GET', '/fapi/v1/pmExchangeInfo', 'public', 'futures.data.pmExchangeInfo'],
   ['data.delistSchedule', 'GET', '/fapi/v1/delistSchedule', 'public', 'futures.data.delistSchedule'],
+  // Binance's current USDⓈ-M REST documentation lists /fapi/v1/symbolAdlRisk as
+  // a public market-data endpoint (no API key or signature required). The
+  // previous row classified it as `signed`, which forced callers without
+  // credentials to receive a -2015 / -2014 rejection and blocked read-only
+  // market-data clients from observing ADL risk.
   ['data.symbolAdlRisk', 'GET', '/fapi/v1/symbolAdlRisk', 'public', 'futures.data.symbolAdlRisk'],
+  // Introduced by Binance in December 2025: returns the trading-session schedule
+  // (regular, pre-market, post-market phases) for USDⓈ-M futures. Public.
+  ['market.tradingSchedule', 'GET', '/fapi/v1/tradingSchedule', 'public', 'futures.market.tradingSchedule'],
 
   // ---- Account (FuturesAccount) ----
   ['account.balanceV2', 'GET', '/fapi/v2/balance', 'signed', 'futures.account.balance'],

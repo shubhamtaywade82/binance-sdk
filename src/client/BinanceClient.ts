@@ -39,7 +39,7 @@ export interface BinanceClientOptions {
   apiBase?: string;
   wsBase?: string;
   /** USDⓈ-M `/public` stream URL override (defaults to `wsBase` with `/market/` → `/public/`). */
-  wsPublicBase?: string;
+  wsMarketPublicBase?: string;
   wsUserBase?: string;
   wsApiBase?: string;
   dapiBase?: string;

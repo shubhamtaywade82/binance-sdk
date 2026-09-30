@@ -17,8 +17,10 @@ host (MCP server `binance-sdk-mcp`, or a chat-ui's `createFuturesToolkit(...)` o
 
 - Configure once via env: `BINANCE_API_KEY`, `BINANCE_API_SECRET`, `BINANCE_TESTNET=true` (→ `testnet.binancefuture.com`).
 - Public market-data tools are **unsigned**; account/trade/private tools are **signed** and require the keys above.
-- Base URLs (live): REST `https://fapi.binance.com`, WS market streams `wss://fstream.binance.com/stream`,
-  WS user data `wss://fstream.binance.com/ws`, WS API `wss://ws-fapi.binance.com/ws-fapi/v1`.
+- Base URLs (live, 2026 USDⓈ-M WS routing — legacy `/stream` and `/ws` paths shut down April 23, 2026):
+  REST `https://fapi.binance.com`, WS market streams `wss://fstream.binance.com/market/stream`,
+  WS public aggregate streams `wss://fstream.binance.com/public/stream`,
+  WS user data `wss://fstream.binance.com/public/ws`, WS API `wss://ws-fapi.binance.com/ws-fapi/v1`.
 - Rate limits: **2400 weight/min** (REST, per IP) + **1200 orders/10s** + 300 orders/10s/uid (WS API). The SDK
   paces every request through a local Bottleneck queue; it does not yet read back the
   `X-MBX-USED-WEIGHT-*` / `X-MBX-ORDER-COUNT-*` response headers, so leave headroom under the caps above.

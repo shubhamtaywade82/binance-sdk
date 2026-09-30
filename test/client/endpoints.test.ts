@@ -5,17 +5,17 @@ describe('resolveEnvironment', () => {
   it('routes USDⓈ-M market streams over /market and /public (legacy /stream is decommissioned)', () => {
     const live = resolveEnvironment().endpoints;
     expect(live.wsMarket).toBe('wss://fstream.binance.com/market/stream');
-    expect(live.wsPublic).toBe('wss://fstream.binance.com/public/stream');
-    expect(resolveEnvironment({ testnet: true }).endpoints.wsPublic).toBe('wss://fstream.binancefuture.com/public/stream');
+    expect(live.wsMarketPublic).toBe('wss://fstream.binance.com/public/stream');
+    expect(resolveEnvironment({ testnet: true }).endpoints.wsMarketPublic).toBe('wss://fstream.binancefuture.com/public/stream');
     expect(resolveEnvironment({ demo: true }).endpoints.wsMarket).toBe('wss://demo-fstream.binance.com/market/stream');
   });
 
   it('derives the public URL from a wsBase override unless wsPublicBase is given', () => {
     const derived = resolveEnvironment({ wsBase: 'ws://localhost:9/market/stream' }).endpoints;
     expect(derived.wsMarket).toBe('ws://localhost:9/market/stream');
-    expect(derived.wsPublic).toBe('ws://localhost:9/public/stream');
-    const explicit = resolveEnvironment({ wsBase: 'ws://a/stream', wsPublicBase: 'ws://b/stream' }).endpoints;
-    expect(explicit.wsPublic).toBe('ws://b/stream');
+    expect(derived.wsMarketPublic).toBe('ws://localhost:9/public/stream');
+    const explicit = resolveEnvironment({ wsBase: 'ws://a/stream', wsMarketPublicBase: 'ws://b/stream' }).endpoints;
+    expect(explicit.wsMarketPublic).toBe('ws://b/stream');
   });
 
   it('resolves live hosts including the new Spot WS API and COIN-M WS hosts', () => {
@@ -26,6 +26,31 @@ describe('resolveEnvironment', () => {
     expect(endpoints.wsDapiUser).toBe('wss://dstream.binance.com/ws');
     expect(endpoints.restDapiRoot).toBe('https://dapi.binance.com');
     expect(endpoints.restDapi).toBe('https://dapi.binance.com/dapi/v1');
+  });
+
+  it('uses the 2026 USDⓈ-M WS routing paths (/market and /public)', () => {
+    // Binance migrated USDⓈ-M market streams off the legacy `/stream` path
+    // (shutdown April 23, 2026) to the new `/market` and `/public` URL paths.
+    const { endpoints } = resolveEnvironment();
+    expect(endpoints.wsMarket).toBe('wss://fstream.binance.com/market/stream');
+    expect(endpoints.wsMarketPublic).toBe('wss://fstream.binance.com/public/stream');
+    expect(endpoints.wsUser).toBe('wss://fstream.binance.com/public/ws');
+  });
+
+  it('uses the 2026 USDⓈ-M WS routing paths on testnet', () => {
+    const { endpoints } = resolveEnvironment({ testnet: true });
+    expect(endpoints.wsMarket).toBe('wss://fstream.binancefuture.com/market/stream');
+    expect(endpoints.wsMarketPublic).toBe('wss://fstream.binancefuture.com/public/stream');
+    expect(endpoints.wsUser).toBe('wss://fstream.binancefuture.com/public/ws');
+  });
+
+  it('honors explicit wsBase and wsMarketPublicBase overrides', () => {
+    const { endpoints } = resolveEnvironment({
+      wsBase: 'ws://localhost:1234/market/stream',
+      wsMarketPublicBase: 'ws://localhost:1234/public/stream',
+    });
+    expect(endpoints.wsMarket).toBe('ws://localhost:1234/market/stream');
+    expect(endpoints.wsMarketPublic).toBe('ws://localhost:1234/public/stream');
   });
 
   it('resolves testnet hosts for Spot WS API and COIN-M WS', () => {
@@ -40,6 +65,9 @@ describe('resolveEnvironment', () => {
     const { endpoints } = resolveEnvironment({ demo: true });
     expect(endpoints.wsDapiMarket).toBe('wss://dstream.binancefuture.com/stream');
     expect(endpoints.restDapiRoot).toBe('https://testnet.binancefuture.com');
+    // USDⓈ-M demo host keeps the new /market and /public routing paths.
+    expect(endpoints.wsMarket).toBe('wss://demo-fstream.binance.com/market/stream');
+    expect(endpoints.wsMarketPublic).toBe('wss://demo-fstream.binance.com/public/stream');
   });
 
   it('honors explicit wsSpotApiBase and wsDapiBase overrides', () => {

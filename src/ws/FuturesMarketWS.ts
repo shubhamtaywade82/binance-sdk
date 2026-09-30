@@ -148,6 +148,11 @@ export class FuturesMarketWS extends BaseWS {
     return 'tradingSession';
   }
 
+  /** All-symbols mark price stream at the 1s update speed; same as `allMarkPrices('1s')`. */
+  allMarkPrices1s(): string {
+    return this.allMarkPrices('1s');
+  }
+
   bookTicker(symbol: string): string {
     return `${symbol.toLowerCase()}@bookTicker`;
   }

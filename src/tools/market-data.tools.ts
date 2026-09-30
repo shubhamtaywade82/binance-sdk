@@ -255,7 +255,7 @@ export function marketDataTools(client: BinanceClient): ToolDefinition[] {
     },
     {
       name: 'futures_symbol_adl_risk',
-      description: 'Get the auto-deleveraging (ADL) risk level for one symbol or all symbols (public).',
+      description: 'Get the auto-deleveraging (ADL) risk level for one symbol or all symbols (public market data, no signature required).',
       inputSchema: z.object({ symbol: optSymbol }),
       handler: async ({ symbol }) => textResult(await d.symbolAdlRisk(symbol ? normalizeSymbol(symbol) : undefined)),
     },

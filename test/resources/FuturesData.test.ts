@@ -138,6 +138,20 @@ describe('FuturesData', () => {
     expect(Array.isArray(balance)).toBe(true);
   });
 
+  it('fetches symbolAdlRisk as a public endpoint (no signature required)', async () => {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/symbolAdlRisk', () =>
+        HttpResponse.json([{ symbol: 'BTCUSDT', adlQuantile: { LONG: 1, SHORT: 2 } }]),
+      ),
+    );
+
+    // No apiKey / apiSecret supplied — must succeed because /fapi/v1/symbolAdlRisk
+    // is public per Binance's current USDⓈ-M REST documentation.
+    const data = new FuturesData();
+    const risk = await data.symbolAdlRisk('BTCUSDT');
+    expect((risk[0] as { symbol: string }).symbol).toBe('BTCUSDT');
+  });
+
   it('fetches BLVT NAV klines with required tokenName + interval', async () => {
     let capturedUrl = '';
     server.use(

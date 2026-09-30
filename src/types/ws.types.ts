@@ -157,6 +157,15 @@ export const WsAssetIndexPayloadSchema = z.object({
 });
 export type WsAssetIndexPayload = z.infer<typeof WsAssetIndexPayloadSchema>;
 
+/**
+ * Aggregate mark-price stream payload. `!markPrice@arr` and `!markPrice@arr@1s`
+ * deliver an array of {@link WsMarkPricePayload}-shaped entries rather than a
+ * single object — the schema wraps that array so `parseWsPayload` can pick it
+ * up for both stream names.
+ */
+export const WsMarkPriceArrayPayloadSchema = z.array(WsMarkPricePayloadSchema);
+export type WsMarkPriceArrayPayload = z.infer<typeof WsMarkPriceArrayPayloadSchema>;
+
 export const WsRollingWindowTickerPayloadSchema = z.object({
   e: z.enum(['1hTicker', '4hTicker', '1dTicker', '7dTicker', '30dTicker']),
   E: z.number(),
@@ -188,7 +197,7 @@ export type WsSpotAvgPricePayload = z.infer<typeof WsSpotAvgPricePayloadSchema>;
  * RPI diff. book depth (`<symbol>@rpiDepth@500ms`). The event-type literal is
  * not pinned (Binance documents it as a plain string).
  */
-export const WsRpiDepthUpdatePayloadSchema = z.object({
+export const WsRpiDepthPayloadSchema = z.object({
   e: z.string(),
   E: z.number(),
   T: z.number().optional(),
@@ -200,7 +209,7 @@ export const WsRpiDepthUpdatePayloadSchema = z.object({
   a: z.array(z.tuple([z.string(), z.string()])),
   ps: z.string().optional(),
 });
-export type WsRpiDepthUpdatePayload = z.infer<typeof WsRpiDepthUpdatePayloadSchema>;
+export type WsRpiDepthPayload = z.infer<typeof WsRpiDepthPayloadSchema>;
 
 /** `!contractInfo` — symbol/contract information updates (leverage bracket list in `bks`). */
 export const WsContractInfoPayloadSchema = z.object({
@@ -246,15 +255,16 @@ export type WsStreamPayload =
   | WsTicker24hrPayload
   | WsBookTickerPayload
   | WsMarkPricePayload
+  | WsMarkPriceArrayPayload
   | WsMiniTickerPayload
   | WsForceOrderPayload
   | WsCompositeIndexPayload
   | WsAssetIndexPayload
-  | WsRollingWindowTickerPayload
-  | WsSpotAvgPricePayload
-  | WsRpiDepthUpdatePayload
   | WsContractInfoPayload
-  | WsTradingSessionPayload;
+  | WsRpiDepthPayload
+  | WsTradingSessionPayload
+  | WsRollingWindowTickerPayload
+  | WsSpotAvgPricePayload;
 
 /**
  * Parse one combined-stream frame. All-market streams (`!…@arr`, `!bookTicker`)
@@ -279,7 +289,7 @@ function allMarketElementStream(streamName: string): string {
 function parseSingleWsPayload(streamName: string, raw: unknown): WsStreamPayload {
   if (streamName === 'all@contractInfo') return WsContractInfoPayloadSchema.parse(raw);
   if (streamName === 'tradingSession') return WsTradingSessionPayloadSchema.parse(raw);
-  if (streamName.includes('@rpiDepth')) return WsRpiDepthUpdatePayloadSchema.parse(raw);
+  if (streamName.includes('@rpiDepth')) return WsRpiDepthPayloadSchema.parse(raw);
   if (streamName.includes('@kline_')) return WsKlinePayloadSchema.parse(raw);
   if (streamName.includes('@continuousKline_') || streamName.includes('@indexPriceKline_') || streamName.includes('@markPriceKline_')) {
     return WsKlinePayloadSchema.parse(raw);

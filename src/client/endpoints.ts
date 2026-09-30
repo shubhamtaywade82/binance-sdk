@@ -8,10 +8,10 @@ export interface Endpoints {
   restApiRoot: string;
   restDapiRoot: string;
   restDapi: string;
-  /** USDⓈ-M `/market` combined-stream URL (trades, klines, tickers, mark price, …). */
+  /** USDⓈ-M `/market` combined-stream URL (trades, klines, tickers, mark price, contract info, …). */
   wsMarket: string;
-  /** USDⓈ-M `/public` combined-stream URL (book tickers and depth / RPI depth). */
-  wsPublic: string;
+  /** USDⓈ-M `/public` combined-stream URL (book tickers, depth, RPI depth). */
+  wsMarketPublic: string;
   wsUser: string;
   wsApi: string;
   wsSpotMarket: string;
@@ -27,7 +27,7 @@ export function resolveEnvironment(options?: {
   apiBase?: string;
   wsBase?: string;
   /** Override for the USDⓈ-M `/public` stream URL (defaults to `wsBase` with `/market/` swapped for `/public/`). */
-  wsPublicBase?: string;
+  wsMarketPublicBase?: string;
   wsUserBase?: string;
   wsApiBase?: string;
   dapiBase?: string;
@@ -45,7 +45,7 @@ export function resolveEnvironment(options?: {
         : 'https://fapi.binance.com');
 
   // USDⓈ-M market streams are routed over `/market` and `/public` (legacy
-  // `/stream` was decommissioned 2026-04-23); user data stays on `/ws`.
+  // `/stream` was decommissioned 2026-04-23).
   const wsFuturesRoot =
     env === 'demo'
       ? 'wss://demo-fstream.binance.com'
@@ -53,17 +53,17 @@ export function resolveEnvironment(options?: {
         ? 'wss://fstream.binancefuture.com'
         : 'wss://fstream.binance.com';
   const wsMarketHost = options?.wsBase ?? `${wsFuturesRoot}/market/stream`;
-  const wsPublicHost =
-    options?.wsPublicBase ??
+  const wsMarketPublicHost =
+    options?.wsMarketPublicBase ??
     (options?.wsBase ? options.wsBase.replace(/\/market(\/|$)/, '/public$1') : `${wsFuturesRoot}/public/stream`);
 
   const wsUserHost =
     options?.wsUserBase ??
     (env === 'demo'
-      ? 'wss://demo-fstream.binance.com/ws'
+      ? 'wss://demo-fstream.binance.com/public/ws'
       : env === 'testnet'
-        ? 'wss://fstream.binancefuture.com/ws'
-        : 'wss://fstream.binance.com/ws');
+        ? 'wss://fstream.binancefuture.com/public/ws'
+        : 'wss://fstream.binance.com/public/ws');
 
   const wsApiHost =
     options?.wsApiBase ??
@@ -108,7 +108,7 @@ export function resolveEnvironment(options?: {
       restDapiRoot: restDapiHost,
       restDapi: `${restDapiHost}/dapi/v1`,
       wsMarket: wsMarketHost,
-      wsPublic: wsPublicHost,
+      wsMarketPublic: wsMarketPublicHost,
       wsUser: wsUserHost,
       wsApi: wsApiHost,
       wsSpotMarket: wsSpotMarketHost,

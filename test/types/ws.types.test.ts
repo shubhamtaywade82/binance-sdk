@@ -59,6 +59,23 @@ describe('ws.types', () => {
     expect(parseWsPayload('tradingSession', { e: 'tradingSession', E: 1, t: 1, T: 2, S: 'OPEN' })).toMatchObject({ S: 'OPEN' });
   });
 
+  it('parses the aggregate !markPrice@arr payload as an array', () => {
+    const payload = parseWsPayload('!markPrice@arr', [
+      { e: 'markPriceUpdate', E: 1, s: 'BTCUSDT', p: '60000', i: '59999', P: '60000', r: '0.0001', T: 1 },
+      { e: 'markPriceUpdate', E: 2, s: 'ETHUSDT', p: '2500', i: '2499', P: '2500', r: '0.0001', T: 2 },
+    ]);
+    expect(Array.isArray(payload)).toBe(true);
+    expect((payload as { s: string }[]).map((entry) => entry.s)).toEqual(['BTCUSDT', 'ETHUSDT']);
+  });
+
+  it('parses the corrected continuous-kline stream name (symbol_contractType@continuousKline_interval)', () => {
+    const payload = parseWsPayload('solusdt_perpetual@continuousKline_5m', {
+      e: 'kline', E: 1, s: 'SOLUSDT',
+      k: { t: 1, T: 2, s: 'SOLUSDT', i: '5m', o: '1', c: '2', h: '3', l: '0.5', v: '10', n: 5, x: false, q: '20', V: '5', Q: '10' },
+    });
+    expect(payload).toMatchObject({ e: 'kline', k: { c: 2 } });
+  });
+
   it('throws on an unrecognized stream name', () => {
     expect(() => parseWsPayload('ethusdt@unknownStream', {})).toThrow(/Unknown WS stream/);
   });

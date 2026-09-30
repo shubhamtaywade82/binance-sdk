@@ -177,6 +177,8 @@ export class FuturesData {
   }
 
   async symbolAdlRisk(symbol?: string): Promise<unknown[]> {
+    // /fapi/v1/symbolAdlRisk is a public market-data endpoint per Binance's
+    // current USDⓈ-M REST documentation — no API key or signature required.
     const params = symbol ? { symbol } : {};
     return this.http.get('/symbolAdlRisk', params);
   }

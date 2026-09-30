@@ -71,7 +71,7 @@ export function buildUsdmSurface(core: CoreContext, getListenKey: () => string |
     execution: new ExecutionManager(futuresTrading, { events, riskGateway }),
     userStream: new UserDataStream(core.http('fapiRoot')),
     ws: new FuturesMarketWS(core.endpoints.wsMarket, { events }),
-    wsPublic: new FuturesMarketWS(core.endpoints.wsPublic, { events, name: 'futuresPublic' }),
+    wsPublic: new FuturesMarketWS(core.endpoints.wsMarketPublic, { events, name: 'futuresPublic' }),
     wsUser: new FuturesUserWS({
       baseUserUrl: core.endpoints.wsUser,
       getListenKey,

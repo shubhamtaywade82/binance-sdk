@@ -93,7 +93,14 @@ export class FuturesMarket extends MarketDataBase {
     return this.http.get('/tradingDayTicker', params);
   }
 
-  /** Trading session schedule — `GET /fapi/v1/tradingSchedule` (public, no parameters). */
+  /**
+   * Trading-session schedule for USDⓈ-M futures (introduced by Binance in
+   * December 2025). Returns the open/close times and phase boundaries
+   * (regular / pre-market / post-market) for the current and upcoming
+   * trading sessions.
+   *
+   * Public endpoint — no API key or signature required.
+   */
   async tradingSchedule(): Promise<unknown> {
     return this.http.get('/tradingSchedule');
   }
