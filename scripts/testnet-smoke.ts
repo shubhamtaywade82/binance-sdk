@@ -84,6 +84,89 @@ async function main(): Promise<void> {
   await check('coinm market data (klines)', () => publicClient.coinm.market.klines('BTCUSD_PERP', '1m', { limit: 1 }));
   await check('spot ws api (time)', () => publicClient.spot.wsApi.time());
 
+  // ---- 2026 USDⓈ-M audit remediation: REST endpoints ----
+  // These are the freshly fixed/added endpoints from the audit:
+  //   - /fapi/v1/insuranceBalance (was wrongly under /futures/data, now /fapi/v1)
+  //   - /fapi/v1/symbolAdlRisk  (was wrongly classified as 'signed', now public)
+  //   - /fapi/v1/tradingSchedule (added; introduced by Binance Dec 2025)
+  console.log('\n== 2026 USDⓈ-M REST audit remediation ==');
+  await check('futures insurance balance (/fapi/v1/insuranceBalance)', () =>
+    publicClient.futures.data.insuranceFundBalance(),
+  );
+  await check('futures symbolAdlRisk (public, no signature)', () =>
+    publicClient.futures.data.symbolAdlRisk('BTCUSDT'),
+  );
+  await check('futures tradingSchedule (Dec 2025 endpoint)', () =>
+    publicClient.futures.market.tradingSchedule(),
+  );
+
+  // ---- 2026 USDⓈ-M audit remediation: WebSocket stream builders ----
+  // Each check subscribes to the freshly added/fixed stream name and waits
+  // for one inbound payload. These exercise the live Binance routing —
+  // a stream whose name is wrong (e.g. the old `continuousKline` format)
+  // simply never delivers a message and times out at 8s.
+  console.log('\n== 2026 USDⓈ-M WebSocket stream builders ==');
+  await check('futures ws: continuousKline (corrected format)', async () => {
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('no message within 8s')), 8000);
+      publicClient.futures.ws.once('message', () => {
+        clearTimeout(timer);
+        resolve();
+      });
+      publicClient.futures.ws.subscribe([
+        publicClient.futures.ws.continuousKline('BTCUSDT', 'perpetual', '1m'),
+      ]);
+    });
+  });
+  await check('futures ws: !markPrice@arr@1s', async () => {
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('no message within 8s')), 8000);
+      publicClient.futures.ws.once('message', () => {
+        clearTimeout(timer);
+        resolve();
+      });
+      publicClient.futures.ws.subscribe([publicClient.futures.ws.allMarkPrices1s()]);
+    });
+  });
+  await check('futures ws: !contractInfo', async () => {
+    // !contractInfo only emits on listing/delisting or contract param changes,
+    // so a "subscribe did not error" outcome is itself the validation. We wait
+    // briefly for an error event; if none arrives within 4s, the stream name
+    // is accepted by Binance.
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => resolve(), 4000);
+      publicClient.futures.ws.once('error', (err: unknown) => {
+        clearTimeout(timer);
+        reject(err instanceof Error ? err : new Error(String(err)));
+      });
+      publicClient.futures.ws.subscribe([publicClient.futures.ws.contractInfo()]);
+    });
+  });
+  await check('futures ws: <symbol>@rpiDepth@500ms', async () => {
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('no message within 8s')), 8000);
+      publicClient.futures.ws.once('message', () => {
+        clearTimeout(timer);
+        resolve();
+      });
+      publicClient.futures.ws.subscribe([publicClient.futures.ws.rpiDepth('BTCUSDT')]);
+    });
+  });
+  await check('futures ws: tradingSession', async () => {
+    // tradingSession fires on session phase transitions; on testnet, accept
+    // "subscribe did not error" as the validation (4s wait, no error = ok).
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => resolve(), 4000);
+      publicClient.futures.ws.once('error', (err: unknown) => {
+        clearTimeout(timer);
+        reject(err instanceof Error ? err : new Error(String(err)));
+      });
+      publicClient.futures.ws.subscribe([publicClient.futures.ws.tradingSession()]);
+    });
+  });
+  // Close the per-client WS so the next checks don't pile onto shared subscriptions.
+  publicClient.futures.ws.close();
+
   console.log('\n== Cross-cutting infra ==');
   await check('syncTime()', () => publicClient.syncTime());
   await check('getRateLimitUsage() is callable', async () => {

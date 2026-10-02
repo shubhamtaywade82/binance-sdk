@@ -22,8 +22,9 @@ describe('resolveEnvironment', () => {
     const { env, endpoints } = resolveEnvironment();
     expect(env).toBe('live');
     expect(endpoints.wsSpotApi).toBe('wss://ws-api.binance.com:443/ws-api/v3');
-    expect(endpoints.wsDapiMarket).toBe('wss://dstream.binance.com/stream');
-    expect(endpoints.wsDapiUser).toBe('wss://dstream.binance.com/ws');
+    expect(endpoints.wsDapiMarket).toBe('wss://dstream.binance.com/market/stream');
+    expect(endpoints.wsDapiMarketPublic).toBe('wss://dstream.binance.com/public/stream');
+    expect(endpoints.wsDapiUser).toBe('wss://dstream.binance.com/public/ws');
     expect(endpoints.restDapiRoot).toBe('https://dapi.binance.com');
     expect(endpoints.restDapi).toBe('https://dapi.binance.com/dapi/v1');
   });
@@ -56,14 +57,16 @@ describe('resolveEnvironment', () => {
   it('resolves testnet hosts for Spot WS API and COIN-M WS', () => {
     const { endpoints } = resolveEnvironment({ testnet: true });
     expect(endpoints.wsSpotApi).toBe('wss://testnet.binance.vision/ws-api/v3');
-    expect(endpoints.wsDapiMarket).toBe('wss://dstream.binancefuture.com/stream');
-    expect(endpoints.wsDapiUser).toBe('wss://dstream.binancefuture.com/ws');
+    expect(endpoints.wsDapiMarket).toBe('wss://dstream.binancefuture.com/market/stream');
+    expect(endpoints.wsDapiMarketPublic).toBe('wss://dstream.binancefuture.com/public/stream');
+    expect(endpoints.wsDapiUser).toBe('wss://dstream.binancefuture.com/public/ws');
     expect(endpoints.restDapiRoot).toBe('https://testnet.binancefuture.com');
   });
 
   it('falls back COIN-M WS demo mode to the testnet stream host (no dedicated demo host exists)', () => {
     const { endpoints } = resolveEnvironment({ demo: true });
-    expect(endpoints.wsDapiMarket).toBe('wss://dstream.binancefuture.com/stream');
+    expect(endpoints.wsDapiMarket).toBe('wss://dstream.binancefuture.com/market/stream');
+    expect(endpoints.wsDapiMarketPublic).toBe('wss://dstream.binancefuture.com/public/stream');
     expect(endpoints.restDapiRoot).toBe('https://testnet.binancefuture.com');
     // USDⓈ-M demo host keeps the new /market and /public routing paths.
     expect(endpoints.wsMarket).toBe('wss://demo-fstream.binance.com/market/stream');
@@ -76,7 +79,7 @@ describe('resolveEnvironment', () => {
       wsDapiBase: 'ws://localhost:5678',
     });
     expect(endpoints.wsSpotApi).toBe('ws://localhost:1234');
-    expect(endpoints.wsDapiMarket).toBe('ws://localhost:5678/stream');
-    expect(endpoints.wsDapiUser).toBe('ws://localhost:5678/ws');
+    expect(endpoints.wsDapiMarket).toBe('ws://localhost:5678/market/stream');
+    expect(endpoints.wsDapiUser).toBe('ws://localhost:5678/public/ws');
   });
 });

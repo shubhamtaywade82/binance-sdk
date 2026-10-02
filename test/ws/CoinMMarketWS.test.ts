@@ -19,11 +19,25 @@ describe('CoinMMarketWS', () => {
     expect(ws.bookTicker('BTCUSD_PERP')).toBe('btcusd_perp@bookTicker');
     expect(ws.markPrice('BTCUSD_PERP')).toBe('btcusd_perp@markPrice@3s');
     expect(ws.markPriceForPair('BTCUSD', '1s')).toBe('btcusd@markPrice@1s');
+    // New 2026 COIN-M aggregate streams (parity with USDⓈ-M).
+    expect(ws.allMarkPrices()).toBe('!markPrice@arr');
+    expect(ws.allMarkPrices1s()).toBe('!markPrice@arr@1s');
+    expect(ws.contractInfo()).toBe('!contractInfo');
     expect(ws.liquidationOrder('BTCUSD_PERP')).toBe('btcusd_perp@forceOrder');
     expect(ws.allLiquidationOrders()).toBe('!forceOrder@arr');
     expect(ws.allMarketTickers()).toBe('!ticker@arr');
     expect(ws.allMiniTickers()).toBe('!miniTicker@arr');
     expect(ws.allBookTickers()).toBe('!bookTicker');
+    ws.close();
+  });
+
+  it('defaults to the new 2026 COIN-M market-stream URL path (/market/stream)', () => {
+    // The legacy `wss://dstream.binance.com/stream` host is being shut down
+    // alongside the USDⓈ-M one; the SDK must default to the new /market/stream path.
+    const ws = new CoinMMarketWS();
+    expect((ws as unknown as { baseStreamUrl: string }).baseStreamUrl).toBe(
+      'wss://dstream.binance.com/market/stream',
+    );
     ws.close();
   });
 });

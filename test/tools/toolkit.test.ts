@@ -25,6 +25,12 @@ describe('futures toolkit', () => {
     expect(names).toContain('futures_new_order');
     expect(names).toContain('futures_income_history');
     expect(names).toContain('futures_ws_subscribe');
+    // New 2026 USDⓈ-M WS stream builders (LLM tool layer).
+    expect(names).toContain('futures_ws_continuous_kline');
+    expect(names).toContain('futures_ws_all_mark_prices_1s');
+    expect(names).toContain('futures_ws_contract_info');
+    expect(names).toContain('futures_ws_rpi_depth');
+    expect(names).toContain('futures_ws_trading_session');
     expect(tk.market.length).toBeGreaterThan(20);
     expect(tk.account.length).toBeGreaterThan(10);
     expect(tk.trading.length).toBeGreaterThan(15);

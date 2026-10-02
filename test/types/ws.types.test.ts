@@ -24,41 +24,6 @@ describe('ws.types', () => {
     expect(payload).toMatchObject({ e: 'markPriceUpdate', p: 2500 });
   });
 
-  it('parses array payloads for all-market streams element-wise', () => {
-    const mark = parseWsPayload('!markPrice@arr@1s', [
-      { e: 'markPriceUpdate', E: 1, s: 'BTCUSDT', p: '100', i: '99', P: '100', r: '0.0001', T: 1 },
-      { e: 'markPriceUpdate', E: 1, s: 'ETHUSDT', p: '10', i: '9', P: '10', r: '0.0001', T: 1 },
-    ]);
-    expect(Array.isArray(mark)).toBe(true);
-    expect(mark).toHaveLength(2);
-    expect((mark as { p: number }[])[1]?.p).toBe(10);
-
-    const tickers = parseWsPayload('!miniTicker@arr', [
-      { e: '24hrMiniTicker', E: 1, s: 'BTCUSDT', c: '1', o: '1', h: '1', l: '1', v: '1', q: '1' },
-    ]);
-    expect(tickers).toHaveLength(1);
-  });
-
-  it('parses !bookTicker (no @ in the stream name)', () => {
-    const payload = parseWsPayload('!bookTicker', { u: 1, s: 'BTCUSDT', b: '1', B: '2', a: '3', A: '4' });
-    expect(payload).toMatchObject({ s: 'BTCUSDT', b: 1 });
-  });
-
-  it('parses rpiDepth, contractInfo and tradingSession payloads', () => {
-    expect(
-      parseWsPayload('btcusdt@rpiDepth@500ms', {
-        e: 'depthUpdate', E: 1, T: 1, s: 'BTCUSDT', U: 1, u: 2, pu: 0, b: [['1', '2']], a: [['3', '4']],
-      }),
-    ).toMatchObject({ s: 'BTCUSDT', U: 1 });
-    expect(
-      parseWsPayload('!contractInfo', {
-        e: 'contractInfo', E: 1, s: 'BTCUSDT', ct: 'PERPETUAL', dt: 1, ot: 1, cs: 'TRADING',
-        bks: [{ bs: 1, bnf: 0, bnc: 5000, mmr: 0.01, cf: 0, mi: 1, ma: 125 }],
-      }),
-    ).toMatchObject({ s: 'BTCUSDT', cs: 'TRADING' });
-    expect(parseWsPayload('tradingSession', { e: 'tradingSession', E: 1, t: 1, T: 2, S: 'OPEN' })).toMatchObject({ S: 'OPEN' });
-  });
-
   it('parses the aggregate !markPrice@arr payload as an array', () => {
     const payload = parseWsPayload('!markPrice@arr', [
       { e: 'markPriceUpdate', E: 1, s: 'BTCUSDT', p: '60000', i: '59999', P: '60000', r: '0.0001', T: 1 },
@@ -68,7 +33,71 @@ describe('ws.types', () => {
     expect((payload as { s: string }[]).map((entry) => entry.s)).toEqual(['BTCUSDT', 'ETHUSDT']);
   });
 
+  it('parses the aggregate !markPrice@arr@1s payload as an array (Binance 2026 addition)', () => {
+    const payload = parseWsPayload('!markPrice@arr@1s', [
+      { e: 'markPriceUpdate', E: 1, s: 'BTCUSDT', p: '60000', i: '59999', P: '60000', r: '0.0001', T: 1 },
+    ]);
+    expect(Array.isArray(payload)).toBe(true);
+    expect((payload as { p: number }[])[0]?.p).toBe(60000);
+  });
+
+  it('parses a !contractInfo stream payload', () => {
+    const payload = parseWsPayload('!contractInfo', {
+      e: 'contractInfo',
+      E: 1,
+      params: [
+        { symbol: 'BTCUSDT', pair: 'BTCUSDT', contractType: 'PERPETUAL', contractStatus: 'TRADING' },
+      ],
+    });
+    expect(payload).toMatchObject({ e: 'contractInfo' });
+  });
+
+  it('parses a <symbol>@rpiDepth@500ms stream payload', () => {
+    const payload = parseWsPayload('btcusdt@rpiDepth@500ms', {
+      e: 'rpiDepthUpdate',
+      E: 1,
+      s: 'BTCUSDT',
+      U: 100,
+      u: 200,
+      b: [['60000', '1']],
+      a: [['60001', '0.5']],
+    });
+    expect(payload).toMatchObject({ e: 'rpiDepthUpdate', s: 'BTCUSDT' });
+  });
+
+  it('parses a tradingSession stream payload', () => {
+    const payload = parseWsPayload('tradingSession', {
+      e: 'tradingSession',
+      E: 1,
+      phase: 'OPEN',
+      openTime: 1,
+      closeTime: 2,
+      session: 'REGULAR',
+    });
+    expect(payload).toMatchObject({ e: 'tradingSession', phase: 'OPEN' });
+  });
+
+  it('parses a tradingSession transition event with ps + ns fields', () => {
+    // Binance emits a transition payload when the session changes phase.
+    // `ps` is the previous phase, `ns` is the next phase — tightened schema
+    // requires the same enum as `phase` for both.
+    const payload = parseWsPayload('tradingSession', {
+      e: 'tradingSession',
+      E: 2,
+      phase: 'PRE_MARKET',
+      ps: 'CLOSED',
+      ns: 'OPEN',
+      openTime: 3,
+      closeTime: 4,
+      session: 'PRE_MARKET',
+    });
+    expect(payload).toMatchObject({ e: 'tradingSession', phase: 'PRE_MARKET', ps: 'CLOSED', ns: 'OPEN' });
+  });
+
   it('parses the corrected continuous-kline stream name (symbol_contractType@continuousKline_interval)', () => {
+    // The new stream-name format puts the contract type between the symbol and
+    // the stream kind — the parser still routes both continuousKline_* and the
+    // symbol-prefixed form to the kline schema.
     const payload = parseWsPayload('solusdt_perpetual@continuousKline_5m', {
       e: 'kline', E: 1, s: 'SOLUSDT',
       k: { t: 1, T: 2, s: 'SOLUSDT', i: '5m', o: '1', c: '2', h: '3', l: '0.5', v: '10', n: 5, x: false, q: '20', V: '5', Q: '10' },

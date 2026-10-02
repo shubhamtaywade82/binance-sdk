@@ -86,7 +86,7 @@ for (const entry of entries) {
 const index = {
   $schema: './catalog.schema.json',
   catalogVersion: 1,
-  sdkVersion: '3.0.0-next',
+  sdkVersion: '3.0.1',
   generatedAt: new Date().toISOString(),
   description:
     'Machine-readable inventory of the SDK REST + WebSocket surface, derived from src/registry and the v3 WS platform. Schema catalogs land with the coverage compiler milestone.',
@@ -101,12 +101,12 @@ const index = {
   ],
 };
 
-function endpointsFor(env: 'live' | 'testnet' | 'demo'): Record<WsFamily, { market: string; wsApi?: string }> {
+function endpointsFor(env: 'live' | 'testnet' | 'demo'): Record<WsFamily, { market: string; marketPublic: string; wsApi?: string }> {
   const { endpoints } = resolveEnvironment(env === 'live' ? {} : env === 'testnet' ? { testnet: true } : { demo: true });
   return {
-    usdm: { market: endpoints.wsMarket, wsApi: endpoints.wsApi },
-    spot: { market: endpoints.wsSpotMarket, wsApi: endpoints.wsSpotApi },
-    coinm: { market: endpoints.wsDapiMarket },
+    usdm: { market: endpoints.wsMarket, marketPublic: endpoints.wsMarketPublic, wsApi: endpoints.wsApi },
+    spot: { market: endpoints.wsSpotMarket, marketPublic: endpoints.wsSpotMarket, wsApi: endpoints.wsSpotApi },
+    coinm: { market: endpoints.wsDapiMarket, marketPublic: endpoints.wsDapiMarketPublic },
   };
 }
 

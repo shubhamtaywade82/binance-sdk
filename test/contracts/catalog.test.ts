@@ -80,7 +80,7 @@ describe('contracts catalog (v3 inventory layer)', () => {
 describe('websocket-catalog (v3 ws platform inventory layer)', () => {
   interface WsCatalogFamily {
     limits: { maxStreamsPerConnection: number; defaultMaxConnections: number };
-    endpoints: Record<string, { market: string; wsApi?: string }>;
+    endpoints: Record<string, { market: string; marketPublic?: string; wsApi?: string }>;
   }
 
   function loadWsCatalog(): {
@@ -123,9 +123,13 @@ describe('websocket-catalog (v3 ws platform inventory layer)', () => {
 
   it('lists live market endpoints for every family', () => {
     const { families } = loadWsCatalog();
+    // USDⓈ-M + COIN-M migrated to the 2026 `/market/stream` URL path
+    // (the legacy `/stream` path is being shut down April 23, 2026).
     expect(families.usdm.endpoints.live.market).toContain('fstream.binance.com');
+    expect(families.usdm.endpoints.live.market).toContain('/market/stream');
     expect(families.spot.endpoints.live.market).toContain('stream.binance.com');
     expect(families.coinm.endpoints.live.market).toContain('dstream.binance.com');
+    expect(families.coinm.endpoints.live.market).toContain('/market/stream');
     expect(families.usdm.endpoints.live.wsApi).toContain('ws-fapi');
     expect(families.spot.endpoints.live.wsApi).toContain('ws-api');
   });

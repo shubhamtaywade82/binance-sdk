@@ -47,7 +47,7 @@ export function wsTools(client: BinanceClient): ToolDefinition[] {
     {
       name: 'futures_ws_subscribe',
       description:
-        'Subscribe to real-time market data streams. Topic format: <symbol>@<stream>, e.g. btcusdt@aggTrade, btcusdt@kline_1m, btcusdt@depth20, btcusdt@markPrice@1s, btcusdt@bookTicker, btcusdt@ticker, btcusdt@miniTicker, btcusdt@forceOrder, or all-market topics !ticker@arr, !bookTicker, !markPrice@arr, !forceOrder@arr, !miniTicker@arr. Multiple topics can be passed at once.',
+        'Subscribe to real-time market data streams. Topic format: <symbol>@<stream>, e.g. btcusdt@aggTrade, btcusdt@kline_1m, btcusdt@depth20, btcusdt@markPrice@1s, btcusdt@bookTicker, btcusdt@ticker, btcusdt@miniTicker, btcusdt@forceOrder, or all-market topics !ticker@arr, !bookTicker, !markPrice@arr, !markPrice@arr@1s, !forceOrder@arr, !miniTicker@arr, !contractInfo, or the new 2026 streams btcusdt_perpetual@continuousKline_5m, btcusdt@rpiDepth@500ms, tradingSession. Multiple topics can be passed at once.',
       inputSchema: z.object({
         topics: z.array(z.string().min(1)).min(1).describe('Stream topics, e.g. ["btcusdt@aggTrade", "btcusdt@kline_1m"]'),
       }),
@@ -56,6 +56,83 @@ export function wsTools(client: BinanceClient): ToolDefinition[] {
         for (const topic of normalized) void connectionFor(client, topic).subscribe([topic]);
         normalized.forEach((t: string) => buffer.subscriptions.add(t));
         return textResult({ subscribed: normalized, active: [...buffer.subscriptions] });
+      },
+    },
+    // ---- Typed stream-name builders (2026 USDⓈ-M audit remediation) ----
+    // These exist because raw topic strings are easy to typo — the audit
+    // found `continuousKline` had been constructed with the wrong format for
+    // months. Each tool takes typed args and returns the canonical topic
+    // string, then subscribes via the same path as `futures_ws_subscribe`.
+    {
+      name: 'futures_ws_continuous_kline',
+      description:
+        'Subscribe to a continuous-contract kline stream for a USDⓈ-M pair. Builds the canonical Binance stream name <symbol>_<contractType>@continuousKline_<interval> (the contract type sits between symbol and stream kind).',
+      inputSchema: z.object({
+        symbol: z.string().min(1).describe('USD-M pair, e.g. BTCUSDT'),
+        contractType: z.enum(['perpetual', 'current_quarter', 'next_quarter']),
+        interval: z
+          .enum(['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M'])
+          .describe('Kline interval'),
+      }),
+      handler: async ({ symbol, contractType, interval }) => {
+        const topic = client.futures.ws.continuousKline(
+          normalizeSymbol(symbol),
+          contractType,
+          interval as Parameters<typeof client.futures.ws.continuousKline>[2],
+        );
+        client.futures.ws.subscribe([topic]);
+        buffer.subscriptions.add(topic);
+        return textResult({ subscribed: topic, active: [...buffer.subscriptions] });
+      },
+    },
+    {
+      name: 'futures_ws_all_mark_prices_1s',
+      description:
+        'Subscribe to the all-symbols mark-price stream at the 1s update cadence (!markPrice@arr@1s, Binance 2026 addition). Delivers an array of mark-price entries every second.',
+      inputSchema: z.object({}),
+      handler: async () => {
+        const topic = client.futures.ws.allMarkPrices1s();
+        client.futures.ws.subscribe([topic]);
+        buffer.subscriptions.add(topic);
+        return textResult({ subscribed: topic, active: [...buffer.subscriptions] });
+      },
+    },
+    {
+      name: 'futures_ws_contract_info',
+      description:
+        'Subscribe to the all-market contract-info stream (!contractInfo). Emits on symbol listing/delisting and on contract parameter changes (leverage bracket, lot size, price precision).',
+      inputSchema: z.object({}),
+      handler: async () => {
+        const topic = client.futures.ws.contractInfo();
+        client.futures.ws.subscribe([topic]);
+        buffer.subscriptions.add(topic);
+        return textResult({ subscribed: topic, active: [...buffer.subscriptions] });
+      },
+    },
+    {
+      name: 'futures_ws_rpi_depth',
+      description:
+        'Subscribe to the Retail Price Improvement (RPI) order-book depth diff stream (<symbol>@rpiDepth@500ms). 500ms cadence; payloads have the same shape as a depthUpdate event.',
+      inputSchema: z.object({
+        symbol: z.string().min(1).describe('USD-M pair, e.g. BTCUSDT'),
+      }),
+      handler: async ({ symbol }) => {
+        const topic = client.futures.ws.rpiDepth(normalizeSymbol(symbol));
+        client.futures.ws.subscribe([topic]);
+        buffer.subscriptions.add(topic);
+        return textResult({ subscribed: topic, active: [...buffer.subscriptions] });
+      },
+    },
+    {
+      name: 'futures_ws_trading_session',
+      description:
+        'Subscribe to the platform trading-session stream (tradingSession, introduced alongside /fapi/v1/tradingSchedule in December 2025). Emits session phase transitions (open, close, pre-market, post-market).',
+      inputSchema: z.object({}),
+      handler: async () => {
+        const topic = client.futures.ws.tradingSession();
+        client.futures.ws.subscribe([topic]);
+        buffer.subscriptions.add(topic);
+        return textResult({ subscribed: topic, active: [...buffer.subscriptions] });
       },
     },
     {

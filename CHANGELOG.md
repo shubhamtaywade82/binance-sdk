@@ -3,7 +3,13 @@
 All notable changes to `binance-sdk` are documented here.
 Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased]
+## [3.0.1] - 2026-10-02
+
+**USDⓈ-M + COIN-M 2026 audit remediation.** Closes every issue surfaced by
+the audit of the public USDⓈ-M REST + WebSocket surface, plus COIN-M parity
+gaps the audit prompted. Safe drop-in upgrade for `3.0.0` — the only
+behavioural changes are URL paths Binance has already deprecated, and the
+corrected `continuousKline` stream-name format.
 
 ### Fixed (client-side stream routing, on top of the audit remediation below)
 - **USDⓈ-M WebSocket routing (breaking for custom `wsBase` users).** Market streams now connect over `…/market/stream` and order-book streams (`bookTicker`, `!bookTicker`, `depth*`, `rpiDepth`) over `…/public/stream`; the legacy `…/stream` URL was decommissioned by Binance on 2026-04-23. `wsBase` without a `/market/` segment leaves the public URL equal to `wsBase`; `wsMarketPublicBase` overrides it, `client.futures.wsPublic` is the `/public` connection, and `client.ws.usdm` (pooled platform) routes each stream automatically. `client.futures.ws` (`/market`) now rejects order-book streams with a clear error — subscribe those on `client.futures.wsPublic`. `OrderBookEngine` via `createFuturesOrderBookEngine` and the MCP `futures_ws_*` tools route automatically. **Not verified:** whether testnet/demo hosts serve the new paths; override with `wsBase`/`wsPublicBase` if they do not.
@@ -60,12 +66,59 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 - **`tradingSession` stream builder** — `FuturesMarketWS.tradingSession()`
   returns the platform session-phase stream name introduced alongside
   `/fapi/v1/tradingSchedule`. Typed schema `WsTradingSessionPayloadSchema`
-  and `parseWsPayload` routing added.
+  (tightened to require `e`, `E`, `phase` and to recognize transition
+  fields `ps` / `ns`) and `parseWsPayload` routing added.
 - **`!markPrice@arr@1s` stream builder + array schema** —
   `FuturesMarketWS.allMarkPrices1s()` returns the 1s-cadence aggregate
   mark-price stream name. The aggregate `!markPrice@arr*` payloads are
   now parsed as arrays via `WsMarkPriceArrayPayloadSchema` (the previous
   schema only described the per-symbol single-object form).
+
+### Added (COIN-M parity with USDⓈ-M)
+
+The audit prompted a re-check of the COIN-M surface; the same WS routing
+migration applies to COIN-M, and three aggregate stream builders were
+missing entirely.
+
+- **COIN-M WS base URL architecture** — `resolveEnvironment()` now emits
+  `wsDapiMarket` (`/market/stream`), `wsDapiMarketPublic` (`/public/stream`)
+  and `wsDapiUser` (`/public/ws`); `CoinMMarketWS` default URL is
+  `wss://dstream.binance.com/market/stream`. `BinanceClientOptions` gains
+  `wsDapiMarketPublicBase`. The websocket catalog now records both
+  `market` and `marketPublic` endpoints for every family.
+- **`CoinMMarketWS.allMarkPrices()` / `allMarkPrices1s()`** — aggregate
+  mark-price streams at 3s and 1s cadences. COIN-M documents both
+  (mirror of the USDⓈ-M streams), but they were missing.
+- **`CoinMMarketWS.contractInfo()`** — all-market contract-info stream.
+  COIN-M documents this stream; it was missing.
+
+### Added (LLM tool layer + smoke test)
+
+- **Five new WS stream-builder tools** in `src/tools/ws.tools.ts` so the MCP
+  server / chat-ui can subscribe to the new streams without typing raw topic
+  strings:
+  - `futures_ws_continuous_kline` (typed `symbol` + `contractType` + `interval`)
+  - `futures_ws_all_mark_prices_1s`
+  - `futures_ws_contract_info`
+  - `futures_ws_rpi_depth`
+  - `futures_ws_trading_session`
+  The pre-existing `futures_ws_subscribe` tool's description now lists the
+  new stream names so the LLM knows they exist.
+- **`scripts/testnet-smoke.ts`** gains a new "2026 USDⓈ-M WebSocket stream
+  builders" section that subscribes to each new stream, plus three REST
+  checks (`insuranceBalance`, `symbolAdlRisk`, `tradingSchedule`). Each
+  check waits up to 8s for the first message (or 4s for low-cadence event
+  streams like `!contractInfo` / `tradingSession`); a stream whose name is
+  wrong simply times out, which is the actual proof the audit format fix
+  works against live Binance routing.
+
+### Tests
+
+- 598 tests passing (was 596 in `3.0.0` — net +2 new test cases; the bulk of
+  the new coverage lands as assertions inside existing tests for
+  `CoinMMarketWS`, `endpoints.test.ts`, `ws.types.test.ts`, and the
+  `toolkit` catalog).
+- `tsc --noEmit` clean, `tsup` build clean.
 
 ## [3.0.0] - 2026-09-16
 
