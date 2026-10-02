@@ -42,10 +42,6 @@ const rows: Row[] = [
   ['data.globalLongShortAccountRatio', 'GET', '/futures/data/globalLongShortAccountRatio', 'public', 'futures.data.globalLongShortAccountRatio'],
   ['data.takerLongShortRatio', 'GET', '/futures/data/takerlongshortRatio', 'public', 'futures.data.takerLongShortRatio'],
   ['data.basis', 'GET', '/futures/data/basis', 'public', 'futures.data.basis'],
-  // Binance's changelog and current REST docs identify /fapi/v1/insuranceBalance
-  // (not /futures/data/insuranceBalance) as the canonical USDⓈ-M insurance fund
-  // balance endpoint. The previous row pointed at /futures/data/insuranceBalance,
-  // which 404s against the live host.
   ['data.insuranceBalance', 'GET', '/fapi/v1/insuranceBalance', 'public', 'futures.data.insuranceFundBalance'],
   ['data.deliveryPrice', 'GET', '/futures/data/delivery-price', 'public', 'futures.data.deliveryPrice'],
   ['data.fundingInfo', 'GET', '/fapi/v1/fundingInfo', 'public', 'futures.data.fundingInfo'],

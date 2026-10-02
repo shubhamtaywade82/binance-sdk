@@ -8,17 +8,9 @@ export interface Endpoints {
   restApiRoot: string;
   restDapiRoot: string;
   restDapi: string;
-  /**
-   * USDⓈ-M combined market-stream socket (per-symbol streams). Binance migrated
-   * USDⓈ-M futures market routing to the new `/market` URL path; the legacy
-   * `/stream` path is being shut down on April 23, 2026.
-   */
+  /** USDⓈ-M `/market` combined-stream URL (trades, klines, tickers, mark price, contract info, …). */
   wsMarket: string;
-  /**
-   * USDⓈ-M public all-market socket (aggregate streams like `!ticker@arr`,
-   * `!bookTicker`, `!contractInfo`). New `/public` URL path introduced in the
-   * 2026 USDⓈ-M WS routing migration.
-   */
+  /** USDⓈ-M `/public` combined-stream URL (book tickers, depth, RPI depth). */
   wsMarketPublic: string;
   wsUser: string;
   wsApi: string;
@@ -34,6 +26,7 @@ export function resolveEnvironment(options?: {
   demo?: boolean;
   apiBase?: string;
   wsBase?: string;
+  /** Override for the USDⓈ-M `/public` stream URL (defaults to `wsBase` with `/market/` swapped for `/public/`). */
   wsMarketPublicBase?: string;
   wsUserBase?: string;
   wsApiBase?: string;
@@ -51,21 +44,18 @@ export function resolveEnvironment(options?: {
         ? 'https://testnet.binancefuture.com'
         : 'https://fapi.binance.com');
 
-  const wsMarketHost =
-    options?.wsBase ??
-    (env === 'demo'
-      ? 'wss://demo-fstream.binance.com/market/stream'
+  // USDⓈ-M market streams are routed over `/market` and `/public` (legacy
+  // `/stream` was decommissioned 2026-04-23).
+  const wsFuturesRoot =
+    env === 'demo'
+      ? 'wss://demo-fstream.binance.com'
       : env === 'testnet'
-        ? 'wss://fstream.binancefuture.com/market/stream'
-        : 'wss://fstream.binance.com/market/stream');
-
+        ? 'wss://fstream.binancefuture.com'
+        : 'wss://fstream.binance.com';
+  const wsMarketHost = options?.wsBase ?? `${wsFuturesRoot}/market/stream`;
   const wsMarketPublicHost =
     options?.wsMarketPublicBase ??
-    (env === 'demo'
-      ? 'wss://demo-fstream.binance.com/public/stream'
-      : env === 'testnet'
-        ? 'wss://fstream.binancefuture.com/public/stream'
-        : 'wss://fstream.binance.com/public/stream');
+    (options?.wsBase ? options.wsBase.replace(/\/market(\/|$)/, '/public$1') : `${wsFuturesRoot}/public/stream`);
 
   const wsUserHost =
     options?.wsUserBase ??

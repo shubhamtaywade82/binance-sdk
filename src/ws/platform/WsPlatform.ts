@@ -120,10 +120,11 @@ export class WsPlatform {
       events: this.events,
     });
 
-    const wire = (family: WsFamily, baseStreamUrl: string): WsFamilyStreams => {
+    const wire = (family: WsFamily, baseStreamUrl: string, publicStreamUrl?: string): WsFamilyStreams => {
       const pool = new FamilyConnectionPool({
         family,
         baseStreamUrl,
+        publicStreamUrl,
         maxConnections: platform.maxConnections?.[family],
         reconnectPolicy,
         events: this.events,
@@ -168,7 +169,7 @@ export class WsPlatform {
       return streams;
     };
 
-    this.usdm = wire('usdm', core.endpoints.wsMarket);
+    this.usdm = wire('usdm', core.endpoints.wsMarket, core.endpoints.wsMarketPublic);
     this.spot = wire('spot', core.endpoints.wsSpotMarket);
     this.coinm = wire('coinm', core.endpoints.wsDapiMarket);
 

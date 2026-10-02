@@ -171,7 +171,7 @@ export class FamilySubscriptionRegistry {
     if (this.attached.has(conn)) return;
     this.attached.add(conn);
 
-    conn.on('message', (stream: string, payload: WsStreamPayload) => {
+    conn.on('message', (stream: string, payload: WsStreamPayload | WsStreamPayload[]) => {
       const mapping = this.mappings.get(stream);
       if (!mapping || mapping.conn !== conn) return;
       for (const sub of mapping.subs) sub.dispatch(payload);

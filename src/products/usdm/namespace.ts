@@ -27,7 +27,10 @@ export interface UsdmSurface {
   /** Idempotent order placement with transport-failure reconciliation. */
   execution: ExecutionManager;
   userStream: UserDataStream;
+  /** `/market` stream connection (trades, klines, tickers, mark price, …). */
   ws: FuturesMarketWS;
+  /** `/public` stream connection (book tickers, depth, RPI depth). */
+  wsPublic: FuturesMarketWS;
   wsUser: FuturesUserWS;
   wsApi: WsApi;
 }
@@ -68,6 +71,7 @@ export function buildUsdmSurface(core: CoreContext, getListenKey: () => string |
     execution: new ExecutionManager(futuresTrading, { events, riskGateway }),
     userStream: new UserDataStream(core.http('fapiRoot')),
     ws: new FuturesMarketWS(core.endpoints.wsMarket, { events }),
+    wsPublic: new FuturesMarketWS(core.endpoints.wsMarketPublic, { events, name: 'futuresPublic' }),
     wsUser: new FuturesUserWS({
       baseUserUrl: core.endpoints.wsUser,
       getListenKey,

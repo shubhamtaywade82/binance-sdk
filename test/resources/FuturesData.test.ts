@@ -126,7 +126,7 @@ describe('FuturesData', () => {
     expect((config[0] as { symbol: string }).symbol).toBe('BTCUSDT');
   });
 
-  it('fetches insurance fund balance from the /fapi/v1 base (not /futures/data)', async () => {
+  it('fetches insurance fund balance from /fapi/v1/insuranceBalance', async () => {
     server.use(
       http.get('https://fapi.binance.com/fapi/v1/insuranceBalance', () =>
         HttpResponse.json([{ symbols: ['BTCUSDT'], assets: [] }]),
@@ -193,6 +193,25 @@ describe('FuturesData', () => {
     const data = new FuturesData();
     const schedule = await data.delistSchedule('OLDUSDT');
     expect((schedule[0] as { symbol: string }).symbol).toBe('OLDUSDT');
+  });
+
+  it('fetches symbolAdlRisk as a public endpoint (no signature, no API key)', async () => {
+    let url: URL | undefined;
+    let apiKey: string | null = null;
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/symbolAdlRisk', ({ request }) => {
+        url = new URL(request.url);
+        apiKey = request.headers.get('X-MBX-APIKEY');
+        return HttpResponse.json([{ symbol: 'BTCUSDT', adlRisk: 'LOW' }]);
+      }),
+    );
+
+    const data = new FuturesData({ apiKey: 'k', apiSecret: 's' });
+    const risk = await data.symbolAdlRisk('BTCUSDT');
+    expect((risk[0] as { symbol: string }).symbol).toBe('BTCUSDT');
+    expect(url?.searchParams.get('symbol')).toBe('BTCUSDT');
+    expect(url?.searchParams.has('signature')).toBe(false);
+    expect(apiKey).toBeNull();
   });
 
   it('fetches adlQuantile with signed auth', async () => {

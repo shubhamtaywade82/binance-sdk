@@ -38,6 +38,7 @@ export interface BinanceClientOptions {
   recvWindow?: number;
   apiBase?: string;
   wsBase?: string;
+  /** USDⓈ-M `/public` stream URL override (defaults to `wsBase` with `/market/` → `/public/`). */
   wsMarketPublicBase?: string;
   wsUserBase?: string;
   wsApiBase?: string;
@@ -342,7 +343,7 @@ export class BinanceClient {
     resyncDelayMs?: number;
   }): OrderBookEngine {
     return new OrderBookEngine({
-      ws: this.futures.ws,
+      ws: this.futures.wsPublic, // depth streams are served on the /public path
       fetchSnapshot: async (symbol) => {
         const snapshot = await this.futures.market.depth(symbol.toUpperCase(), 1000);
         // Re-stringify: the typed schema converts to numbers; the book engine
@@ -416,6 +417,7 @@ export class BinanceClient {
   closeAllWebSockets(): void {
     this.core.closeWebSockets(); // platform pools/WS API (no-op when never built)
     this.futures.ws.close();
+    this.futures.wsPublic.close();
     this.futures.wsUser.close();
     this.spot.ws.close();
     this.spot.wsUser.close();
@@ -427,7 +429,10 @@ export class BinanceClient {
   }
 
   reconnectWebSocket(target: 'ws' | 'wsUser' | 'spot' | 'spotUser' | 'coinm' | 'coinmUser'): void {
-    if (target === 'ws') this.futures.ws.reconnect();
+    if (target === 'ws') {
+      this.futures.ws.reconnect();
+      this.futures.wsPublic.reconnect();
+    }
     else if (target === 'wsUser') this.futures.wsUser.reconnect();
     else if (target === 'spot') this.spot.ws.reconnect();
     else if (target === 'spotUser') this.spot.wsUser.reconnect();
@@ -437,6 +442,7 @@ export class BinanceClient {
 
   resetReconnectAttempts(): void {
     this.futures.ws.resetReconnectAttempts();
+    this.futures.wsPublic.resetReconnectAttempts();
     this.futures.wsUser.resetReconnectAttempts();
     this.spot.ws.resetReconnectAttempts();
     this.spot.wsUser.resetReconnectAttempts();

@@ -162,16 +162,9 @@ export class FuturesData {
     );
   }
 
-  async insuranceFundBalance(options?: { symbol?: string; startTime?: number; endTime?: number; limit?: number }): Promise<unknown[]> {
-    // Binance moved the insurance fund balance endpoint to /fapi/v1/insuranceBalance
-    // (the legacy /futures/data/insuranceBalance path now 404s). It is served
-    // from the same fapi/v1 base as the rest of FuturesData's market analytics.
-    return this.http.get('/insuranceBalance', {
-      symbol: options?.symbol,
-      startTime: options?.startTime,
-      endTime: options?.endTime,
-      limit: options?.limit,
-    });
+  /** Insurance fund balance snapshot — `GET /fapi/v1/insuranceBalance` (public; `symbol` optional). */
+  async insuranceFundBalance(options?: { symbol?: string }): Promise<unknown[]> {
+    return this.http.get('/insuranceBalance', { symbol: options?.symbol });
   }
 
   async pmExchangeInfo(): Promise<unknown> {

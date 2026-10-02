@@ -17,7 +17,8 @@ import { buildUsdmSurface, type UsdmSurface } from './namespace.js';
  * const fill = await usdm.execution.placeOrder({
  *   symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: '0.01',
  * });
- * usdm.ws.bookTicker('BTCUSDT', handler);      // product WS surface
+ * usdm.wsPublic.subscribe([usdm.wsPublic.bookTicker('BTCUSDT')]); // /public path: book tickers + depth
+ * usdm.ws.subscribe([usdm.ws.aggTrade('BTCUSDT')]);               // /market path: everything else
  * usdm.close();                                // product-scoped cleanup
  * ```
  *
@@ -73,6 +74,11 @@ export class USDMClient implements ProductClient {
 
   get ws(): UsdmSurface['ws'] {
     return this.surface.ws;
+  }
+
+  /** `/public` stream connection: book tickers, depth and RPI depth (see {@link FuturesMarketWS}). */
+  get wsPublic(): UsdmSurface['wsPublic'] {
+    return this.surface.wsPublic;
   }
 
   get wsUser(): UsdmSurface['wsUser'] {
@@ -160,6 +166,7 @@ export class USDMClient implements ProductClient {
     this.bookEngineValue?.close();
     this.closeUserStream();
     this.surface.ws.close();
+    this.surface.wsPublic.close();
     this.surface.wsUser.close();
   }
 }

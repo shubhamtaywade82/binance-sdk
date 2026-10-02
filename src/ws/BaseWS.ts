@@ -284,7 +284,7 @@ export class BaseWS extends WsConnection {
       // parser does not yet know about.
       this.emit('raw', stream, raw);
       try {
-        const payload: WsStreamPayload = parseWsPayload(stream, raw);
+        const payload: WsStreamPayload | WsStreamPayload[] = parseWsPayload(stream, raw);
         this.emit('message', stream, payload);
         this.emit(stream, payload);
       } catch (err) {

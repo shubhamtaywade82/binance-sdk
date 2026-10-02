@@ -5,6 +5,14 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed (client-side stream routing, on top of the audit remediation below)
+- **USDⓈ-M WebSocket routing (breaking for custom `wsBase` users).** Market streams now connect over `…/market/stream` and order-book streams (`bookTicker`, `!bookTicker`, `depth*`, `rpiDepth`) over `…/public/stream`; the legacy `…/stream` URL was decommissioned by Binance on 2026-04-23. `wsBase` without a `/market/` segment leaves the public URL equal to `wsBase`; `wsMarketPublicBase` overrides it, `client.futures.wsPublic` is the `/public` connection, and `client.ws.usdm` (pooled platform) routes each stream automatically. `client.futures.ws` (`/market`) now rejects order-book streams with a clear error — subscribe those on `client.futures.wsPublic`. `OrderBookEngine` via `createFuturesOrderBookEngine` and the MCP `futures_ws_*` tools route automatically. **Not verified:** whether testnet/demo hosts serve the new paths; override with `wsBase`/`wsPublicBase` if they do not.
+- `futures.data.insuranceFundBalance` sends only the documented `symbol` parameter (`startTime`/`endTime`/`limit` are not part of `GET /fapi/v1/insuranceBalance`).
+- `parseWsPayload` no longer throws on array payloads (`!markPrice@arr`, `!ticker@arr`, `!miniTicker@arr`, `!assetIndex@arr`) and on `!bookTicker`; array frames yield arrays of typed payloads.
+
+### Added (client-side stream routing)
+- Stream builders `allMarkPrices('1s')` (`!markPrice@arr@1s`), `rpiDepth()`, `contractInfo()`, `tradingSession()`, plus `futuresStreamRoute()`; `allMarkPrices()` also accepts `'1s'`. The RPI depth, contract info and trading session schemas follow Binance's official connector field names (`ct`/`dt`/`ot`/`cs`/`bks` for contract info, `t`/`T`/`S` for trading session), replacing earlier guessed shapes.
+
 ### Fixed (USDⓈ-M REST audit remediation)
 
 - **`/fapi/v1/insuranceBalance`** — `FuturesData.insuranceFundBalance()` and the
