@@ -7,3 +7,4 @@ export { NetworkError } from './NetworkError.js';
 export { PolicyViolationError } from './PolicyViolationError.js';
 export type { PolicyRule } from './PolicyViolationError.js';
 export { DryRunError } from './DryRunError.js';
+export { BinanceUnknownExecutionError, classifyUnknownExecution } from './BinanceUnknownExecutionError.js';
