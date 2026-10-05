@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BinanceApiError, NetworkError } from '../../../src/errors/index.js';
+import { BinanceApiError, BinanceUnknownExecutionError, NetworkError } from '../../../src/errors/index.js';
 import { ExecutionUnknownError } from '../../../src/execution/types.js';
 import { classifyRetrySafety, isRetrySafety } from '../../../src/execution/platform/RetrySafety.js';
 
@@ -71,6 +71,22 @@ describe('classifyRetrySafety', () => {
     expect(classifyRetrySafety(undefined).safety).toBe('never-retry');
     expect(classifyRetrySafety(new Error('plain')).safety).toBe('never-retry');
     expect(classifyRetrySafety('string error').safety).toBe('never-retry');
+  });
+
+  it('classifies BinanceUnknownExecutionError as reconciliation-required (audit 5XX trap)', () => {
+    const err = new BinanceUnknownExecutionError('nbsdk-x', 'BTCUSDT', new Error('502'));
+    const result = classifyRetrySafety(err);
+    expect(result.safety).toBe('reconciliation-required');
+    expect(result.reason).toMatch(/HTTP 5XX/i);
+    expect(result.reason).toContain('nbsdk-x');
+    expect(result.reason).toContain('BTCUSDT');
+  });
+
+  it('classifies HTTP-5XX BinanceApiError as reconciliation-required (defensive path)', () => {
+    const internalError = new BinanceApiError('Internal error', -1000, 500);
+    const result = classifyRetrySafety(internalError);
+    expect(result.safety).toBe('reconciliation-required');
+    expect(result.reason).toContain('500');
   });
 
   it('isRetrySafety narrows the four semantic values', () => {

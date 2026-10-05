@@ -3,6 +3,80 @@
 All notable changes to `binance-sdk` are documented here.
 Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+**Architecture audit remediation — Ed25519 session, atomic cancel-replace,
+5XX UNKNOWN trap, pluggable transport.** Closes the architectural gaps
+surfaced by the recurring audit digest against the Binance Developer
+Docs and the official `binance-connector-js` connector. All additions
+are additive — no breaking changes to the existing surface.
+
+### Added
+- **Ed25519 `session.logon` handshaker (`src/ws/platform/WsSession.ts`).**
+  Per the Spot WebSocket API Authentication Documentation, persistent
+  session authorization accepts Ed25519 keys only. The new `WsSession`
+  class signs and dispatches `session.logon` using Node's native
+  `node:crypto` (zero external deps, sub-millisecond CPU overhead),
+  tracks authenticated state, and exposes `buildAuthenticatedFrame(method, params)`
+  so callers can omit `apiKey`/`signature` from subsequent trading calls
+  when the session is active — saving ~120–160 bytes per request and ~1.2ms
+  of CPU per order. Includes `session.status` and `session.logout`
+  helpers; `clearSession()` lets the transport reset state on a dropped
+  socket so the next `logon` re-authorizes server-side on the new
+  connection. Reconnect-after-drop re-authentication is wired by the
+  transport, not this class.
+- **HTTP 5XX UNKNOWN trap (`src/errors/BinanceUnknownExecutionError.ts`).**
+  Binance documents HTTP 5XX as "execution status is UNKNOWN and could
+  have been a success" — naive retries can double-fill. The new
+  `BinanceUnknownExecutionError` preserves `clientOrderId`/`symbol`/
+  `originalError` for downstream reconciliation, and the companion
+  `classifyUnknownExecution(err, ctx)` recognises 5XX, ECONNRESET,
+  ETIMEDOUT, EPIPE, TimeoutError, and the SDK's own `NetworkError`. The
+  `classifyRetrySafety` matrix now returns `reconciliation-required`
+  for both `BinanceUnknownExecutionError` and any `BinanceApiError`
+  whose HTTP status is 5XX, defensively surfacing the audit's UNKNOWN
+  trap even when callers bypass the explicit wrapper.
+- **Pluggable execution transport (`src/execution/ITransport.ts`,
+  `src/execution/Transports.ts`).** Strategy code written against
+  `IExecutionTransport` can swap between live Binance and a local
+  paper broker at constructor time — neither the official connector
+  nor the community library expose this. `LiveBinanceTransport`
+  wraps the Spot / USDⓈ-M trading resources and wraps 5XX /
+  transport-timeout placement failures in
+  `BinanceUnknownExecutionError`; `PaperBrokerTransport` adapts the
+  SDK's existing `PaperTradingEngine` to the same shape, returning
+  exact decimal strings so callers cannot tell backends apart by
+  reading the result. `LiveBinanceTransport.cancelOrder` reconciles
+  `-2011` / `-2013` (already-gone / does-not-exist) into a clean
+  `CANCELED` result.
+- **Atomic cancel-replace manager
+  (`src/execution/AtomicOrderManager.ts`).** Binance's
+  `order.cancelReplace` returns HTTP 409 with a structured body
+  under `ALLOW_FAILURE` mode; the manager surfaces this as a
+  typed `CancelReplaceResult` (`cancelResult`/`newOrderResult`/
+  `cancelResponse?`/`newOrderResponse?`) so consumers no longer
+  parse raw HTTP 409 exceptions to inspect partial outcomes.
+  Defaults to `cancelOrderId` (numeric) over `cancelOrigClientOrderId`
+  for the cancel target — Binance documents that numeric IDs deliver
+  strictly lower internal latency by avoiding the matching engine's
+  secondary hash-index traversal.
+- **Subpath exports.** `package.json#exports` now exposes
+  `./spot`, `./futures`, `./ws-api`, `./orderbook`, and `./errors`
+  alongside the existing `./tools` and `./mcp` entry points, so
+  consumers can tree-shake by product family without dependency drift.
+  All subpaths resolve to the unified `dist/index.js` bundle today —
+  per-family split bundles are a future optimisation; the type and
+  runtime paths are stable now.
+
+### Tests
+- 45 new tests covering the audit remediation:
+  `test/errors/BinanceUnknownExecutionError.test.ts` (9 tests),
+  `test/ws/platform/WsSession.test.ts` (9 tests),
+  `test/execution/AtomicOrderManager.test.ts` (6 tests),
+  `test/execution/Transports.test.ts` (10 tests),
+  plus 2 new test cases in `test/execution/platform/RetrySafety.test.ts`
+  for the 5XX UNKNOWN trap. Full suite (641 tests) still green.
+
 ## [3.0.1] - 2026-10-02
 
 **USDⓈ-M + COIN-M 2026 audit remediation.** Closes every issue surfaced by

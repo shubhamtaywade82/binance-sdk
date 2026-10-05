@@ -308,3 +308,35 @@ export {
   paperTools,
 } from './tools/index.js';
 export { createBinanceMcpServer } from './mcp/server.js';
+
+// v3 audit remediation: pluggable transport + atomic cancel-replace + Ed25519 session
+export type {
+  IExecutionTransport,
+  OrderPlacementParams,
+  OrderExecutionResult,
+  OrderCancelResult,
+  OrderSide as TransportOrderSide,
+  OrderType as TransportOrderType,
+  SelfTradePreventionMode,
+} from './execution/ITransport.js';
+export { LiveBinanceTransport, PaperBrokerTransport } from './execution/Transports.js';
+export {
+  AtomicOrderManager,
+  type CancelReplaceParams,
+  type CancelReplaceResult,
+  type CancelReplaceMode,
+  type ReplaceOrderType,
+  type CancelReplaceTransportCall,
+} from './execution/AtomicOrderManager.js';
+
+// v3 audit remediation: Ed25519 session.logon handshaker
+export {
+  WsSession,
+  type WsSessionOptions,
+  type WsSessionTransport,
+  type SessionLogonResponse,
+  type SessionStatusResponse,
+  type SessionLogoutResponse,
+  type SessionAuthMethod,
+  newSessionRequestId,
+} from './ws/platform/WsSession.js';

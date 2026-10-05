@@ -1,4 +1,4 @@
-import { BinanceApiError, NetworkError } from '../../errors/index.js';
+import { BinanceApiError, BinanceUnknownExecutionError, NetworkError } from '../../errors/index.js';
 import { ExecutionUnknownError } from '../types.js';
 import type { RetryClassification, RetrySafety } from './types.js';
 
@@ -41,6 +41,16 @@ export function classifyRetrySafety(error: unknown): RetryClassification {
     };
   }
 
+  // The audit's HTTP-5XX UNKNOWN trap: a server-side error on a mutating
+  // request means the order may have reached the engine. Reconcile by
+  // client order id; never blind-retry.
+  if (error instanceof BinanceUnknownExecutionError) {
+    return {
+      safety: 'reconciliation-required',
+      reason: `HTTP 5XX / transport failure left the order outcome unknown (symbol=${error.symbol}, clientOrderId=${error.clientOrderId}); reconcile before any retry`,
+    };
+  }
+
   if (error instanceof NetworkError) {
     return {
       safety: 'reconciliation-required',
@@ -64,6 +74,16 @@ export function classifyRetrySafety(error: unknown): RetryClassification {
 
 function classifyApiError(error: BinanceApiError): RetryClassification {
   const code = error.code;
+
+  // HTTP 5XX on a mutating request is the audit's UNKNOWN trap — Binance
+  // explicitly warns: "execution status is UNKNOWN and could have been a
+  // success." Surface as reconciliation-required; never blind-retry.
+  if (error.status >= 500 && error.status < 600) {
+    return {
+      safety: 'reconciliation-required',
+      reason: `HTTP ${error.status} — exchange-internal error; outcome not determinable from the response`,
+    };
+  }
 
   // Proven-absent orders: the canonical "safe" signals. A -2013 on the
   // reconciliation path means the submission never reached the engine; a
