@@ -1,7 +1,7 @@
 import type { EventBus } from '../core/events.js';
 import type { WsConnectionOptions, WsConnectionState } from './WsConnection.js';
 import { WsConnection } from './WsConnection.js';
-import { parseUserDataEvent, type UserDataEvent } from '../types/userdata.types.js';
+import { parseUserDataEvent, type UserDataEvent, type UserDataEventMap } from '../types/userdata.types.js';
 
 export { type WsConnectionState };
 
@@ -58,6 +58,15 @@ export class FuturesUserWS extends WsConnection {
     } catch (err) {
       this.emit('error', err);
     }
+  }
+
+  /**
+   * Type-safe listener: the handler's argument narrows to the payload for
+   * `type` (e.g. `onUserEvent('ORDER_TRADE_UPDATE', (e) => e.o.pm)`). Events
+   * without a schema arrive on the plain `userData` event as `UserDataUnknownEvent`.
+   */
+  onUserEvent<K extends keyof UserDataEventMap>(type: K, handler: (event: UserDataEventMap[K]) => void): this {
+    return this.on(type, handler);
   }
 
   /** The user-data stream base URL this instance was configured with. */

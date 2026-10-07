@@ -83,4 +83,32 @@ describe('FuturesUserWS', () => {
     expect(err.message).toContain('listenKey');
     client.close();
   });
+
+  it('delivers new and unrecognised event types without raising an error', async () => {
+    server.on('connection', (socket) => {
+      socket.send(JSON.stringify({ e: 'ALGO_UPDATE', E: 1, T: 1, o: { aid: 5, X: 'NEW', pm: 'TOP' } }));
+      socket.send(JSON.stringify({ e: 'GRID_UPDATE', E: 2, T: 2, gu: {} }));
+    });
+
+    const client = new FuturesUserWS({ baseUserUrl: `ws://localhost:${port}`, getListenKey: () => 'lk' });
+    const errors: unknown[] = [];
+    client.on('error', (err) => errors.push(err));
+    const seen: string[] = [];
+    const algo = new Promise<{ o: { pm?: string } }>((resolve) => {
+      client.onUserEvent('ALGO_UPDATE', (event) => resolve(event));
+    });
+    const both = new Promise<void>((resolve) => {
+      client.on('userData', (event: { e: string }) => {
+        seen.push(event.e);
+        if (seen.length === 2) resolve();
+      });
+    });
+    client.connect();
+
+    expect((await algo).o.pm).toBe('TOP');
+    await both;
+    expect(seen).toEqual(['ALGO_UPDATE', 'GRID_UPDATE']);
+    expect(errors).toEqual([]);
+    client.close();
+  });
 });

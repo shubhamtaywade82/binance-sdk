@@ -5,6 +5,13 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- `FuturesUserWS` / `CoinMUserWS` (via `parseUserDataEvent`) no longer raise `error` for `ALGO_UPDATE`, `TRADE_LITE`, `ACCOUNT_CONFIG_UPDATE`, `listenKeyExpired` or any other event without a schema (`GRID_UPDATE`, `STRATEGY_UPDATE`, `CONDITIONAL_ORDER_TRIGGER_REJECT`, future types). Typed events get schemas; the rest arrive unvalidated as `UserDataUnknownEvent` on `userData`.
+
+### Added
+- `ORDER_TRADE_UPDATE.o.pm` (price-match mode) plus `pP`, `si`, `ss`, `V`, `gtd`, `er`, `M`, all optional, per Binance's official connector types.
+- `FuturesUserWS.onUserEvent(type, handler)` — listener whose argument narrows to the payload for `type`; `UserDataEventMap` exposes the mapping.
+
 **Architecture audit remediation — Ed25519 session, atomic cancel-replace,
 5XX UNKNOWN trap, pluggable transport.** Closes the architectural gaps
 surfaced by the recurring audit digest against the Binance Developer
