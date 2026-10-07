@@ -5,11 +5,76 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-**Architecture audit remediation — Ed25519 session, atomic cancel-replace,
-5XX UNKNOWN trap, pluggable transport.** Closes the architectural gaps
-surfaced by the recurring audit digest against the Binance Developer
-Docs and the official `binance-connector-js` connector. All additions
-are additive — no breaking changes to the existing surface.
+**October 7, 2026 audit remediation — typed user-data events, PM Pro
+stream, price-match enum, type-safe dispatcher, decimal-preserving
+position accumulator.** Closes the architectural gaps surfaced by the
+audit's October 7 digest (Binance Developer Docs + the official
+`binance-connector-js` connector). All additions are additive — no
+breaking changes to the existing public surface.
+
+### Added
+- **Strict discriminated `UserDataEvent` union.** Covers Spot
+  `executionReport`, USDⓈ-M `ORDER_TRADE_UPDATE` (with the
+  newly-verified `pm` field), `ACCOUNT_UPDATE`, `MARGIN_CALL`,
+  `PortfolioMarginProAccountUpdate` (PM Pro), and an explicit
+  `UserDataUnknownEvent` fallback for events Binance ships that the
+  SDK does not yet model (`GRID_UPDATE`, `STRATEGY_UPDATE`,
+  `ALGO_UPDATE`, `CONDITIONAL_ORDER_TRIGGER_REJECT`). Per the audit,
+  throwing on unrecognized event types is a production-crash vector in
+  user-data streams — a new upstream event would terminate a real
+  trading bot's user stream the first time Binance sent it. The
+  `parseUserDataEvent` parser now routes unrecognized event types to
+  the typed `UserDataUnknownEvent` instead of throwing.
+- **Verified `PriceMatchMode` enum on `ORDER_TRADE_UPDATE.o.pm`.**
+  The audit's October 7 digest confirmed the canonical enum values
+  (`NONE`, `OPPONENT`, `OPPONENT_5`, `OPPONENT_10`, `OPPONENT_20`,
+  `TOP`, `QUEUE`, `QUEUE_5`, `QUEUE_10`, `QUEUE_20`) after a prior
+  spec listed only `OPPONENT` / `TOP` / `QUEUE`. The strict
+  `PriceMatchModeSchema` rejects out-of-spec values; the permissive
+  `PriceMatchModeLooseSchema` accepts future protocol additions as
+  plain strings so a new Binance enum value won't break parsing.
+- **`PortfolioMarginProAccountUpdate` schema.** The PM Pro stream
+  gateway (separate from the Classic PM stream at
+  `wss://fstream.binance.com/pm-classic`) pushes unified USDⓈ-M
+  Futures + COIN-M Futures + Spot Cross Margin risk telemetry. Per
+  the audit's October 7 digest recommendation, all decimal values
+  (`u`, `eq`, `ae`, `im`, `mm`, `avb`, `vmw`) are kept as exact
+  decimal strings — sub-satoshi precision preserved, no
+  `.transform(Number)` coercion, to avoid IEEE 754 drift on
+  collateral equity / margin values.
+- **`UserDataAccountUpdateRawSchema` — decimal-preserving mirror of
+  the existing `UserDataAccountUpdateSchema`.** The public schema
+  keeps `.transform(Number)` for backward compat with downstream
+  consumers (the audit explicitly recommends leaving existing schemas
+  untouched). The new Raw variant preserves the exact decimal strings
+  Binance sent on the wire — the dispatcher's position accumulator
+  uses it so `'64500.00'` survives intact instead of being silently
+  truncated to `'64500'` via `String(Number(...))`.
+- **`UserStreamDispatcher` + `attachUserStreamDispatcher`** (`src/ws/
+  UserStreamDispatcher.ts`). Type-safe `.on<K extends UserDataEvent
+  ['e']>(eventType, handler)` API with compile-time-narrowed payloads
+  (no per-call `as` casts); wildcard `'*'` listener for structured
+  logging, audit sinks, or replay harnesses. In-memory position
+  accumulator fed exclusively from `ACCOUNT_UPDATE.a.P` (the audit's
+  canonical ground-truth source — never derived from `ORDER_TRADE_
+  UPDATE` fill deltas, which silently drift on funding fees, fee
+  rebating, liquidation slices, and ADL events). Each listener
+  receives a disposer for clean teardown in long-running sessions.
+- **`isUserDataEvent(event, type)` discriminator helper.** Lets
+  consumers branch on event types after `parseUserDataEvent(raw)`
+  without `as` casts: `if (isUserDataEvent(event, 'ACCOUNT_UPDATE'))
+  { event.a.P... }`.
+
+### Tests
+- 29 new tests covering the typed event surface
+  (`test/ws/UserStreamDispatcher.test.ts`): parser routing for every
+  event type incl. PM Pro and ALGO_UPDATE passthrough, the verified
+  `PriceMatchMode` enum, the type-safe `.on()` API and wildcard
+  channel, the decimal-preserving position accumulator, and the
+  `attachUserStreamDispatcher` adapter. Full suite (670 tests) green.
+- typecheck (`tsc --noEmit`) and build (`tsup`) both clean.
+
+## [3.0.1] - 2026-10-02
 
 ### Added
 - **Ed25519 `session.logon` handshaker (`src/ws/platform/WsSession.ts`).**

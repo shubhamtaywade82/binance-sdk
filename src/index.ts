@@ -188,6 +188,18 @@ export { WsApi } from './ws/WsApi.js';
 export type { WsApiOptions } from './ws/WsApi.js';
 export { SpotWsApi } from './ws/SpotWsApi.js';
 export type { SpotWsApiOptions } from './ws/SpotWsApi.js';
+// v3 audit remediation (2026-10-07): typed user-data events + PM Pro + dispatcher
+// (Schemas, event-type unions, and the parser live in ./types/userdata.types.js
+//  and surface through the `export * from './types/userdata.types.js'` barrel above.)
+export {
+  UserStreamDispatcher,
+  attachUserStreamDispatcher,
+  USER_DATA_EVENT,
+} from './ws/UserStreamDispatcher.js';
+export type {
+  AccumulatedPosition,
+  UserEventListener,
+} from './ws/UserStreamDispatcher.js';
 
 // v3 WebSocket platform
 export { WsPlatform, createWsPlatform, familyLimits } from './ws/platform/WsPlatform.js';
