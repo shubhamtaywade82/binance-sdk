@@ -2,7 +2,7 @@
 
 > Generated from `src/registry/*.endpoints.ts` by `npm run docs:generate` — do not edit by hand.
 
-40 implemented endpoints.
+66 implemented endpoints.
 
 | Operation | Method | Path | Auth | SDK surface |
 |---|---|---|---|---|
@@ -33,16 +33,42 @@
 | `account.commissionRate` | GET | `/dapi/v1/commissionRate` | SIGNED | `coinm.account.commissionRate` |
 | `account.positionMode` | GET | `/dapi/v1/positionSide/dual` | SIGNED | `coinm.account.positionMode` |
 | `account.setPositionMode` | POST | `/dapi/v1/positionSide/dual` | SIGNED | `coinm.account.setPositionMode` |
+| `account.incomeDownloadId` | GET | `/dapi/v1/income/asyn` | SIGNED | `coinm.account.requestIncomeDownload` |
+| `account.incomeDownloadStatus` | GET | `/dapi/v1/income/asyn/id` | SIGNED | `coinm.account.getIncomeDownloadStatus` |
+| `account.orderDownloadId` | GET | `/dapi/v1/order/asyn` | SIGNED | `coinm.account.requestOrderDownload` |
+| `account.orderDownloadStatus` | GET | `/dapi/v1/order/asyn/id` | SIGNED | `coinm.account.getOrderDownloadStatus` |
+| `account.tradeDownloadId` | GET | `/dapi/v1/trade/asyn` | SIGNED | `coinm.account.requestTradeDownload` |
+| `account.tradeDownloadStatus` | GET | `/dapi/v1/trade/asyn/id` | SIGNED | `coinm.account.getTradeDownloadStatus` |
+| `account.leverageBracketsV2` | GET | `/dapi/v2/leverageBracket` | SIGNED | `coinm.account.leverageBracketsV2` |
+| `account.pmAccountInfo` | GET | `/dapi/v1/pmAccountInfo` | SIGNED | `coinm.account.pmAccountInfo` |
+| `account.forceOrders` | GET | `/dapi/v1/forceOrders` | SIGNED | `coinm.account.forceOrders` |
+| `account.positionMarginHistory` | GET | `/dapi/v1/positionMargin/history` | SIGNED | `coinm.account.positionMarginHistory` |
 | `trading.setLeverage` | POST | `/dapi/v1/leverage` | SIGNED | `coinm.trading.setLeverage` |
 | `trading.setMarginType` | POST | `/dapi/v1/marginType` | SIGNED | `coinm.trading.setMarginType` |
 | `trading.createOrder` | POST | `/dapi/v1/order` | SIGNED | `coinm.trading.createOrder` |
 | `trading.createTestOrder` | POST | `/dapi/v1/order/test` | SIGNED | `coinm.trading.createTestOrder` |
 | `trading.getOrder` | GET | `/dapi/v1/order` | SIGNED | `coinm.trading.getOrder` |
+| `trading.modifyOrder` | PUT | `/dapi/v1/order` | SIGNED | `coinm.trading.modifyOrder` |
 | `trading.cancelOrder` | DELETE | `/dapi/v1/order` | SIGNED | `coinm.trading.cancelOrder` |
 | `trading.cancelAllOpenOrders` | DELETE | `/dapi/v1/allOpenOrders` | SIGNED | `coinm.trading.cancelAllOpenOrders` |
+| `trading.getOpenOrder` | GET | `/dapi/v1/openOrder` | SIGNED | `coinm.trading.getCurrentOrder` |
 | `trading.getOpenOrders` | GET | `/dapi/v1/openOrders` | SIGNED | `coinm.trading.getOpenOrders` |
 | `trading.getAllOrders` | GET | `/dapi/v1/allOrders` | SIGNED | `coinm.trading.getAllOrders` |
 | `trading.modifyPositionMargin` | POST | `/dapi/v1/positionMargin` | SIGNED | `coinm.trading.modifyPositionMargin` |
+| `trading.createBatchOrders` | POST | `/dapi/v1/batchOrders` | SIGNED | `coinm.trading.createBatchOrders` |
+| `trading.modifyBatchOrders` | PUT | `/dapi/v1/batchOrders` | SIGNED | `coinm.trading.modifyBatchOrders` |
+| `trading.cancelBatchOrders` | DELETE | `/dapi/v1/batchOrders` | SIGNED | `coinm.trading.cancelBatchOrders` |
+| `trading.setCountdownCancelAll` | POST | `/dapi/v1/countdownCancelAll` | SIGNED | `coinm.trading.setCountdownCancelAll` |
+| `trading.getOrderAmendHistory` | GET | `/dapi/v1/orderAmendment` | SIGNED | `coinm.trading.getOrderAmendHistory` |
+| `trading.adlQuantile` | GET | `/dapi/v1/adlQuantile` | SIGNED | `coinm.trading.adlQuantile` |
+| `market.constituents` | GET | `/dapi/v1/constituents` | PUBLIC | `coinm.market.constituents` |
+| `market.fundingInfo` | GET | `/dapi/v1/fundingInfo` | PUBLIC | `coinm.market.fundingInfo` |
+| `market.premiumIndexKlines` | GET | `/dapi/v1/premiumIndexKlines` | PUBLIC | `coinm.market.premiumIndexKlines` |
+| `data.basis` | GET | `/futures/data/basis` | PUBLIC | `coinm.data.basis` |
+| `data.globalLongShortAccountRatio` | GET | `/futures/data/globalLongShortAccountRatio` | PUBLIC | `coinm.data.globalLongShortAccountRatio` |
+| `data.takerBuySellVol` | GET | `/futures/data/takerBuySellVol` | PUBLIC | `coinm.data.takerBuySellVol` |
+| `data.topLongShortAccountRatio` | GET | `/futures/data/topLongShortAccountRatio` | PUBLIC | `coinm.data.topLongShortAccountRatio` |
+| `data.topLongShortPositionRatio` | GET | `/futures/data/topLongShortPositionRatio` | PUBLIC | `coinm.data.topLongShortPositionRatio` |
 | `userStream.create` | POST | `/dapi/v1/listenKey` | API_KEY | `coinm.userStream.createListenKey` |
 | `userStream.keepAlive` | PUT | `/dapi/v1/listenKey` | API_KEY | `coinm.userStream.keepAliveListenKey` |
 | `userStream.close` | DELETE | `/dapi/v1/listenKey` | API_KEY | `coinm.userStream.closeListenKey` |

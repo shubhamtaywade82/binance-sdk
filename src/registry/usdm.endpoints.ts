@@ -126,6 +126,9 @@ const rows: Row[] = [
   ['convert.acceptQuote', 'POST', '/fapi/v1/convert/acceptQuote', 'signed', 'futures.trading.convertAcceptQuote'],
   ['convert.orderStatus', 'GET', '/fapi/v1/convert/orderStatus', 'signed', 'futures.trading.convertOrderStatus'],
 
+  // ---- Futures TradFi Perps (FuturesTrading) ----
+  ['trading.stockContract', 'POST', '/fapi/v1/stock/contract', 'signed', 'futures.trading.stockContract'],
+
   // ---- User data stream (UserDataStream) ----
   ['userStream.create', 'POST', '/fapi/v1/listenKey', 'apiKey', 'futures.userStream.createListenKey'],
   ['userStream.keepAlive', 'PUT', '/fapi/v1/listenKey', 'apiKey', 'futures.userStream.keepAliveListenKey'],

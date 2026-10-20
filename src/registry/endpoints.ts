@@ -17,7 +17,23 @@ export type EndpointMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 export interface EndpointEntry {
   /** Binance product family. */
-  product: 'spot' | 'usdm' | 'coinm' | 'margin' | 'wallet' | 'subaccount';
+  product:
+    | 'spot'
+    | 'usdm'
+    | 'coinm'
+    | 'margin'
+    | 'wallet'
+    | 'subaccount'
+    | 'options'
+    | 'portfolio'
+    | 'portfolioPro'
+    | 'cryptoLoan'
+    | 'convert'
+    | 'algo'
+    | 'dualInvestment'
+    | 'alpha'
+    | 'copyTrading'
+    | 'c2c';
   /** SDK surface implementing it, e.g. `futures.trading.createOrder`. */
   operation: string;
   method: EndpointMethod;
@@ -35,6 +51,16 @@ import { COINM_ENDPOINTS } from './coinm.endpoints.js';
 import { MARGIN_ENDPOINTS } from './margin.endpoints.js';
 import { WALLET_ENDPOINTS } from './wallet.endpoints.js';
 import { SUBACCOUNT_ENDPOINTS } from './subaccount.endpoints.js';
+import { OPTIONS_ENDPOINTS } from './options.endpoints.js';
+import { PORTFOLIO_ENDPOINTS } from './portfolio.endpoints.js';
+import { PORTFOLIO_PRO_ENDPOINTS } from './portfolioPro.endpoints.js';
+import { CRYPTO_LOAN_ENDPOINTS } from './cryptoLoan.endpoints.js';
+import { CONVERT_ENDPOINTS } from './convert.endpoints.js';
+import { ALGO_ENDPOINTS } from './algo.endpoints.js';
+import { DUAL_INVESTMENT_ENDPOINTS } from './dualInvestment.endpoints.js';
+import { ALPHA_ENDPOINTS } from './alpha.endpoints.js';
+import { COPY_TRADING_ENDPOINTS } from './copyTrading.endpoints.js';
+import { C2C_ENDPOINTS } from './c2c.endpoints.js';
 
 /** Every implemented endpoint, across all products. */
 export const ENDPOINT_REGISTRY: readonly EndpointEntry[] = [
@@ -44,6 +70,16 @@ export const ENDPOINT_REGISTRY: readonly EndpointEntry[] = [
   ...MARGIN_ENDPOINTS,
   ...WALLET_ENDPOINTS,
   ...SUBACCOUNT_ENDPOINTS,
+  ...OPTIONS_ENDPOINTS,
+  ...PORTFOLIO_ENDPOINTS,
+  ...PORTFOLIO_PRO_ENDPOINTS,
+  ...CRYPTO_LOAN_ENDPOINTS,
+  ...CONVERT_ENDPOINTS,
+  ...ALGO_ENDPOINTS,
+  ...DUAL_INVESTMENT_ENDPOINTS,
+  ...ALPHA_ENDPOINTS,
+  ...COPY_TRADING_ENDPOINTS,
+  ...C2C_ENDPOINTS,
 ];
 
 export interface EndpointQuery {

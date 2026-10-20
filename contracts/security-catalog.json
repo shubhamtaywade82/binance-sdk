@@ -1,18 +1,78 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-10-02T07:42:19.777Z",
+  "generatedAt": "2026-10-20T19:27:40.266Z",
   "products": {
+    "algo": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 11,
+      "total": 11
+    },
+    "alpha": {
+      "public": 5,
+      "apiKey": 0,
+      "signed": 0,
+      "total": 5
+    },
+    "c2c": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 1,
+      "total": 1
+    },
     "coinm": {
-      "public": 17,
+      "public": 25,
       "apiKey": 4,
-      "signed": 19,
-      "total": 40
+      "signed": 37,
+      "total": 66
+    },
+    "convert": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 9,
+      "total": 9
+    },
+    "copyTrading": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 2,
+      "total": 2
+    },
+    "cryptoLoan": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 17,
+      "total": 17
+    },
+    "dualInvestment": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 5,
+      "total": 5
     },
     "margin": {
       "public": 1,
       "apiKey": 0,
       "signed": 17,
       "total": 18
+    },
+    "options": {
+      "public": 11,
+      "apiKey": 3,
+      "signed": 22,
+      "total": 36
+    },
+    "portfolio": {
+      "public": 0,
+      "apiKey": 3,
+      "signed": 108,
+      "total": 111
+    },
+    "portfolioPro": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 24,
+      "total": 24
     },
     "spot": {
       "public": 14,
@@ -29,8 +89,8 @@
     "usdm": {
       "public": 39,
       "apiKey": 4,
-      "signed": 56,
-      "total": 99
+      "signed": 57,
+      "total": 100
     },
     "wallet": {
       "public": 0,

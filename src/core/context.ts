@@ -13,7 +13,16 @@ import { createWsPlatform, type WsPlatform, type WsPlatformOptions } from '../ws
  * cached `HttpClient` (its own weight budget and clock offset), created on
  * first use — a spot-only client never builds the futures transports.
  */
-export type RestHost = 'fapiRoot' | 'fapi' | 'spot' | 'apiRoot' | 'dapiRoot' | 'dapi';
+export type RestHost =
+  | 'fapiRoot'
+  | 'fapi'
+  | 'spot'
+  | 'apiRoot'
+  | 'dapiRoot'
+  | 'dapi'
+  | 'eapi'
+  | 'papi'
+  | 'bapi';
 
 /** Transport tuning shared by every host client. */
 export interface CoreTransportOptions {
@@ -37,6 +46,9 @@ const HOST_URL: Record<RestHost, (e: Endpoints) => string> = {
   apiRoot: (e) => e.restApiRoot,
   dapiRoot: (e) => e.restDapiRoot,
   dapi: (e) => e.restDapi,
+  eapi: (e) => e.restEapi,
+  papi: (e) => e.restPapi,
+  bapi: (e) => e.restBapi,
 };
 
 /**

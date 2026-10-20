@@ -1,5 +1,6 @@
 import type { CoreContext } from '../../core/context.js';
 import { CoinMAccount } from '../../resources/CoinMAccount.js';
+import { CoinMData } from '../../resources/CoinMData.js';
 import { CoinMMarket } from '../../resources/CoinMMarket.js';
 import { CoinMTrading } from '../../resources/CoinMTrading.js';
 import { CoinMUserDataStream } from '../../resources/CoinMUserDataStream.js';
@@ -15,6 +16,8 @@ export interface CoinMSurface {
   market: CoinMMarket;
   account: CoinMAccount;
   trading: CoinMTrading;
+  /** Futures analytics under `/futures/data` (basis, long/short ratios, taker volumes). */
+  data: CoinMData;
   userStream: CoinMUserDataStream;
   ws: CoinMMarketWS;
   wsUser: CoinMUserWS;
@@ -26,6 +29,9 @@ export function buildCoinmSurface(core: CoreContext, getListenKey: () => string 
     market: new CoinMMarket(core.http('dapi')),
     account: new CoinMAccount(core.http('dapiRoot')),
     trading: new CoinMTrading(core.http('dapiRoot')),
+    // `CoinMData` uses both the dapi host (for signed /dapi/v1 calls) and the
+    // shared `/futures/data` host (for public analytics — same host as USDⓈ-M).
+    data: new CoinMData(core.http('dapiRoot'), core.http('fapiRoot')),
     userStream: new CoinMUserDataStream(core.http('dapiRoot')),
     ws: new CoinMMarketWS(core.endpoints.wsDapiMarket, { events: core.events }),
     wsUser: new CoinMUserWS({
