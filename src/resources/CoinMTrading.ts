@@ -70,4 +70,96 @@ export class CoinMTrading {
       await this.http.post('/dapi/v1/positionMargin', { symbol, amount, type }, 'signed'),
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // Trading endpoints (added to close the COIN-M gap)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Modify an existing COIN-M order (price/quantity). Endpoint: `PUT /dapi/v1/order` (SIGNED).
+   */
+  async modifyOrder(params: Record<string, unknown>): Promise<unknown> {
+    return this.http.put('/dapi/v1/order', params, 'signed');
+  }
+
+  /**
+   * Query a single currently-active order by `orderId` or
+   * `origClientOrderId`. Distinct from `getOpenOrders` (which lists all open
+   * orders for a symbol). Endpoint: `GET /dapi/v1/openOrder` (SIGNED).
+   */
+  async getCurrentOrder(symbol: string, options?: { orderId?: number; origClientOrderId?: string }): Promise<unknown> {
+    return this.http.get('/dapi/v1/openOrder', { symbol, ...options }, 'signed');
+  }
+
+  /**
+   * COIN-M order amendment history (modifications logged over time).
+   * Endpoint: `GET /dapi/v1/orderAmendment` (SIGNED).
+   */
+  async getOrderAmendHistory(options: {
+    symbol: string;
+    orderId?: number;
+    origClientOrderId?: string;
+    startTime?: number;
+    endTime?: number;
+    limit?: number;
+  }): Promise<unknown[]> {
+    return this.http.get('/dapi/v1/orderAmendment', options, 'signed');
+  }
+
+  /**
+   * Place up to 5 COIN-M orders in a single batched request.
+   * Endpoint: `POST /dapi/v1/batchOrders` (SIGNED).
+   */
+  async createBatchOrders(batchOrders: CoinMCreateOrderParams[]): Promise<unknown[]> {
+    return this.http.post(
+      '/dapi/v1/batchOrders',
+      { batchOrders: JSON.stringify(batchOrders) },
+      'signed',
+    );
+  }
+
+  /**
+   * Modify up to 5 COIN-M orders in a single batched request.
+   * Endpoint: `PUT /dapi/v1/batchOrders` (SIGNED).
+   */
+  async modifyBatchOrders(batchOrders: Record<string, unknown>[]): Promise<unknown[]> {
+    return this.http.put(
+      '/dapi/v1/batchOrders',
+      { batchOrders: JSON.stringify(batchOrders) },
+      'signed',
+    );
+  }
+
+  /**
+   * Cancel up to 5 COIN-M orders in a single batched request.
+   * Endpoint: `DELETE /dapi/v1/batchOrders` (SIGNED).
+   */
+  async cancelBatchOrders(
+    symbol: string,
+    options?: { orderIdList?: number[]; origClientOrderIdList?: string[] },
+  ): Promise<unknown[]> {
+    const params: Record<string, unknown> = { symbol };
+    if (options?.orderIdList?.length) params.orderIdList = JSON.stringify(options.orderIdList);
+    if (options?.origClientOrderIdList?.length) {
+      params.origClientOrderIdList = JSON.stringify(options.origClientOrderIdList);
+    }
+    return this.http.delete('/dapi/v1/batchOrders', params, 'signed');
+  }
+
+  /**
+   * Auto-cancellation countdown — schedule all open orders for `symbol` to be
+   * cancelled after `countdownTime` (ms). Set to `0` to disable.
+   * Endpoint: `POST /dapi/v1/countdownCancelAll` (SIGNED).
+   */
+  async setCountdownCancelAll(symbol: string, countdownTime: number): Promise<unknown> {
+    return this.http.post('/dapi/v1/countdownCancelAll', { symbol, countdownTime }, 'signed');
+  }
+
+  /**
+   * COIN-M ADL quantile estimation. Endpoint: `GET /dapi/v1/adlQuantile` (SIGNED).
+   */
+  async adlQuantile(symbol?: string): Promise<unknown> {
+    const params = symbol ? { symbol } : undefined;
+    return this.http.get('/dapi/v1/adlQuantile', params, 'signed');
+  }
 }

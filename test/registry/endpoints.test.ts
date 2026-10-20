@@ -13,8 +13,9 @@ describe('endpoint registry', () => {
 
   it('every entry carries a full canonical path and an SDK surface', () => {
     for (const entry of ENDPOINT_REGISTRY) {
-      expect(entry.path).toMatch(/^\/(api|fapi|dapi|sapi|futures)\//);
-      expect(entry.implementedBy).toMatch(/^[a-z]+(\.[a-zA-Z0-9]+)+$/);
+      expect(entry.path).toMatch(/^\/(api|fapi|dapi|sapi|eapi|papi|bapi|futures)\//);
+      expect(entry.implementedBy).toMatch(/^[a-zA-Z][a-zA-Z0-9]*(\.[a-zA-Z0-9]+)+$/);
+      expect(entry.operation).toMatch(/^[a-zA-Z][a-zA-Z0-9]*(\.[a-zA-Z0-9]+)+$/);
       expect(['public', 'apiKey', 'signed']).toContain(entry.authentication);
       expect(['GET', 'POST', 'PUT', 'DELETE']).toContain(entry.method);
     }

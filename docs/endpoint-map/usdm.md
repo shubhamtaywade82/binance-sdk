@@ -2,7 +2,7 @@
 
 > Generated from `src/registry/*.endpoints.ts` by `npm run docs:generate` — do not edit by hand.
 
-99 implemented endpoints.
+100 implemented endpoints.
 
 | Operation | Method | Path | Auth | SDK surface |
 |---|---|---|---|---|
@@ -102,6 +102,7 @@
 | `convert.getQuote` | POST | `/fapi/v1/convert/getQuote` | SIGNED | `futures.trading.convertGetQuote` |
 | `convert.acceptQuote` | POST | `/fapi/v1/convert/acceptQuote` | SIGNED | `futures.trading.convertAcceptQuote` |
 | `convert.orderStatus` | GET | `/fapi/v1/convert/orderStatus` | SIGNED | `futures.trading.convertOrderStatus` |
+| `trading.stockContract` | POST | `/fapi/v1/stock/contract` | SIGNED | `futures.trading.stockContract` |
 | `userStream.create` | POST | `/fapi/v1/listenKey` | API_KEY | `futures.userStream.createListenKey` |
 | `userStream.keepAlive` | PUT | `/fapi/v1/listenKey` | API_KEY | `futures.userStream.keepAliveListenKey` |
 | `userStream.close` | DELETE | `/fapi/v1/listenKey` | API_KEY | `futures.userStream.closeListenKey` |

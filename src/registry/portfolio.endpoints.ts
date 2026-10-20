@@ -1,0 +1,150 @@
+import type { EndpointEntry, EndpointAuth, EndpointMethod } from './endpoints.js';
+
+/**
+ * [operation, method, path, auth, implementedBy] rows for Binance Portfolio
+ * Margin (base https://papi.binance.com/papi/v1). Unified margin account that
+ * spans UM Futures, CM Futures, Spot Margin, and classic-mode portfolio
+ * endpoints.
+ *
+ * The 109 endpoints cover: account/balance/transfer, classic PM repay
+ * switches, the entire /papi/v1/cm/* / /papi/v1/um/* / /papi/v1/margin/*
+ * sub-surfaces, /papi/v1/portfolio/* configuration, rateLimit/order, and the
+ * listenKey lifecycle.
+ */
+type Row = [operation: string, method: EndpointMethod, path: string, auth: EndpointAuth, implementedBy: string];
+
+const rows: Row[] = [
+  // ---- Account & balance (PortfolioMarginAccount) ----
+  ['account.account', 'GET', '/papi/v1/account', 'signed', 'portfolio.account.account'],
+  ['account.balance', 'GET', '/papi/v1/balance', 'signed', 'portfolio.account.balance'],
+  ['account.assetCollection', 'GET', '/papi/v1/asset-collection', 'signed', 'portfolio.account.assetCollection'],
+  ['account.autoCollection', 'POST', '/papi/v1/auto-collection', 'signed', 'portfolio.account.autoCollection'],
+  ['account.bnbTransfer', 'POST', '/papi/v1/bnb-transfer', 'signed', 'portfolio.account.bnbTransfer'],
+  ['account.repayFuturesSwitch', 'POST', '/papi/v1/repay-futures-switch', 'signed', 'portfolio.account.repayFuturesSwitch'],
+  ['account.repayFuturesNegativeBalance', 'POST', '/papi/v1/repay-futures-negative-balance', 'signed', 'portfolio.account.repayFuturesNegativeBalance'],
+  ['account.rateLimitOrder', 'GET', '/papi/v1/rateLimit/order', 'signed', 'portfolio.account.rateLimitOrder'],
+
+  // ---- UM Futures sub-surface (PortfolioMarginUm) ----
+  ['um.account', 'GET', '/papi/v1/um/account', 'signed', 'portfolio.um.account'],
+  ['um.accountV2', 'GET', '/papi/v1/um/accountV2', 'signed', 'portfolio.um.accountV2'],
+  ['um.positionRisk', 'GET', '/papi/v1/um/positionRisk', 'signed', 'portfolio.um.positionRisk'],
+  ['um.positionSideDual', 'GET', '/papi/v1/um/positionSide/dual', 'signed', 'portfolio.um.positionMode'],
+  ['um.setPositionSide', 'POST', '/papi/v1/um/positionSide/dual', 'signed', 'portfolio.um.setPositionMode'],
+  ['um.balance', 'GET', '/papi/v1/um/balance', 'signed', 'portfolio.um.balance'],
+  ['um.balanceV3', 'GET', '/papi/v1/um/balanceV3', 'signed', 'portfolio.um.balanceV3'],
+  ['um.accountV3', 'GET', '/papi/v1/um/accountV3', 'signed', 'portfolio.um.accountV3'],
+  ['um.positionRiskV3', 'GET', '/papi/v1/um/positionRiskV3', 'signed', 'portfolio.um.positionRiskV3'],
+  ['um.income', 'GET', '/papi/v1/um/income', 'signed', 'portfolio.um.income'],
+  ['um.leverageBracket', 'GET', '/papi/v1/um/leverageBracket', 'signed', 'portfolio.um.leverageBracket'],
+  ['um.commissionRate', 'GET', '/papi/v1/um/commissionRate', 'signed', 'portfolio.um.commissionRate'],
+  ['um.fundingRate', 'GET', '/papi/v1/um/fundingRate', 'signed', 'portfolio.um.fundingRate'],
+  ['um.openInterest', 'GET', '/papi/v1/um/openInterest', 'signed', 'portfolio.um.openInterest'],
+  ['um.openOrder', 'GET', '/papi/v1/um/openOrder', 'signed', 'portfolio.um.openOrder'],
+  ['um.openOrders', 'GET', '/papi/v1/um/openOrders', 'signed', 'portfolio.um.openOrders'],
+  ['um.allOrders', 'GET', '/papi/v1/um/allOrders', 'signed', 'portfolio.um.allOrders'],
+  ['um.order', 'POST', '/papi/v1/um/order', 'signed', 'portfolio.um.placeOrder'],
+  ['um.orderModify', 'PUT', '/papi/v1/um/order', 'signed', 'portfolio.um.modifyOrder'],
+  ['um.orderCancel', 'DELETE', '/papi/v1/um/order', 'signed', 'portfolio.um.cancelOrder'],
+  ['um.allOpenOrders', 'DELETE', '/papi/v1/um/allOpenOrders', 'signed', 'portfolio.um.cancelAllOpenOrders'],
+  ['um.batchOrders', 'POST', '/papi/v1/um/batchOrders', 'signed', 'portfolio.um.batchOrders'],
+  ['um.batchOrdersCancel', 'DELETE', '/papi/v1/um/batchOrders', 'signed', 'portfolio.um.cancelBatchOrders'],
+  ['um.countdownCancelAll', 'POST', '/papi/v1/um/countdownCancelAll', 'signed', 'portfolio.um.countdownCancelAll'],
+  ['um.leverage', 'POST', '/papi/v1/um/leverage', 'signed', 'portfolio.um.setLeverage'],
+  ['um.marginType', 'POST', '/papi/v1/um/marginType', 'signed', 'portfolio.um.setMarginType'],
+  ['um.positionMargin', 'POST', '/papi/v1/um/positionMargin', 'signed', 'portfolio.um.modifyPositionMargin'],
+  ['um.positionMarginHistory', 'GET', '/papi/v1/um/positionMargin/history', 'signed', 'portfolio.um.positionMarginHistory'],
+  ['um.tradeAsyn', 'GET', '/papi/v1/um/trade/asyn', 'signed', 'portfolio.um.requestTradeDownload'],
+  ['um.tradeAsynId', 'GET', '/papi/v1/um/trade/asyn/id', 'signed', 'portfolio.um.getTradeDownloadStatus'],
+  ['um.orderAsyn', 'GET', '/papi/v1/um/order/asyn', 'signed', 'portfolio.um.requestOrderDownload'],
+  ['um.orderAsynId', 'GET', '/papi/v1/um/order/asyn/id', 'signed', 'portfolio.um.getOrderDownloadStatus'],
+  ['um.incomeAsyn', 'GET', '/papi/v1/um/income/asyn', 'signed', 'portfolio.um.requestIncomeDownload'],
+  ['um.incomeAsynId', 'GET', '/papi/v1/um/income/asyn/id', 'signed', 'portfolio.um.getIncomeDownloadStatus'],
+  ['um.userTrades', 'GET', '/papi/v1/um/userTrades', 'signed', 'portfolio.um.userTrades'],
+  ['um.adlQuantile', 'GET', '/papi/v1/um/adlQuantile', 'signed', 'portfolio.um.adlQuantile'],
+  ['um.forceOrders', 'GET', '/papi/v1/um/forceOrders', 'signed', 'portfolio.um.forceOrders'],
+  ['um.feeBurn', 'GET', '/papi/v1/um/feeBurn', 'signed', 'portfolio.um.feeBurnStatus'],
+  ['um.setFeeBurn', 'POST', '/papi/v1/um/feeBurn', 'signed', 'portfolio.um.setFeeBurn'],
+  ['um.apiTradingStatus', 'GET', '/papi/v1/um/apiTradingStatus', 'signed', 'portfolio.um.apiTradingStatus'],
+  ['um.accountConfig', 'GET', '/papi/v1/um/accountConfig', 'signed', 'portfolio.um.accountConfig'],
+  ['um.multiAssetsMargin', 'GET', '/papi/v1/um/multiAssetsMargin', 'signed', 'portfolio.um.multiAssetsMargin'],
+  ['um.setMultiAssetsMargin', 'POST', '/papi/v1/um/multiAssetsMargin', 'signed', 'portfolio.um.setMultiAssetsMargin'],
+
+  // ---- CM Futures sub-surface (PortfolioMarginCm) ----
+  ['cm.account', 'GET', '/papi/v1/cm/account', 'signed', 'portfolio.cm.account'],
+  ['cm.positionRisk', 'GET', '/papi/v1/cm/positionRisk', 'signed', 'portfolio.cm.positionRisk'],
+  ['cm.positionSideDual', 'GET', '/papi/v1/cm/positionSide/dual', 'signed', 'portfolio.cm.positionMode'],
+  ['cm.setPositionSide', 'POST', '/papi/v1/cm/positionSide/dual', 'signed', 'portfolio.cm.setPositionMode'],
+  ['cm.balance', 'GET', '/papi/v1/cm/balance', 'signed', 'portfolio.cm.balance'],
+  ['cm.income', 'GET', '/papi/v1/cm/income', 'signed', 'portfolio.cm.income'],
+  ['cm.leverageBracket', 'GET', '/papi/v1/cm/leverageBracket', 'signed', 'portfolio.cm.leverageBracket'],
+  ['cm.commissionRate', 'GET', '/papi/v1/cm/commissionRate', 'signed', 'portfolio.cm.commissionRate'],
+  ['cm.openOrder', 'GET', '/papi/v1/cm/openOrder', 'signed', 'portfolio.cm.openOrder'],
+  ['cm.openOrders', 'GET', '/papi/v1/cm/openOrders', 'signed', 'portfolio.cm.openOrders'],
+  ['cm.allOrders', 'GET', '/papi/v1/cm/allOrders', 'signed', 'portfolio.cm.allOrders'],
+  ['cm.order', 'POST', '/papi/v1/cm/order', 'signed', 'portfolio.cm.placeOrder'],
+  ['cm.orderModify', 'PUT', '/papi/v1/cm/order', 'signed', 'portfolio.cm.modifyOrder'],
+  ['cm.orderCancel', 'DELETE', '/papi/v1/cm/order', 'signed', 'portfolio.cm.cancelOrder'],
+  ['cm.allOpenOrders', 'DELETE', '/papi/v1/cm/allOpenOrders', 'signed', 'portfolio.cm.cancelAllOpenOrders'],
+  ['cm.batchOrders', 'POST', '/papi/v1/cm/batchOrders', 'signed', 'portfolio.cm.batchOrders'],
+  ['cm.batchOrdersCancel', 'DELETE', '/papi/v1/cm/batchOrders', 'signed', 'portfolio.cm.cancelBatchOrders'],
+  ['cm.countdownCancelAll', 'POST', '/papi/v1/cm/countdownCancelAll', 'signed', 'portfolio.cm.countdownCancelAll'],
+  ['cm.leverage', 'POST', '/papi/v1/cm/leverage', 'signed', 'portfolio.cm.setLeverage'],
+  ['cm.marginType', 'POST', '/papi/v1/cm/marginType', 'signed', 'portfolio.cm.setMarginType'],
+  ['cm.positionMargin', 'POST', '/papi/v1/cm/positionMargin', 'signed', 'portfolio.cm.modifyPositionMargin'],
+  ['cm.positionMarginHistory', 'GET', '/papi/v1/cm/positionMargin/history', 'signed', 'portfolio.cm.positionMarginHistory'],
+  ['cm.userTrades', 'GET', '/papi/v1/cm/userTrades', 'signed', 'portfolio.cm.userTrades'],
+  ['cm.adlQuantile', 'GET', '/papi/v1/cm/adlQuantile', 'signed', 'portfolio.cm.adlQuantile'],
+  ['cm.forceOrders', 'GET', '/papi/v1/cm/forceOrders', 'signed', 'portfolio.cm.forceOrders'],
+  ['cm.fundingRate', 'GET', '/papi/v1/cm/fundingRate', 'signed', 'portfolio.cm.fundingRate'],
+  ['cm.openInterest', 'GET', '/papi/v1/cm/openInterest', 'signed', 'portfolio.cm.openInterest'],
+  ['cm.openInterestHist', 'GET', '/papi/v1/cm/openInterestHist', 'signed', 'portfolio.cm.openInterestHist'],
+
+  // ---- Margin sub-surface (PortfolioMarginMargin) ----
+  ['margin.account', 'GET', '/papi/v1/margin/account', 'signed', 'portfolio.margin.account'],
+  ['margin.balance', 'GET', '/papi/v1/margin/balance', 'signed', 'portfolio.margin.balance'],
+  ['margin.loan', 'POST', '/papi/v1/margin/loan', 'signed', 'portfolio.margin.loan'],
+  ['margin.repay', 'POST', '/papi/v1/margin/repay', 'signed', 'portfolio.margin.repay'],
+  ['margin.loanRecord', 'GET', '/papi/v1/margin/loan', 'signed', 'portfolio.margin.loanRecord'],
+  ['margin.repayRecord', 'GET', '/papi/v1/margin/repay', 'signed', 'portfolio.margin.repayRecord'],
+  ['margin.order', 'POST', '/papi/v1/margin/order', 'signed', 'portfolio.margin.placeOrder'],
+  ['margin.orderCancel', 'DELETE', '/papi/v1/margin/order', 'signed', 'portfolio.margin.cancelOrder'],
+  ['margin.openOrders', 'GET', '/papi/v1/margin/openOrders', 'signed', 'portfolio.margin.openOrders'],
+  ['margin.allOrders', 'GET', '/papi/v1/margin/allOrders', 'signed', 'portfolio.margin.allOrders'],
+  ['margin.openOrder', 'GET', '/papi/v1/margin/openOrder', 'signed', 'portfolio.margin.openOrder'],
+  ['margin.myTrades', 'GET', '/papi/v1/margin/myTrades', 'signed', 'portfolio.margin.myTrades'],
+  ['margin.priceIndex', 'GET', '/papi/v1/margin/priceIndex', 'signed', 'portfolio.margin.priceIndex'],
+  ['margin.allAssets', 'GET', '/papi/v1/margin/allAssets', 'signed', 'portfolio.margin.allAssets'],
+  ['margin.allPairs', 'GET', '/papi/v1/margin/allPairs', 'signed', 'portfolio.margin.allPairs'],
+  ['margin.transfer', 'POST', '/papi/v1/margin/transfer', 'signed', 'portfolio.margin.transfer'],
+
+  // ---- Portfolio configuration endpoints (PortfolioMarginPortfolio) ----
+  ['portfolio.account', 'GET', '/papi/v1/portfolio/account', 'signed', 'portfolio.portfolio.account'],
+  ['portfolio.balance', 'GET', '/papi/v1/portfolio/balance', 'signed', 'portfolio.portfolio.balance'],
+  ['portfolio.collateralRate', 'GET', '/papi/v1/portfolio/collateralRate', 'signed', 'portfolio.portfolio.collateralRate'],
+  ['portfolio.assetIndexPrice', 'GET', '/papi/v1/portfolio/asset-index-price', 'signed', 'portfolio.portfolio.assetIndexPrice'],
+  ['portfolio.marginAssetLeverage', 'GET', '/papi/v1/portfolio/margin-asset-leverage', 'signed', 'portfolio.portfolio.marginAssetLeverage'],
+  ['portfolio.pmLoan', 'POST', '/papi/v1/portfolio/pmLoan', 'signed', 'portfolio.portfolio.pmLoan'],
+  ['portfolio.pmLoanHistory', 'GET', '/papi/v1/portfolio/pmLoan-history', 'signed', 'portfolio.portfolio.pmLoanHistory'],
+  ['portfolio.repay', 'POST', '/papi/v1/portfolio/repay', 'signed', 'portfolio.portfolio.repay'],
+  ['portfolio.interestHistory', 'GET', '/papi/v1/portfolio/interest-history', 'signed', 'portfolio.portfolio.interestHistory'],
+  ['portfolio.marginCallLevel', 'GET', '/papi/v1/portfolio/margin-call-level', 'signed', 'portfolio.portfolio.marginCallLevel'],
+  ['portfolio.deltaMode', 'GET', '/papi/v1/portfolio/delta-mode', 'signed', 'portfolio.portfolio.deltaMode'],
+  ['portfolio.earnAssetBalance', 'GET', '/papi/v1/portfolio/earn-asset-balance', 'signed', 'portfolio.portfolio.earnAssetBalance'],
+  ['portfolio.earnAssetTransfer', 'POST', '/papi/v1/portfolio/earn-asset-transfer', 'signed', 'portfolio.portfolio.earnAssetTransfer'],
+
+  // ---- User data stream (PortfolioMarginUserDataStream) ----
+  ['userStream.create', 'POST', '/papi/v1/listenKey', 'apiKey', 'portfolio.userStream.createListenKey'],
+  ['userStream.keepAlive', 'PUT', '/papi/v1/listenKey', 'apiKey', 'portfolio.userStream.keepAliveListenKey'],
+  ['userStream.close', 'DELETE', '/papi/v1/listenKey', 'apiKey', 'portfolio.userStream.closeListenKey'],
+];
+
+export const PORTFOLIO_ENDPOINTS: EndpointEntry[] = rows.map(
+  ([operation, method, path, authentication, implementedBy]) => ({
+    product: 'portfolio',
+    operation,
+    method,
+    path,
+    authentication,
+    implementedBy,
+  }),
+);

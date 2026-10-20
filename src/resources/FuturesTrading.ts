@@ -210,4 +210,18 @@ export class FuturesTrading {
   async convertOrderStatus(options: { orderId?: string; quoteId?: string }): Promise<Record<string, unknown>> {
     return this.http.get('/fapi/v1/convert/orderStatus', options, 'signed');
   }
+
+  /**
+   * Futures TradFi Perps Contract — places a stock-style contract order on the
+   * USDⓈ-M Futures host. Introduced by Binance for TradFi perps exposure.
+   * Endpoint: `POST /fapi/v1/stock/contract` (SIGNED).
+   *
+   * Returns the raw Binance response envelope; callers requiring strict typing
+   * can wrap the result with their own Zod schema. Kept permissive deliberately
+   * because Binance has not yet published a stable response shape for this
+   * endpoint across all environments.
+   */
+  async stockContract(params: Record<string, unknown>): Promise<Record<string, unknown>> {
+    return this.http.post('/fapi/v1/stock/contract', params, 'signed');
+  }
 }

@@ -17,6 +17,28 @@ import {
   type UsdmSurface,
 } from '../products/usdm/namespace.js';
 import { buildCoinmSurface, type CoinMSurface } from '../products/coinm/surface.js';
+import { buildOptionsSurface, type OptionsSurface } from '../products/options/surface.js';
+import {
+  buildPortfolioMarginSurface,
+  type PortfolioMarginSurface,
+} from '../products/portfolio/surface.js';
+import {
+  buildPortfolioMarginProSurface,
+  type PortfolioMarginProSurface,
+} from '../products/portfolioPro/surface.js';
+import { buildConvertSurface, type ConvertSurface } from '../products/convert/surface.js';
+import { buildCryptoLoanSurface, type CryptoLoanSurface } from '../products/cryptoLoan/surface.js';
+import { buildAlgoSurface, type AlgoSurface } from '../products/algo/surface.js';
+import {
+  buildDualInvestmentSurface,
+  type DualInvestmentSurface,
+} from '../products/dualInvestment/surface.js';
+import { buildAlphaSurface, type AlphaSurface } from '../products/alpha/surface.js';
+import {
+  buildCopyTradingSurface,
+  type CopyTradingSurface,
+} from '../products/copyTrading/surface.js';
+import { buildC2CSurface, type C2CSurface } from '../products/c2c/surface.js';
 import { ExecutionManager } from '../execution/ExecutionManager.js';
 import { PaperExecutionAdapter } from '../execution/paper.js';
 import { ExecutionGateway, type ExecutionBackend } from '../execution/Gateway.js';
@@ -134,6 +156,71 @@ export class BinanceClient {
   }
 
   /**
+   * Binance Options product surface. Distinct product family (eapi host)
+   * covering market data, account/bill, order placement, MMP, and block
+   * trading. Lazy — never constructed until first access.
+   */
+  get options(): OptionsSurface {
+    return this.cached('options', () => buildOptionsSurface(this.core));
+  }
+
+  /**
+   * Binance Portfolio Margin product surface. Unified margin account
+   * (account, UM/CM/margin sub-surfaces, portfolio configuration, listenKey).
+   * Lazy — never constructed until first access.
+   */
+  get portfolioMargin(): PortfolioMarginSurface {
+    return this.cached('portfolioMargin', () => buildPortfolioMarginSurface(this.core));
+  }
+
+  /**
+   * Binance Portfolio Margin Pro product surface. Next-generation PM under
+   * `/sapi/v1/portfolio/*` and `/sapi/v2/portfolio/*` (24 endpoints).
+   */
+  get portfolioMarginPro(): PortfolioMarginProSurface {
+    return this.cached('portfolioMarginPro', () => buildPortfolioMarginProSurface(this.core));
+  }
+
+  /**
+   * SAPI Convert product surface — RFQ, accept quote, limit orders, trade
+   * flow (9 endpoints). Distinct from the Futures-hosted `/fapi/v1/convert/*`
+   * surface already on `client.futures.trading`.
+   */
+  get convert(): ConvertSurface {
+    return this.cached('convert', () => buildConvertSurface(this.core));
+  }
+
+  /** Binance Crypto Loan product surface — fixed-term (v1) + flexible (v2). */
+  get cryptoLoan(): CryptoLoanSurface {
+    return this.cached('cryptoLoan', () => buildCryptoLoanSurface(this.core));
+  }
+
+  /** SAPI Algo product surface — spot TWAP/VP and futures TWAP/VP. */
+  get algo(): AlgoSurface {
+    return this.cached('algo', () => buildAlgoSurface(this.core));
+  }
+
+  /** Dual Investment product surface — subscribe, positions, accounts. */
+  get dualInvestment(): DualInvestmentSurface {
+    return this.cached('dualInvestment', () => buildDualInvestmentSurface(this.core));
+  }
+
+  /** Alpha product surface — bapi-hosted public market data. */
+  get alpha(): AlphaSurface {
+    return this.cached('alpha', () => buildAlphaSurface(this.core));
+  }
+
+  /** Copy Trading product surface — futures lead-symbol & user-status. */
+  get copyTrading(): CopyTradingSurface {
+    return this.cached('copyTrading', () => buildCopyTradingSurface(this.core));
+  }
+
+  /** C2C product surface — order-match history. */
+  get c2c(): C2CSurface {
+    return this.cached('c2c', () => buildC2CSurface(this.core));
+  }
+
+  /**
    * The v3 WebSocket platform: pooled connections per product family with
    * refcounted `Subscription` objects, central liveness/renewal, and
    * persistent multiplexed WS API clients — all sharing the core's
@@ -167,6 +254,16 @@ export class BinanceClient {
     margin: MarginNamespace;
     wallet: Wallet;
     subaccount: SubAccount;
+    options: OptionsSurface;
+    portfolioMargin: PortfolioMarginSurface;
+    portfolioMarginPro: PortfolioMarginProSurface;
+    convert: ConvertSurface;
+    cryptoLoan: CryptoLoanSurface;
+    algo: AlgoSurface;
+    dualInvestment: DualInvestmentSurface;
+    alpha: AlphaSurface;
+    copyTrading: CopyTradingSurface;
+    c2c: C2CSurface;
   } {
     return {
       spot: this.spot,
@@ -175,6 +272,16 @@ export class BinanceClient {
       margin: this.margin,
       wallet: this.wallet,
       subaccount: this.subaccount,
+      options: this.options,
+      portfolioMargin: this.portfolioMargin,
+      portfolioMarginPro: this.portfolioMarginPro,
+      convert: this.convert,
+      cryptoLoan: this.cryptoLoan,
+      algo: this.algo,
+      dualInvestment: this.dualInvestment,
+      alpha: this.alpha,
+      copyTrading: this.copyTrading,
+      c2c: this.c2c,
     };
   }
 

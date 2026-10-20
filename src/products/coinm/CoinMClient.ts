@@ -57,6 +57,10 @@ export class CoinMClient implements ProductClient {
     return this.surface.trading;
   }
 
+  get data(): CoinMSurface['data'] {
+    return this.surface.data;
+  }
+
   get userStream(): CoinMSurface['userStream'] {
     return this.surface.userStream;
   }

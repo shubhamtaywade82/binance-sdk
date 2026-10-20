@@ -80,4 +80,122 @@ export class CoinMAccount {
   async setPositionMode(dualSidePosition: boolean): Promise<Record<string, unknown>> {
     return this.http.post('/dapi/v1/positionSide/dual', { dualSidePosition }, 'signed');
   }
+
+  // ---------------------------------------------------------------------------
+  // Account / reporting endpoints (added to close the COIN-M gap)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Get download ID for async COIN-M income history. The user can then poll
+   * `getIncomeDownloadStatus(downloadId)` until `status === 'completed'`.
+   * Endpoint: `GET /dapi/v1/income/asyn` (SIGNED).
+   */
+  async requestIncomeDownload(options: { startTime: number; endTime: number }): Promise<Record<string, unknown>> {
+    return this.http.get('/dapi/v1/income/asyn', options, 'signed');
+  }
+
+  /**
+   * Query status of an async COIN-M income download by its `downloadId`.
+   * Endpoint: `GET /dapi/v1/income/asyn/id` (SIGNED).
+   */
+  async getIncomeDownloadStatus(downloadId: string): Promise<Record<string, unknown>> {
+    return this.http.get('/dapi/v1/income/asyn/id', { downloadId }, 'signed');
+  }
+
+  /**
+   * Get download ID for async COIN-M order history.
+   * Endpoint: `GET /dapi/v1/order/asyn` (SIGNED).
+   */
+  async requestOrderDownload(options: {
+    symbol?: string;
+    startTime: number;
+    endTime: number;
+  }): Promise<Record<string, unknown>> {
+    return this.http.get('/dapi/v1/order/asyn', options, 'signed');
+  }
+
+  /**
+   * Query status of an async COIN-M order download by its `downloadId`.
+   * Endpoint: `GET /dapi/v1/order/asyn/id` (SIGNED).
+   */
+  async getOrderDownloadStatus(downloadId: string): Promise<Record<string, unknown>> {
+    return this.http.get('/dapi/v1/order/asyn/id', { downloadId }, 'signed');
+  }
+
+  /**
+   * Get download ID for async COIN-M trade history.
+   * Endpoint: `GET /dapi/v1/trade/asyn` (SIGNED).
+   */
+  async requestTradeDownload(options: {
+    symbol?: string;
+    startTime: number;
+    endTime: number;
+  }): Promise<Record<string, unknown>> {
+    return this.http.get('/dapi/v1/trade/asyn', options, 'signed');
+  }
+
+  /**
+   * Query status of an async COIN-M trade download by its `downloadId`.
+   * Endpoint: `GET /dapi/v1/trade/asyn/id` (SIGNED).
+   */
+  async getTradeDownloadStatus(downloadId: string): Promise<Record<string, unknown>> {
+    return this.http.get('/dapi/v1/trade/asyn/id', { downloadId }, 'signed');
+  }
+
+  /**
+   * V2 leverage brackets — adds `notionalCoef` / `priceScope` / `targetLeverage`
+   * fields used by the COIN-M v2 bracket response.
+   * Endpoint: `GET /dapi/v2/leverageBracket` (SIGNED).
+   */
+  async leverageBracketsV2(symbol?: string): Promise<unknown> {
+    const params = symbol ? { symbol } : undefined;
+    return this.http.get('/dapi/v2/leverageBracket', params, 'signed');
+  }
+
+  /**
+   * Portfolio-margin account info for COIN-M, returning the margin-level
+   * summary used by PM-mode accounts. Endpoint: `GET /dapi/v1/pmAccountInfo` (SIGNED).
+   */
+  async pmAccountInfo(asset?: string): Promise<Record<string, unknown>> {
+    const params = asset ? { asset } : undefined;
+    return this.http.get('/dapi/v1/pmAccountInfo', params, 'signed');
+  }
+
+  /**
+   * COIN-M force-orders history (liquidations / ADL).
+   * Endpoint: `GET /dapi/v1/forceOrders` (SIGNED).
+   */
+  async forceOrders(options?: {
+    symbol?: string;
+    autoCloseType?: 'LIQUIDATION' | 'ADL';
+    startTime?: number;
+    endTime?: number;
+    limit?: number;
+  }): Promise<unknown[]> {
+    return this.http.get(
+      '/dapi/v1/forceOrders',
+      {
+        symbol: options?.symbol,
+        autoCloseType: options?.autoCloseType,
+        startTime: options?.startTime,
+        endTime: options?.endTime,
+        limit: options?.limit,
+      },
+      'signed',
+    );
+  }
+
+  /**
+   * COIN-M position-margin history.
+   * Endpoint: `GET /dapi/v1/positionMargin/history` (SIGNED).
+   */
+  async positionMarginHistory(options: {
+    symbol: string;
+    type?: number;
+    startTime?: number;
+    endTime?: number;
+    limit?: number;
+  }): Promise<unknown[]> {
+    return this.http.get('/dapi/v1/positionMargin/history', options, 'signed');
+  }
 }

@@ -41,6 +41,28 @@ export type { SpotSurface } from './products/spot/surface.js';
 export { CoinMClient } from './products/coinm/CoinMClient.js';
 export type { CoinMSurface } from './products/coinm/surface.js';
 
+// ---- New product surfaces (gap closure) ----
+export { OptionsClient } from './products/options/OptionsClient.js';
+export type { OptionsSurface } from './products/options/surface.js';
+export { PortfolioMarginClient } from './products/portfolio/PortfolioMarginClient.js';
+export type { PortfolioMarginSurface } from './products/portfolio/surface.js';
+export { PortfolioMarginProClient } from './products/portfolioPro/PortfolioMarginProClient.js';
+export type { PortfolioMarginProSurface } from './products/portfolioPro/surface.js';
+export { ConvertClient } from './products/convert/ConvertClient.js';
+export type { ConvertSurface } from './products/convert/surface.js';
+export { CryptoLoanClient } from './products/cryptoLoan/CryptoLoanClient.js';
+export type { CryptoLoanSurface } from './products/cryptoLoan/surface.js';
+export { AlgoClient } from './products/algo/AlgoClient.js';
+export type { AlgoSurface } from './products/algo/surface.js';
+export { DualInvestmentClient } from './products/dualInvestment/DualInvestmentClient.js';
+export type { DualInvestmentSurface } from './products/dualInvestment/surface.js';
+export { AlphaClient } from './products/alpha/AlphaClient.js';
+export type { AlphaSurface } from './products/alpha/surface.js';
+export { CopyTradingClient } from './products/copyTrading/CopyTradingClient.js';
+export type { CopyTradingSurface } from './products/copyTrading/surface.js';
+export { C2CClient } from './products/c2c/C2CClient.js';
+export type { C2CSurface } from './products/c2c/surface.js';
+
 // ---- Execution: idempotent placement + reconciliation ----
 export { ExecutionManager } from './execution/ExecutionManager.js';
 export type { ExecutionManagerOptions } from './execution/types.js';
@@ -141,6 +163,29 @@ export { CoinMUserDataStream } from './resources/CoinMUserDataStream.js';
 export { MarginAccount, MarginTrading } from './resources/Margin.js';
 export { Wallet } from './resources/Wallet.js';
 export { SubAccount } from './resources/SubAccount.js';
+
+// ---- New resources (gap closure) ----
+export { CoinMData } from './resources/CoinMData.js';
+export { OptionsMarket } from './resources/OptionsMarket.js';
+export { OptionsAccount } from './resources/OptionsAccount.js';
+export { OptionsTrading } from './resources/OptionsTrading.js';
+export { OptionsMmp } from './resources/OptionsMmp.js';
+export { OptionsBlockTrading } from './resources/OptionsBlockTrading.js';
+export { OptionsUserDataStream } from './resources/OptionsUserDataStream.js';
+export { PortfolioMarginAccount } from './resources/PortfolioMarginAccount.js';
+export { PortfolioMarginUm } from './resources/PortfolioMarginUm.js';
+export { PortfolioMarginCm } from './resources/PortfolioMarginCm.js';
+export { PortfolioMarginMargin } from './resources/PortfolioMarginMargin.js';
+export { PortfolioMarginPortfolio } from './resources/PortfolioMarginPortfolio.js';
+export { PortfolioMarginUserDataStream } from './resources/PortfolioMarginUserDataStream.js';
+export { PortfolioMarginPro } from './resources/PortfolioMarginPro.js';
+export { Convert } from './resources/Convert.js';
+export { CryptoLoan } from './resources/CryptoLoan.js';
+export { Algo, AlgoFutures, AlgoSpot } from './resources/Algo.js';
+export { DualInvestment } from './resources/DualInvestment.js';
+export { Alpha } from './resources/Alpha.js';
+export { CopyTrading } from './resources/CopyTrading.js';
+export { C2C } from './resources/C2C.js';
 
 export { PaperTradingEngine } from './paper/PaperTradingEngine.js';
 export type {

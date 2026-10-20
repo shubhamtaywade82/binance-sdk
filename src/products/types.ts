@@ -11,7 +11,16 @@ export type ProductId =
   | 'margin'
   | 'wallet'
   | 'subaccount'
-  | 'convert';
+  | 'convert'
+  | 'options'
+  | 'portfolio'
+  | 'portfolioPro'
+  | 'cryptoLoan'
+  | 'algo'
+  | 'dualInvestment'
+  | 'alpha'
+  | 'copyTrading'
+  | 'c2c';
 
 /**
  * v3 product boundary.

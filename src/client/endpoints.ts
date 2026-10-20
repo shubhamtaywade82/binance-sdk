@@ -8,6 +8,12 @@ export interface Endpoints {
   restApiRoot: string;
   restDapiRoot: string;
   restDapi: string;
+  /** Options API root (https://eapi.binance.com/eapi/v1). */
+  restEapi: string;
+  /** Portfolio Margin API root (https://papi.binance.com/papi/v1). */
+  restPapi: string;
+  /** Alpha / BAPI root (https://www.binance.com/bapi). */
+  restBapi: string;
   /** USDⓈ-M `/market` combined-stream URL (trades, klines, tickers, mark price, contract info, …). */
   wsMarket: string;
   /** USDⓈ-M `/public` combined-stream URL (book tickers, depth, RPI depth). */
@@ -127,6 +133,13 @@ export function resolveEnvironment(options?: {
       restApiRoot: restSpotHost,
       restDapiRoot: restDapiHost,
       restDapi: `${restDapiHost}/dapi/v1`,
+      // New product hosts — Options, Portfolio Margin, Alpha / BAPI. They use
+      // distinct hosts (eapi.binance.com, papi.binance.com, www.binance.com/bapi)
+      // independent of the futures testnet/demo modes. When testnet/demo hosts
+      // become available, these can be parameterized via options.
+      restEapi: 'https://eapi.binance.com/eapi/v1',
+      restPapi: 'https://papi.binance.com/papi/v1',
+      restBapi: 'https://www.binance.com/bapi',
       wsMarket: wsMarketHost,
       wsMarketPublic: wsMarketPublicHost,
       wsUser: wsUserHost,
