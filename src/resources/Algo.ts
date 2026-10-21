@@ -1,18 +1,23 @@
 import { HttpClient } from '../client/HttpClient.js';
+import {
+  AlgoOrder,
+  AlgoOrderResponseSchema,
+  AlgoOrdersResponseSchema,
+  AlgoSubOrder,
+  AlgoSubOrdersResponseSchema,
+} from '../types/extras.types.js';
 
 /**
  * Binance Algo SAPI — TWAP/VP algo orders for spot and futures. Distinct from
  * the Futures-hosted `/fapi/v1/algoOrder` surface: these SAPI-routed algo
  * orders run through the broker/spot algo engine.
- *
- * Endpoint surface (11 total): 6 futures + 5 spot.
  */
 export class AlgoSpot {
   constructor(private readonly http: HttpClient) {}
 
   /** Historical spot algo orders. `GET /sapi/v1/algo/spot/historicalOrders` (SIGNED). */
-  async historicalOrders(options?: { symbol?: string; side?: 'BUY' | 'SELL'; startTime?: number; endTime?: number; page?: number; pageSize?: number }): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/algo/spot/historicalOrders', options ?? {}, 'signed');
+  async historicalOrders(options?: { symbol?: string; side?: 'BUY' | 'SELL'; startTime?: number; endTime?: number; page?: number; pageSize?: number }): Promise<AlgoOrder[]> {
+    return AlgoOrdersResponseSchema.parse(await this.http.get('/sapi/v1/algo/spot/historicalOrders', options ?? {}, 'signed'));
   }
 
   /** Place a new spot TWAP order. `POST /sapi/v1/algo/spot/newOrderTwap` (SIGNED). */
@@ -23,13 +28,13 @@ export class AlgoSpot {
     duration: number;
     clientOrderId?: string;
     limitPrice?: string;
-  }): Promise<Record<string, unknown>> {
-    return this.http.post('/sapi/v1/algo/spot/newOrderTwap', params, 'signed');
+  }): Promise<AlgoOrder> {
+    return AlgoOrderResponseSchema.parse(await this.http.post('/sapi/v1/algo/spot/newOrderTwap', params, 'signed'));
   }
 
   /** Currently open spot algo orders. `GET /sapi/v1/algo/spot/openOrders` (SIGNED). */
-  async openOrders(options?: { symbol?: string; page?: number; pageSize?: number }): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/algo/spot/openOrders', options ?? {}, 'signed');
+  async openOrders(options?: { symbol?: string; page?: number; pageSize?: number }): Promise<AlgoOrder[]> {
+    return AlgoOrdersResponseSchema.parse(await this.http.get('/sapi/v1/algo/spot/openOrders', options ?? {}, 'signed'));
   }
 
   /** Cancel a spot algo order. `DELETE /sapi/v1/algo/spot/order` (SIGNED). */
@@ -38,8 +43,8 @@ export class AlgoSpot {
   }
 
   /** Sub-orders of a spot algo order (per-slice execution). `GET /sapi/v1/algo/spot/subOrders` (SIGNED). */
-  async subOrders(options: { algoId: string; page?: number; pageSize?: number }): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/algo/spot/subOrders', options, 'signed');
+  async subOrders(options: { algoId: string; page?: number; pageSize?: number }): Promise<AlgoSubOrder[]> {
+    return AlgoSubOrdersResponseSchema.parse(await this.http.get('/sapi/v1/algo/spot/subOrders', options, 'signed'));
   }
 }
 
@@ -48,8 +53,8 @@ export class AlgoFutures {
   constructor(private readonly http: HttpClient) {}
 
   /** Historical futures algo orders. `GET /sapi/v1/algo/futures/historicalOrders` (SIGNED). */
-  async historicalOrders(options?: { symbol?: string; side?: 'BUY' | 'SELL'; startTime?: number; endTime?: number; page?: number; pageSize?: number }): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/algo/futures/historicalOrders', options ?? {}, 'signed');
+  async historicalOrders(options?: { symbol?: string; side?: 'BUY' | 'SELL'; startTime?: number; endTime?: number; page?: number; pageSize?: number }): Promise<AlgoOrder[]> {
+    return AlgoOrdersResponseSchema.parse(await this.http.get('/sapi/v1/algo/futures/historicalOrders', options ?? {}, 'signed'));
   }
 
   /** Place a new futures TWAP order. `POST /sapi/v1/algo/futures/newOrderTwap` (SIGNED). */
@@ -62,8 +67,8 @@ export class AlgoFutures {
     limitPrice?: string;
     positionSide?: 'BOTH' | 'LONG' | 'SHORT';
     reduceOnly?: boolean;
-  }): Promise<Record<string, unknown>> {
-    return this.http.post('/sapi/v1/algo/futures/newOrderTwap', params, 'signed');
+  }): Promise<AlgoOrder> {
+    return AlgoOrderResponseSchema.parse(await this.http.post('/sapi/v1/algo/futures/newOrderTwap', params, 'signed'));
   }
 
   /** Place a new futures VP (Volume Participation) order. `POST /sapi/v1/algo/futures/newOrderVp` (SIGNED). */
@@ -76,13 +81,13 @@ export class AlgoFutures {
     limitPrice?: string;
     positionSide?: 'BOTH' | 'LONG' | 'SHORT';
     reduceOnly?: boolean;
-  }): Promise<Record<string, unknown>> {
-    return this.http.post('/sapi/v1/algo/futures/newOrderVp', params, 'signed');
+  }): Promise<AlgoOrder> {
+    return AlgoOrderResponseSchema.parse(await this.http.post('/sapi/v1/algo/futures/newOrderVp', params, 'signed'));
   }
 
   /** Currently open futures algo orders. `GET /sapi/v1/algo/futures/openOrders` (SIGNED). */
-  async openOrders(options?: { symbol?: string; page?: number; pageSize?: number }): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/algo/futures/openOrders', options ?? {}, 'signed');
+  async openOrders(options?: { symbol?: string; page?: number; pageSize?: number }): Promise<AlgoOrder[]> {
+    return AlgoOrdersResponseSchema.parse(await this.http.get('/sapi/v1/algo/futures/openOrders', options ?? {}, 'signed'));
   }
 
   /** Cancel a futures algo order. `DELETE /sapi/v1/algo/futures/order` (SIGNED). */
@@ -91,8 +96,8 @@ export class AlgoFutures {
   }
 
   /** Sub-orders of a futures algo order. `GET /sapi/v1/algo/futures/subOrders` (SIGNED). */
-  async subOrders(options: { algoId: string; page?: number; pageSize?: number }): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/algo/futures/subOrders', options, 'signed');
+  async subOrders(options: { algoId: string; page?: number; pageSize?: number }): Promise<AlgoSubOrder[]> {
+    return AlgoSubOrdersResponseSchema.parse(await this.http.get('/sapi/v1/algo/futures/subOrders', options, 'signed'));
   }
 }
 

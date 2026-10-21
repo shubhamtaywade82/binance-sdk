@@ -7,17 +7,17 @@ import { HttpClient } from '../client/HttpClient.js';
  * the COIN-M convention of using `pair` rather than `symbol` for several
  * analytics calls.
  *
- * Used as a standalone resource (and via the standalone `CoinMClient`) — the
- * multi-product facade exposes it through `client.coinm.data`.
+ * Paths are canonical (`/futures/data/*` for analytics, `/dapi/v1/*` for
+ * signed COIN-M endpoints). When constructed via `buildCoinmSurface`, the
+ * `dataHttp` HttpClient uses the host-only `fapiRoot` baseURL
+ * (`https://fapi.binance.com`), so canonical paths combine correctly.
+ *
+ * Responses are intentionally returned as `unknown[]` because Binance does not
+ * publish formal schemas for the `/futures/data/*` endpoints and the fields
+ * vary by `period` / `contractType` parameter. Callers wishing to validate
+ * the shape can wrap the result in their own Zod schema.
  */
 export class CoinMData {
-  /**
-   * Two HttpClient instances, mirroring {@link FuturesData}:
-   *
-   * - `http` for signed COIN-M endpoints under `/dapi/v1` (e.g. `adlQuantile`).
-   * - `dataHttp` for public analytics under `/futures/data` (basis, long/short
-   *   ratios, taker buy/sell volumes).
-   */
   private readonly http: HttpClient;
   private readonly dataHttp: HttpClient;
 
@@ -35,7 +35,7 @@ export class CoinMData {
     period: string,
     options?: { startTime?: number; endTime?: number; limit?: number },
   ): Promise<unknown[]> {
-    return this.dataHttp.get('/basis', { pair, contractType, period, ...options });
+    return this.dataHttp.get('/futures/data/basis', { pair, contractType, period, ...options });
   }
 
   /**
@@ -46,7 +46,7 @@ export class CoinMData {
     period: string,
     limit = 30,
   ): Promise<unknown[]> {
-    return this.dataHttp.get('/globalLongShortAccountRatio', { symbol, period, limit });
+    return this.dataHttp.get('/futures/data/globalLongShortAccountRatio', { symbol, period, limit });
   }
 
   /**
@@ -57,7 +57,7 @@ export class CoinMData {
     period: string,
     options?: { startTime?: number; endTime?: number; limit?: number },
   ): Promise<unknown[]> {
-    return this.dataHttp.get('/takerBuySellVol', { symbol, period, ...options });
+    return this.dataHttp.get('/futures/data/takerBuySellVol', { symbol, period, ...options });
   }
 
   /**
@@ -68,7 +68,7 @@ export class CoinMData {
     period: string,
     limit = 30,
   ): Promise<unknown[]> {
-    return this.dataHttp.get('/topLongShortAccountRatio', { symbol, period, limit });
+    return this.dataHttp.get('/futures/data/topLongShortAccountRatio', { symbol, period, limit });
   }
 
   /**
@@ -79,6 +79,6 @@ export class CoinMData {
     period: string,
     limit = 30,
   ): Promise<unknown[]> {
-    return this.dataHttp.get('/topLongShortPositionRatio', { symbol, period, limit });
+    return this.dataHttp.get('/futures/data/topLongShortPositionRatio', { symbol, period, limit });
   }
 }

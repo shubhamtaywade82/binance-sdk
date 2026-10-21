@@ -134,12 +134,14 @@ export function resolveEnvironment(options?: {
       restDapiRoot: restDapiHost,
       restDapi: `${restDapiHost}/dapi/v1`,
       // New product hosts — Options, Portfolio Margin, Alpha / BAPI. They use
-      // distinct hosts (eapi.binance.com, papi.binance.com, www.binance.com/bapi)
+      // distinct hosts (eapi.binance.com, papi.binance.com, www.binance.com)
       // independent of the futures testnet/demo modes. When testnet/demo hosts
       // become available, these can be parameterized via options.
       restEapi: 'https://eapi.binance.com/eapi/v1',
       restPapi: 'https://papi.binance.com/papi/v1',
-      restBapi: 'https://www.binance.com/bapi',
+      // Note: restBapi uses the bare www host because Alpha paths already
+      // include the `/bapi` prefix (e.g. `/bapi/defi/v1/public/alpha-trade/*`).
+      restBapi: 'https://www.binance.com',
       wsMarket: wsMarketHost,
       wsMarketPublic: wsMarketPublicHost,
       wsUser: wsUserHost,
