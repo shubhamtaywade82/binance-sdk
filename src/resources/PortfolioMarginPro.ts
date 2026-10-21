@@ -1,41 +1,45 @@
 import { HttpClient } from '../client/HttpClient.js';
+import {
+  PmProAccount,
+  PmProAccountSchema,
+  PmProAssetIndexPrice,
+  PmProAssetIndexPriceResponseSchema,
+  PmProBalance,
+  PmProBalanceResponseSchema,
+  PmProCollateralRate,
+  PmProCollateralRateResponseSchema,
+  PmProInterestHistory,
+  PmProInterestHistoryResponseSchema,
+  PmProMarginAssetLeverage,
+  PmProMarginAssetLeverageResponseSchema,
+} from '../types/extras.types.js';
 
 /**
  * Binance Portfolio Margin Pro — account/balance/repay endpoints under
  * `/sapi/v1/portfolio/*` and `/sapi/v2/portfolio/*` (and a v3 collateral
  * rate). PM Pro is distinct from the legacy /papi/v1 PM surface.
- *
- * Endpoint surface (24 total):
- *  - account, balance, asset-collection, auto-collection, bnb-transfer
- *  - delta-mode, earn-asset-balance, earn-asset-transfer
- *  - interest-history, margin-call-level
- *  - pmLoan, pmloan-history, repay
- *  - repay-futures-negative-balance, repay-futures-switch
- *  - market: asset-index-price, collateralRate, margin-asset-leverage
- *  - v2: account, collateralRate, balance, asset-index-price, margin-asset-leverage
- *  - v3: collateralRate
  */
 export class PortfolioMarginPro {
   constructor(private readonly http: HttpClient) {}
 
   /** PM Pro account summary (v1). `GET /sapi/v1/portfolio/account` (SIGNED). */
-  async account(): Promise<Record<string, unknown>> {
-    return this.http.get('/sapi/v1/portfolio/account', undefined, 'signed');
+  async account(): Promise<PmProAccount> {
+    return PmProAccountSchema.parse(await this.http.get('/sapi/v1/portfolio/account', undefined, 'signed'));
   }
 
   /** PM Pro account summary (v2). `GET /sapi/v2/portfolio/account` (SIGNED). */
-  async accountV2(): Promise<Record<string, unknown>> {
-    return this.http.get('/sapi/v2/portfolio/account', undefined, 'signed');
+  async accountV2(): Promise<PmProAccount> {
+    return PmProAccountSchema.parse(await this.http.get('/sapi/v2/portfolio/account', undefined, 'signed'));
   }
 
   /** PM Pro balance (v1). `GET /sapi/v1/portfolio/balance` (SIGNED). */
-  async balance(): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/portfolio/balance', undefined, 'signed');
+  async balance(): Promise<PmProBalance[]> {
+    return PmProBalanceResponseSchema.parse(await this.http.get('/sapi/v1/portfolio/balance', undefined, 'signed'));
   }
 
   /** PM Pro balance (v2). `GET /sapi/v2/portfolio/balance` (SIGNED). */
-  async balanceV2(): Promise<unknown[]> {
-    return this.http.get('/sapi/v2/portfolio/balance', undefined, 'signed');
+  async balanceV2(): Promise<PmProBalance[]> {
+    return PmProBalanceResponseSchema.parse(await this.http.get('/sapi/v2/portfolio/balance', undefined, 'signed'));
   }
 
   /** PM Pro asset-collection status. `GET /sapi/v1/portfolio/asset-collection` (SIGNED). */
@@ -70,8 +74,8 @@ export class PortfolioMarginPro {
   }
 
   /** PM Pro interest history. `GET /sapi/v1/portfolio/interest-history` (SIGNED). */
-  async interestHistory(options?: { asset?: string; startTime?: number; endTime?: number; current?: number; size?: number }): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/portfolio/interest-history', options ?? {}, 'signed');
+  async interestHistory(options?: { asset?: string; startTime?: number; endTime?: number; current?: number; size?: number }): Promise<PmProInterestHistory[]> {
+    return PmProInterestHistoryResponseSchema.parse(await this.http.get('/sapi/v1/portfolio/interest-history', options ?? {}, 'signed'));
   }
 
   /** PM Pro margin-call level. `GET /sapi/v1/portfolio/margin-call-level` (SIGNED). */
@@ -105,39 +109,39 @@ export class PortfolioMarginPro {
   }
 
   /** Asset index price (PM Pro v1). `GET /sapi/v1/portfolio/asset-index-price` (SIGNED). */
-  async assetIndexPrice(asset?: string): Promise<unknown[]> {
+  async assetIndexPrice(asset?: string): Promise<PmProAssetIndexPrice[]> {
     const params = asset ? { asset } : undefined;
-    return this.http.get('/sapi/v1/portfolio/asset-index-price', params, 'signed');
+    return PmProAssetIndexPriceResponseSchema.parse(await this.http.get('/sapi/v1/portfolio/asset-index-price', params, 'signed'));
   }
 
   /** Asset index price (PM Pro v2). `GET /sapi/v2/portfolio/asset-index-price` (SIGNED). */
-  async assetIndexPriceV2(asset?: string): Promise<unknown[]> {
+  async assetIndexPriceV2(asset?: string): Promise<PmProAssetIndexPrice[]> {
     const params = asset ? { asset } : undefined;
-    return this.http.get('/sapi/v2/portfolio/asset-index-price', params, 'signed');
+    return PmProAssetIndexPriceResponseSchema.parse(await this.http.get('/sapi/v2/portfolio/asset-index-price', params, 'signed'));
   }
 
   /** Collateral rate (v1). `GET /sapi/v1/portfolio/collateralRate` (SIGNED). */
-  async collateralRate(): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/portfolio/collateralRate', undefined, 'signed');
+  async collateralRate(): Promise<PmProCollateralRate[]> {
+    return PmProCollateralRateResponseSchema.parse(await this.http.get('/sapi/v1/portfolio/collateralRate', undefined, 'signed'));
   }
 
   /** Collateral rate (v2). `GET /sapi/v2/portfolio/collateralRate` (SIGNED). */
-  async collateralRateV2(): Promise<unknown[]> {
-    return this.http.get('/sapi/v2/portfolio/collateralRate', undefined, 'signed');
+  async collateralRateV2(): Promise<PmProCollateralRate[]> {
+    return PmProCollateralRateResponseSchema.parse(await this.http.get('/sapi/v2/portfolio/collateralRate', undefined, 'signed'));
   }
 
   /** Collateral rate (v3). `GET /sapi/v3/portfolio/collateralRate` (SIGNED). */
-  async collateralRateV3(): Promise<unknown[]> {
-    return this.http.get('/sapi/v3/portfolio/collateralRate', undefined, 'signed');
+  async collateralRateV3(): Promise<PmProCollateralRate[]> {
+    return PmProCollateralRateResponseSchema.parse(await this.http.get('/sapi/v3/portfolio/collateralRate', undefined, 'signed'));
   }
 
   /** Margin asset leverage (v1). `GET /sapi/v1/portfolio/margin-asset-leverage` (SIGNED). */
-  async marginAssetLeverage(): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/portfolio/margin-asset-leverage', undefined, 'signed');
+  async marginAssetLeverage(): Promise<PmProMarginAssetLeverage[]> {
+    return PmProMarginAssetLeverageResponseSchema.parse(await this.http.get('/sapi/v1/portfolio/margin-asset-leverage', undefined, 'signed'));
   }
 
   /** Margin asset leverage (v2). `GET /sapi/v2/portfolio/margin-asset-leverage` (SIGNED). */
-  async marginAssetLeverageV2(): Promise<unknown[]> {
-    return this.http.get('/sapi/v2/portfolio/margin-asset-leverage', undefined, 'signed');
+  async marginAssetLeverageV2(): Promise<PmProMarginAssetLeverage[]> {
+    return PmProMarginAssetLeverageResponseSchema.parse(await this.http.get('/sapi/v2/portfolio/margin-asset-leverage', undefined, 'signed'));
   }
 }

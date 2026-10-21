@@ -1,4 +1,5 @@
 import { HttpClient } from '../client/HttpClient.js';
+import { OptionsMmp as OptionsMmpType, OptionsMmpSchema } from '../types/options.types.js';
 
 /**
  * Binance Options Market Maker Protection (MMP) — query, configure, and
@@ -10,9 +11,9 @@ export class OptionsMmp {
   constructor(private readonly http: HttpClient) {}
 
   /** Get the current MMP profile. `GET /eapi/v1/mmp` (SIGNED). */
-  async getMmp(uid?: string): Promise<Record<string, unknown>> {
+  async getMmp(uid?: string): Promise<OptionsMmpType> {
     const params = uid ? { uid } : undefined;
-    return this.http.get('/mmp', params, 'signed');
+    return OptionsMmpSchema.parse(await this.http.get('/eapi/v1/mmp', params, 'signed'));
   }
 
   /** Set/update the MMP profile. `POST /eapi/v1/mmpSet` (SIGNED). */
@@ -24,12 +25,12 @@ export class OptionsMmp {
     qtyLimit?: number;
     deltaLimit?: number;
     triggerLimit?: number;
-  }): Promise<Record<string, unknown>> {
-    return this.http.post('/mmpSet', params, 'signed');
+  }): Promise<OptionsMmpType> {
+    return OptionsMmpSchema.parse(await this.http.post('/eapi/v1/mmpSet', params, 'signed'));
   }
 
   /** Reset an MMP block (unfreeze the underlying). `POST /eapi/v1/mmpReset` (SIGNED). */
-  async resetMmp(uid: string, underlying: string): Promise<Record<string, unknown>> {
-    return this.http.post('/mmpReset', { uid, underlying }, 'signed');
+  async resetMmp(uid: string, underlying: string): Promise<OptionsMmpType> {
+    return OptionsMmpSchema.parse(await this.http.post('/eapi/v1/mmpReset', { uid, underlying }, 'signed'));
   }
 }

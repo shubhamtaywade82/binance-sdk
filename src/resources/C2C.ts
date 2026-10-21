@@ -1,9 +1,8 @@
 import { HttpClient } from '../client/HttpClient.js';
+import { C2COrder, C2COrderResponseSchema } from '../types/extras.types.js';
 
 /**
  * Binance C2C — peer-to-peer order history. SAPI-routed.
- *
- * Endpoint surface (1 total).
  */
 export class C2C {
   constructor(private readonly http: HttpClient) {}
@@ -15,7 +14,7 @@ export class C2C {
     endTimestamp?: number;
     page?: number;
     rows?: number;
-  }): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/c2c/orderMatch/listUserOrderHistory', options, 'signed');
+  }): Promise<C2COrder[]> {
+    return C2COrderResponseSchema.parse(await this.http.get('/sapi/v1/c2c/orderMatch/listUserOrderHistory', options, 'signed'));
   }
 }

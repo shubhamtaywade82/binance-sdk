@@ -1,11 +1,26 @@
 import { HttpClient } from '../client/HttpClient.js';
+import {
+  CryptoLoanBorrowHistory,
+  CryptoLoanBorrowHistoryResponseSchema,
+  CryptoLoanFlexibleCollateral,
+  CryptoLoanFlexibleCollateralResponseSchema,
+  CryptoLoanFlexibleLoanable,
+  CryptoLoanFlexibleLoanableResponseSchema,
+  CryptoLoanIncome,
+  CryptoLoanIncomeResponseSchema,
+  CryptoLoanInterestRateHistory,
+  CryptoLoanInterestRateHistoryResponseSchema,
+  CryptoLoanLtvAdjustmentHistory,
+  CryptoLoanLtvAdjustmentHistoryResponseSchema,
+  CryptoLoanRepayCollateralRate,
+  CryptoLoanRepayCollateralRateSchema,
+  CryptoLoanRepayHistory,
+  CryptoLoanRepayHistoryResponseSchema,
+} from '../types/extras.types.js';
 
 /**
  * Binance Crypto Loan — fixed-term (v1) and flexible (v2) loan products.
  * Borrow against collateral, repay, adjust LTV, and query history.
- *
- * Endpoint surface (17 total): 5 v1 fixed-term, 12 v2 flexible (including
- * the v2 interest-rate-history endpoint).
  */
 export class CryptoLoan {
   constructor(private readonly http: HttpClient) {}
@@ -21,8 +36,8 @@ export class CryptoLoan {
     endTime?: number;
     current?: number;
     limit?: number;
-  }): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/loan/borrow/history', options ?? {}, 'signed');
+  }): Promise<CryptoLoanBorrowHistory[]> {
+    return CryptoLoanBorrowHistoryResponseSchema.parse(await this.http.get('/sapi/v1/loan/borrow/history', options ?? {}, 'signed'));
   }
 
   /** Income (interest) records. `GET /sapi/v1/loan/income` (SIGNED). */
@@ -32,8 +47,8 @@ export class CryptoLoan {
     startTime?: number;
     endTime?: number;
     limit?: number;
-  }): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/loan/income', options ?? {}, 'signed');
+  }): Promise<CryptoLoanIncome[]> {
+    return CryptoLoanIncomeResponseSchema.parse(await this.http.get('/sapi/v1/loan/income', options ?? {}, 'signed'));
   }
 
   /** LTV adjustment history. `GET /sapi/v1/loan/ltv/adjustment/history` (SIGNED). */
@@ -44,13 +59,13 @@ export class CryptoLoan {
     endTime?: number;
     current?: number;
     limit?: number;
-  }): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/loan/ltv/adjustment/history', options ?? {}, 'signed');
+  }): Promise<CryptoLoanLtvAdjustmentHistory[]> {
+    return CryptoLoanLtvAdjustmentHistoryResponseSchema.parse(await this.http.get('/sapi/v1/loan/ltv/adjustment/history', options ?? {}, 'signed'));
   }
 
   /** Repay collateral rate. `GET /sapi/v1/loan/repay/collateral/rate` (SIGNED). */
-  async repayCollateralRate(params: { loanCoin: string; collateralCoin: string; repayAmount: string }): Promise<Record<string, unknown>> {
-    return this.http.get('/sapi/v1/loan/repay/collateral/rate', params, 'signed');
+  async repayCollateralRate(params: { loanCoin: string; collateralCoin: string; repayAmount: string }): Promise<CryptoLoanRepayCollateralRate> {
+    return CryptoLoanRepayCollateralRateSchema.parse(await this.http.get('/sapi/v1/loan/repay/collateral/rate', params, 'signed'));
   }
 
   /** Repay history. `GET /sapi/v1/loan/repay/history` (SIGNED). */
@@ -62,8 +77,8 @@ export class CryptoLoan {
     endTime?: number;
     current?: number;
     limit?: number;
-  }): Promise<unknown[]> {
-    return this.http.get('/sapi/v1/loan/repay/history', options ?? {}, 'signed');
+  }): Promise<CryptoLoanRepayHistory[]> {
+    return CryptoLoanRepayHistoryResponseSchema.parse(await this.http.get('/sapi/v1/loan/repay/history', options ?? {}, 'signed'));
   }
 
   // ---- v2 flexible ----
@@ -105,8 +120,8 @@ export class CryptoLoan {
     collateralCoin?: string;
     current?: number;
     limit?: number;
-  }): Promise<unknown[]> {
-    return this.http.get('/sapi/v2/loan/flexible/collateral/data', options ?? {}, 'signed');
+  }): Promise<CryptoLoanFlexibleCollateral[]> {
+    return CryptoLoanFlexibleCollateralResponseSchema.parse(await this.http.get('/sapi/v2/loan/flexible/collateral/data', options ?? {}, 'signed'));
   }
 
   /** Flexible liquidation history. `GET /sapi/v2/loan/flexible/liquidation/history` (SIGNED). */
@@ -126,8 +141,8 @@ export class CryptoLoan {
     loanCoin?: string;
     current?: number;
     limit?: number;
-  }): Promise<unknown[]> {
-    return this.http.get('/sapi/v2/loan/flexible/loanable/data', options ?? {}, 'signed');
+  }): Promise<CryptoLoanFlexibleLoanable[]> {
+    return CryptoLoanFlexibleLoanableResponseSchema.parse(await this.http.get('/sapi/v2/loan/flexible/loanable/data', options ?? {}, 'signed'));
   }
 
   /** Flexible LTV adjustment history. `GET /sapi/v2/loan/flexible/ltv/adjustment/history` (SIGNED). */
@@ -138,8 +153,8 @@ export class CryptoLoan {
     endTime?: number;
     current?: number;
     limit?: number;
-  }): Promise<unknown[]> {
-    return this.http.get('/sapi/v2/loan/flexible/ltv/adjustment/history', options ?? {}, 'signed');
+  }): Promise<CryptoLoanLtvAdjustmentHistory[]> {
+    return CryptoLoanLtvAdjustmentHistoryResponseSchema.parse(await this.http.get('/sapi/v2/loan/flexible/ltv/adjustment/history', options ?? {}, 'signed'));
   }
 
   /** Ongoing flexible orders. `GET /sapi/v2/loan/flexible/ongoing/orders` (SIGNED). */
@@ -169,13 +184,13 @@ export class CryptoLoan {
     endTime?: number;
     current?: number;
     limit?: number;
-  }): Promise<unknown[]> {
-    return this.http.get('/sapi/v2/loan/flexible/repay/history', options ?? {}, 'signed');
+  }): Promise<CryptoLoanRepayHistory[]> {
+    return CryptoLoanRepayHistoryResponseSchema.parse(await this.http.get('/sapi/v2/loan/flexible/repay/history', options ?? {}, 'signed'));
   }
 
   /** Flexible repay rate. `GET /sapi/v2/loan/flexible/repay/rate` (SIGNED). */
-  async flexibleRepayRate(params: { loanCoin: string; collateralCoin: string; repayAmount: string }): Promise<Record<string, unknown>> {
-    return this.http.get('/sapi/v2/loan/flexible/repay/rate', params, 'signed');
+  async flexibleRepayRate(params: { loanCoin: string; collateralCoin: string; repayAmount: string }): Promise<CryptoLoanRepayCollateralRate> {
+    return CryptoLoanRepayCollateralRateSchema.parse(await this.http.get('/sapi/v2/loan/flexible/repay/rate', params, 'signed'));
   }
 
   /** Interest rate history (v2). `GET /sapi/v2/loan/interestRateHistory` (SIGNED). */
@@ -185,7 +200,7 @@ export class CryptoLoan {
     endTime?: number;
     current?: number;
     limit?: number;
-  }): Promise<unknown[]> {
-    return this.http.get('/sapi/v2/loan/interestRateHistory', options ?? {}, 'signed');
+  }): Promise<CryptoLoanInterestRateHistory[]> {
+    return CryptoLoanInterestRateHistoryResponseSchema.parse(await this.http.get('/sapi/v2/loan/interestRateHistory', options ?? {}, 'signed'));
   }
 }

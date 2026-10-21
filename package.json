@@ -91,6 +91,7 @@
     "typecheck": "tsc --noEmit",
     "docs:generate": "tsx scripts/generate-endpoint-map.ts",
     "contracts:generate": "tsx scripts/generate-contract-catalog.ts",
+    "contracts:check": "tsx scripts/check-contracts-drift.ts",
     "smoke": "tsx scripts/smoke-test.ts",
     "smoke:testnet": "tsx scripts/testnet-smoke.ts",
     "mcp": "tsx src/mcp/index.ts",
