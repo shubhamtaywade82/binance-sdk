@@ -9,7 +9,7 @@ import { CryptoLoan } from '../../src/resources/CryptoLoan.js';
 import { DualInvestment } from '../../src/resources/DualInvestment.js';
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'bypass' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'bypass' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 

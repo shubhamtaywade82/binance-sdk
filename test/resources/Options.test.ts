@@ -10,7 +10,7 @@ import { OptionsTrading } from '../../src/resources/OptionsTrading.js';
 import { OptionsUserDataStream } from '../../src/resources/OptionsUserDataStream.js';
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'bypass' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'bypass' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 

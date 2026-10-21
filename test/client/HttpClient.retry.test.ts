@@ -15,7 +15,7 @@ import { EventBus } from '../../src/core/events.js';
 const server = setupServer();
 
 describe('HttpClient retry policy (strict)', () => {
-  beforeAll(() => server.listen({ onUnhandledRequest: 'bypass' }));
+  beforeAll(() => server.listen({ onUnhandledFrame: 'bypass' }));
   afterEach(() => server.resetHandlers());
   afterAll(() => server.close());
 

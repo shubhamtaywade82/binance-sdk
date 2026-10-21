@@ -14,7 +14,7 @@ import { PaperTradingEngine } from '../../src/paper/PaperTradingEngine.js';
 // MSW server intercepting the public ticker/price REST call the paper engine
 // uses to source mark prices. Each test installs the price it wants.
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 

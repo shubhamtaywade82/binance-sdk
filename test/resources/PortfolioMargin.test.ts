@@ -9,7 +9,7 @@ import { PortfolioMarginUm } from '../../src/resources/PortfolioMarginUm.js';
 import { PortfolioMarginUserDataStream } from '../../src/resources/PortfolioMarginUserDataStream.js';
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'bypass' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'bypass' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
