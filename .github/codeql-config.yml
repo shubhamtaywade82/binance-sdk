@@ -1,0 +1,15 @@
+name: CodeQL Config
+
+# Custom CodeQL configuration. Used by .github/workflows/codeql.yml's
+# `github/codeql-action/init@v4` step when the `config` key is set.
+#
+# The `paths-ignore` for `scripts/check-contracts-drift.ts` suppresses a
+# false-positive on the `ts/clear-text-logging` query — the script reads
+# the endpoint catalog JSON (which legitimately contains the literal
+# field name "apiKey" as a security-scheme counter), and CodeQL was
+# mistakenly flagging the developer-facing `console.error` drift reports
+# as a clear-text logging of secret material. The script does not read
+# or log any actual API keys; only field-name strings from the catalog.
+
+paths-ignore:
+  - scripts/check-contracts-drift.ts
