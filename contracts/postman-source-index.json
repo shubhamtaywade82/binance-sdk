@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "sourceUrl": "https://github.com/binance/binance-api-postman",
+  "officialDocsUrl": "https://developers.binance.com/en/docs/sdks-tools/postman/collections",
+  "collections": [
+    {
+      "collectionFile": "Binance Algo API.json",
+      "collectionName": "Binance Algo REST API",
+      "description": "OpenAPI Specification for the Binance Algo REST API",
+      "endpointCount": 11,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Algo%20API.json"
+    },
+    {
+      "collectionFile": "Binance Alpha API.json",
+      "collectionName": "Binance Alpha REST API",
+      "description": "OpenAPI Specification for the Binance Alpha REST API",
+      "endpointCount": 5,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Alpha%20API.json"
+    },
+    {
+      "collectionFile": "Binance C2C API.json",
+      "collectionName": "Binance C2C REST API",
+      "description": "OpenAPI Specification for the Binance C2C REST API",
+      "endpointCount": 1,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20C2C%20API.json"
+    },
+    {
+      "collectionFile": "Binance Convert API.json",
+      "collectionName": "Binance Convert REST API",
+      "description": "OpenAPI Specification for the Binance Convert REST API",
+      "endpointCount": 9,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Convert%20API.json"
+    },
+    {
+      "collectionFile": "Binance Copy Trading API.json",
+      "collectionName": "Binance Copy Trading REST API",
+      "description": "OpenAPI Specification for the Binance Copy Trading REST API",
+      "endpointCount": 2,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Copy%20Trading%20API.json"
+    },
+    {
+      "collectionFile": "Binance Crypto Loan API.json",
+      "collectionName": "Binance Crypto Loan REST API",
+      "description": "OpenAPI Specification for the Binance Crypto Loan REST API",
+      "endpointCount": 17,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Crypto%20Loan%20API.json"
+    },
+    {
+      "collectionFile": "Binance Derivatives Trading COIN Futures API.json",
+      "collectionName": "Binance Derivatives Trading COIN Futures REST API",
+      "description": "OpenAPI Specification for the Binance Derivatives Trading COIN Futures REST API",
+      "endpointCount": 65,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Derivatives%20Trading%20COIN%20Futures%20API.json"
+    },
+    {
+      "collectionFile": "Binance Derivatives Trading Options API.json",
+      "collectionName": "Binance Derivatives Trading Options REST API",
+      "description": "OpenAPI Specification for the Binance Derivatives Trading Options REST API",
+      "endpointCount": 43,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Derivatives%20Trading%20Options%20API.json"
+    },
+    {
+      "collectionFile": "Binance Derivatives Trading Portfolio Margin API.json",
+      "collectionName": "Binance Derivatives Trading Portfolio Margin REST API",
+      "description": "OpenAPI Specification for the Binance Derivatives Trading Portfolio Margin REST API",
+      "endpointCount": 109,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Derivatives%20Trading%20Portfolio%20Margin%20API.json"
+    },
+    {
+      "collectionFile": "Binance Derivatives Trading Portfolio Margin Pro API.json",
+      "collectionName": "Binance Derivatives Trading Portfolio Margin Pro REST API",
+      "description": "OpenAPI Specification for the Binance Derivatives Trading Portfolio Margin Pro REST API",
+      "endpointCount": 24,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Derivatives%20Trading%20Portfolio%20Margin%20Pro%20API.json"
+    },
+    {
+      "collectionFile": "Binance Derivatives Trading USDS Futures API.json",
+      "collectionName": "Binance Derivatives Trading USDS Futures REST API",
+      "description": "OpenAPI Specification for the Binance Derivatives Trading USDS Futures REST API",
+      "endpointCount": 95,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Derivatives%20Trading%20USDS%20Futures%20API.json"
+    },
+    {
+      "collectionFile": "Binance Dual Investment API.json",
+      "collectionName": "Binance Dual Investment REST API",
+      "description": "OpenAPI Specification for the Binance Dual Investment REST API",
+      "endpointCount": 5,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Dual%20Investment%20API.json"
+    },
+    {
+      "collectionFile": "Binance Fiat API.json",
+      "collectionName": "Binance Fiat REST API",
+      "description": "OpenAPI Specification for the Binance Fiat REST API",
+      "endpointCount": 5,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Fiat%20API.json"
+    },
+    {
+      "collectionFile": "Binance Gift Card API.json",
+      "collectionName": "Binance Gift Card REST API",
+      "description": "OpenAPI Specification for the Binance Gift Card REST API",
+      "endpointCount": 6,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Gift%20Card%20API.json"
+    },
+    {
+      "collectionFile": "Binance Margin Trading API.json",
+      "collectionName": "Binance Margin Trading REST API",
+      "description": "OpenAPI Specification for the Binance Margin Trading REST API",
+      "endpointCount": 61,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Margin%20Trading%20API.json"
+    },
+    {
+      "collectionFile": "Binance Mining API.json",
+      "collectionName": "Binance Mining REST API",
+      "description": "OpenAPI Specification for the Binance Mining REST API",
+      "endpointCount": 13,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Mining%20API.json"
+    },
+    {
+      "collectionFile": "Binance NFT API.json",
+      "collectionName": "Binance NFT REST API",
+      "description": "OpenAPI Specification for the Binance NFT REST API",
+      "endpointCount": 4,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20NFT%20API.json"
+    },
+    {
+      "collectionFile": "Binance Pay API.json",
+      "collectionName": "Binance Pay REST API",
+      "description": "OpenAPI Specification for the Binance Pay REST API",
+      "endpointCount": 1,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Pay%20API.json"
+    },
+    {
+      "collectionFile": "Binance Rebate API.json",
+      "collectionName": "Binance Rebate REST API",
+      "description": "OpenAPI Specification for the Binance Rebate REST API",
+      "endpointCount": 1,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Rebate%20API.json"
+    },
+    {
+      "collectionFile": "Binance Simple Earn API.json",
+      "collectionName": "Binance Simple Earn REST API",
+      "description": "OpenAPI Specification for the Binance Simple Earn REST API",
+      "endpointCount": 40,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Simple%20Earn%20API.json"
+    },
+    {
+      "collectionFile": "Binance Spot API.json",
+      "collectionName": "Binance Spot REST API",
+      "description": "OpenAPI Specifications for the Binance Spot REST API\n\nAPI documents:\n  - [Github rest-api documentation file](https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md)\n  - [General API information for rest-api on website](https://developers.binance.com/docs/binance-spot-api-docs/rest-api/general-api-information)\n",
+      "endpointCount": 48,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Spot%20API.json"
+    },
+    {
+      "collectionFile": "Binance Staking API.json",
+      "collectionName": "Binance Staking REST API",
+      "description": "OpenAPI Specification for the Binance Staking REST API",
+      "endpointCount": 37,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Staking%20API.json"
+    },
+    {
+      "collectionFile": "Binance Sub Account API.json",
+      "collectionName": "Binance Sub Account REST API",
+      "description": "OpenAPI Specification for the Binance Sub Account REST API",
+      "endpointCount": 45,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Sub%20Account%20API.json"
+    },
+    {
+      "collectionFile": "Binance VIP Loan API.json",
+      "collectionName": "Binance VIP Loan REST API",
+      "description": "OpenAPI Specification for the Binance VIP Loan REST API",
+      "endpointCount": 11,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20VIP%20Loan%20API.json"
+    },
+    {
+      "collectionFile": "Binance Wallet API.json",
+      "collectionName": "Binance Wallet REST API",
+      "description": "OpenAPI Specification for the Binance Wallet REST API",
+      "endpointCount": 47,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Wallet%20API.json"
+    }
+  ]
+}

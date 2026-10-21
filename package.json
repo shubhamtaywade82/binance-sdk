@@ -92,6 +92,8 @@
     "docs:generate": "tsx scripts/generate-endpoint-map.ts",
     "contracts:generate": "tsx scripts/generate-contract-catalog.ts",
     "contracts:check": "tsx scripts/check-contracts-drift.ts",
+    "contracts:import-postman": "tsx scripts/import-postman-collections.ts",
+    "contracts:generate-from-postman": "tsx scripts/generate-sdk-from-postman.ts",
     "smoke": "tsx scripts/smoke-test.ts",
     "smoke:testnet": "tsx scripts/testnet-smoke.ts",
     "mcp": "tsx src/mcp/index.ts",

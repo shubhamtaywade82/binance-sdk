@@ -39,6 +39,18 @@ import {
   type CopyTradingSurface,
 } from '../products/copyTrading/surface.js';
 import { buildC2CSurface, type C2CSurface } from '../products/c2c/surface.js';
+// Contract-first generated product surfaces (Wave 5: 9 new products from
+// the official Binance Postman collections at
+// https://github.com/binance/binance-api-postman).
+import { buildFiatSurface, type FiatSurface } from '../products/fiat/surface.js';
+import { buildGiftCardSurface, type GiftCardSurface } from '../products/giftCard/surface.js';
+import { buildMiningSurface, type MiningSurface } from '../products/mining/surface.js';
+import { buildNftSurface, type NftSurface } from '../products/nft/surface.js';
+import { buildPaySurface, type PaySurface } from '../products/pay/surface.js';
+import { buildRebateSurface, type RebateSurface } from '../products/rebate/surface.js';
+import { buildSimpleEarnSurface, type SimpleEarnSurface } from '../products/simpleEarn/surface.js';
+import { buildStakingSurface, type StakingSurface } from '../products/staking/surface.js';
+import { buildVipLoanSurface, type VipLoanSurface } from '../products/vipLoan/surface.js';
 import { ExecutionManager } from '../execution/ExecutionManager.js';
 import { PaperExecutionAdapter } from '../execution/paper.js';
 import { ExecutionGateway, type ExecutionBackend } from '../execution/Gateway.js';
@@ -220,6 +232,57 @@ export class BinanceClient {
     return this.cached('c2c', () => buildC2CSurface(this.core));
   }
 
+  // ----- Contract-first generated product surfaces (Wave 5: 9 new products
+  // derived from the official Binance Postman collections). Each surface is
+  // a thin resource wrapper around the same HttpClient pipeline; response
+  // payloads are `unknown` until a Zod schema is added (see existing
+  // src/types/*.types.ts pattern for upgrading to typed responses).
+
+  /** Fiat order history (SAPI). */
+  get fiat(): FiatSurface {
+    return this.cached('fiat', () => buildFiatSurface(this.core));
+  }
+
+  /** Gift Card creation / redemption (SAPI). */
+  get giftCard(): GiftCardSurface {
+    return this.cached('giftCard', () => buildGiftCardSurface(this.core));
+  }
+
+  /** Mining account / hash-rate resales (SAPI). */
+  get mining(): MiningSurface {
+    return this.cached('mining', () => buildMiningSurface(this.core));
+  }
+
+  /** NFT deposit / withdrawal / transaction history (SAPI). */
+  get nft(): NftSurface {
+    return this.cached('nft', () => buildNftSurface(this.core));
+  }
+
+  /** Binance Pay order / payout history (SAPI). */
+  get pay(): PaySurface {
+    return this.cached('pay', () => buildPaySurface(this.core));
+  }
+
+  /** Cashback / commission rebate history (SAPI). */
+  get rebate(): RebateSurface {
+    return this.cached('rebate', () => buildRebateSurface(this.core));
+  }
+
+  /** Simple Earn: flexible + locked products, redeem, subscribe (SAPI). */
+  get simpleEarn(): SimpleEarnSurface {
+    return this.cached('simpleEarn', () => buildSimpleEarnSurface(this.core));
+  }
+
+  /** Staking: ETH staking, redeem, rewards history (SAPI). */
+  get staking(): StakingSurface {
+    return this.cached('staking', () => buildStakingSurface(this.core));
+  }
+
+  /** VIP Loan: borrow / repay / collateral history (SAPI). */
+  get vipLoan(): VipLoanSurface {
+    return this.cached('vipLoan', () => buildVipLoanSurface(this.core));
+  }
+
   /**
    * The v3 WebSocket platform: pooled connections per product family with
    * refcounted `Subscription` objects, central liveness/renewal, and
@@ -264,6 +327,15 @@ export class BinanceClient {
     alpha: AlphaSurface;
     copyTrading: CopyTradingSurface;
     c2c: C2CSurface;
+    fiat: FiatSurface;
+    giftCard: GiftCardSurface;
+    mining: MiningSurface;
+    nft: NftSurface;
+    pay: PaySurface;
+    rebate: RebateSurface;
+    simpleEarn: SimpleEarnSurface;
+    staking: StakingSurface;
+    vipLoan: VipLoanSurface;
   } {
     return {
       spot: this.spot,
@@ -282,6 +354,15 @@ export class BinanceClient {
       alpha: this.alpha,
       copyTrading: this.copyTrading,
       c2c: this.c2c,
+      fiat: this.fiat,
+      giftCard: this.giftCard,
+      mining: this.mining,
+      nft: this.nft,
+      pay: this.pay,
+      rebate: this.rebate,
+      simpleEarn: this.simpleEarn,
+      staking: this.staking,
+      vipLoan: this.vipLoan,
     };
   }
 

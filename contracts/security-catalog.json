@@ -1,6 +1,6 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-10-20T19:27:40.266Z",
+  "generatedAt": "2026-10-21T04:50:22.230Z",
   "products": {
     "algo": {
       "public": 0,
@@ -50,17 +50,47 @@
       "signed": 5,
       "total": 5
     },
+    "fiat": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 5,
+      "total": 5
+    },
+    "giftCard": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 6,
+      "total": 6
+    },
     "margin": {
       "public": 1,
       "apiKey": 0,
       "signed": 17,
       "total": 18
     },
+    "mining": {
+      "public": 0,
+      "apiKey": 2,
+      "signed": 11,
+      "total": 13
+    },
+    "nft": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 4,
+      "total": 4
+    },
     "options": {
       "public": 11,
       "apiKey": 3,
       "signed": 22,
       "total": 36
+    },
+    "pay": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 1,
+      "total": 1
     },
     "portfolio": {
       "public": 0,
@@ -74,10 +104,28 @@
       "signed": 24,
       "total": 24
     },
+    "rebate": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 1,
+      "total": 1
+    },
+    "simpleEarn": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 40,
+      "total": 40
+    },
     "spot": {
       "public": 14,
       "apiKey": 4,
       "signed": 19,
+      "total": 37
+    },
+    "staking": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 37,
       "total": 37
     },
     "subaccount": {
@@ -91,6 +139,12 @@
       "apiKey": 4,
       "signed": 57,
       "total": 100
+    },
+    "vipLoan": {
+      "public": 0,
+      "apiKey": 0,
+      "signed": 11,
+      "total": 11
     },
     "wallet": {
       "public": 0,
