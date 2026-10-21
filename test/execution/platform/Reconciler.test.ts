@@ -9,9 +9,11 @@ import { EventBus } from '../../../src/core/events.js';
 const server = setupServer();
 beforeAll(() =>
   server.listen({
-    onUnhandledRequest: (request, print) => {
-      if (request.url.startsWith('http://127.0.0.1')) return;
-      print.error();
+    onUnhandledFrame: ({ frame, defaults }) => {
+      const data = frame.data as { request?: { url?: string } };
+      const url = frame.protocol === "http" ? (data.request?.url ?? "") : "";
+      if (url.startsWith("http://127.0.0.1")) return;
+      defaults.warn();
     },
   }),
 );

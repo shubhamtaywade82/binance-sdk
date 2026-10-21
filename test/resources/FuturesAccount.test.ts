@@ -5,7 +5,7 @@ import { FuturesAccount } from '../../src/resources/FuturesAccount.js';
 import { HttpClient } from '../../src/client/HttpClient.js';
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 

@@ -6,7 +6,7 @@ import { Algo } from '../../src/resources/Algo.js';
 import { Convert } from '../../src/resources/Convert.js';
 
 const server = setupServer();
-beforeAll(() => server.listen({ onUnhandledRequest: 'bypass' }));
+beforeAll(() => server.listen({ onUnhandledFrame: 'bypass' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
