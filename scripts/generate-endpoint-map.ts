@@ -19,7 +19,12 @@ import { ENDPOINT_REGISTRY, listEndpoints, endpointCounts, type EndpointEntry } 
 const ROOT = join(import.meta.dirname, '..');
 const MAP_DIR = join(ROOT, 'docs', 'endpoint-map');
 
-const PRODUCTS: Array<EndpointEntry['product']> = ['spot', 'usdm', 'coinm', 'margin', 'wallet', 'subaccount'];
+const PRODUCTS: Array<EndpointEntry['product']> = [
+  'spot', 'usdm', 'coinm', 'margin', 'wallet', 'subaccount',
+  'options', 'portfolio', 'portfolioPro',
+  'cryptoLoan', 'convert', 'algo', 'dualInvestment', 'alpha', 'copyTrading', 'c2c',
+  'fiat', 'giftCard', 'mining', 'nft', 'pay', 'rebate', 'simpleEarn', 'staking', 'vipLoan',
+];
 const PRODUCT_TITLES: Record<string, string> = {
   spot: 'Spot',
   usdm: 'USDⓈ-M Futures',
@@ -27,6 +32,25 @@ const PRODUCT_TITLES: Record<string, string> = {
   margin: 'Margin',
   wallet: 'Wallet',
   subaccount: 'Sub-account',
+  options: 'Options',
+  portfolio: 'Portfolio Margin',
+  portfolioPro: 'Portfolio Margin Pro',
+  cryptoLoan: 'Crypto Loan',
+  convert: 'Convert SAPI',
+  algo: 'Algo SAPI',
+  dualInvestment: 'Dual Investment',
+  alpha: 'Alpha',
+  copyTrading: 'Copy Trading',
+  c2c: 'C2C',
+  fiat: 'Fiat',
+  giftCard: 'Gift Card',
+  mining: 'Mining',
+  nft: 'NFT',
+  pay: 'Pay',
+  rebate: 'Rebate',
+  simpleEarn: 'Simple Earn',
+  staking: 'Staking',
+  vipLoan: 'VIP Loan',
 };
 
 function authBadge(auth: EndpointEntry['authentication']): string {

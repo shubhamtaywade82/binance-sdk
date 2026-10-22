@@ -55,6 +55,11 @@ export class PortfolioMarginClient implements ProductClient {
     return this.surface.userStream;
   }
 
+  /** Wave 8 — Portfolio Margin user-data WebSocket stream. */
+  get wsUser(): PortfolioMarginSurface['wsUser'] {
+    return this.surface.wsUser;
+  }
+
   /** Start the PM listen-key user-data stream (creates key + 30-min keep-alive). */
   async startUserStream(): Promise<string> {
     const { listenKey } = await this.surface.userStream.createListenKey();
@@ -64,6 +69,7 @@ export class PortfolioMarginClient implements ProductClient {
         /* retried on the next tick */
       });
     }, 30 * 60 * 1000);
+    this.surface.wsUser.connect();
     return listenKey;
   }
 
@@ -71,6 +77,7 @@ export class PortfolioMarginClient implements ProductClient {
   closeUserStream(): void {
     if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
     this.keepAliveInterval = null;
+    this.surface.wsUser.close();
     this.surface.userStream.closeListenKey().catch(() => {
       /* best-effort cleanup */
     });

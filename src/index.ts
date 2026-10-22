@@ -272,6 +272,12 @@ export { CoinMMarketWS } from './ws/CoinMMarketWS.js';
 export type { CoinMContractType, CoinMMarkPriceSpeed } from './ws/CoinMMarketWS.js';
 export { CoinMUserWS } from './ws/CoinMUserWS.js';
 export type { CoinMUserWSOptions } from './ws/CoinMUserWS.js';
+// Wave 8 — Options + Portfolio Margin WebSocket streams.
+export { OptionsMarketWS } from './ws/OptionsMarketWS.js';
+export { OptionsUserWS } from './ws/OptionsUserWS.js';
+export type { OptionsUserWSOptions } from './ws/OptionsUserWS.js';
+export { PortfolioMarginUserWS } from './ws/PortfolioMarginUserWS.js';
+export type { PortfolioMarginUserWSOptions } from './ws/PortfolioMarginUserWS.js';
 export { WsApi } from './ws/WsApi.js';
 export type { WsApiOptions } from './ws/WsApi.js';
 export { SpotWsApi } from './ws/SpotWsApi.js';
@@ -389,6 +395,7 @@ export {
   tradingTools,
   executionTools,
   spotTools,
+  newProductsTools,
   derivedTools,
   wsTools,
   getBufferedWsEvents,

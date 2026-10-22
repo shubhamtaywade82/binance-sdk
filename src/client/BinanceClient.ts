@@ -203,7 +203,7 @@ export class BinanceClient {
    * trading. Lazy — never constructed until first access.
    */
   get options(): OptionsSurface {
-    return this.cached('options', () => buildOptionsSurface(this.core));
+    return this.cached('options', () => buildOptionsSurface(this.core, () => this.optionsListenKeyValue));
   }
 
   /**
@@ -212,7 +212,7 @@ export class BinanceClient {
    * Lazy — never constructed until first access.
    */
   get portfolioMargin(): PortfolioMarginSurface {
-    return this.cached('portfolioMargin', () => buildPortfolioMarginSurface(this.core));
+    return this.cached('portfolioMargin', () => buildPortfolioMarginSurface(this.core, () => this.pmListenKeyValue));
   }
 
   /**
@@ -403,6 +403,10 @@ export class BinanceClient {
   private spotKeepAliveInterval: NodeJS.Timeout | null = null;
   private coinmListenKeyValue: string | null = null;
   private coinmKeepAliveInterval: NodeJS.Timeout | null = null;
+  private optionsListenKeyValue: string | null = null;
+  private optionsKeepAliveInterval: NodeJS.Timeout | null = null;
+  private pmListenKeyValue: string | null = null;
+  private pmKeepAliveInterval: NodeJS.Timeout | null = null;
 
   static nowSeconds(): number {
     return Math.floor(Date.now() / 1000);
@@ -547,6 +551,52 @@ export class BinanceClient {
     this.coinmListenKeyValue = null;
   }
 
+  // ---- Wave 8: Options + Portfolio Margin user-data stream lifecycle ----
+
+  async startOptionsUserStream(): Promise<string> {
+    const { listenKey } = await this.options.userStream.createListenKey();
+    this.optionsListenKeyValue = listenKey;
+    this.optionsKeepAliveInterval = setInterval(() => {
+      this.options.userStream.keepAliveListenKey().catch(() => {
+        /* retried on next tick */
+      });
+    }, 30 * 60 * 1000);
+    this.options.wsUser.connect();
+    return listenKey;
+  }
+
+  closeOptionsUserStream(): void {
+    if (this.optionsKeepAliveInterval) clearInterval(this.optionsKeepAliveInterval);
+    this.optionsKeepAliveInterval = null;
+    this.options.wsUser.close();
+    this.options.userStream.closeListenKey().catch(() => {
+      /* best-effort cleanup */
+    });
+    this.optionsListenKeyValue = null;
+  }
+
+  async startPortfolioMarginUserStream(): Promise<string> {
+    const { listenKey } = await this.portfolioMargin.userStream.createListenKey();
+    this.pmListenKeyValue = listenKey;
+    this.pmKeepAliveInterval = setInterval(() => {
+      this.portfolioMargin.userStream.keepAliveListenKey().catch(() => {
+        /* retried on next tick */
+      });
+    }, 30 * 60 * 1000);
+    this.portfolioMargin.wsUser.connect();
+    return listenKey;
+  }
+
+  closePortfolioMarginUserStream(): void {
+    if (this.pmKeepAliveInterval) clearInterval(this.pmKeepAliveInterval);
+    this.pmKeepAliveInterval = null;
+    this.portfolioMargin.wsUser.close();
+    this.portfolioMargin.userStream.closeListenKey().catch(() => {
+      /* best-effort cleanup */
+    });
+    this.pmListenKeyValue = null;
+  }
+
   /**
    * Local L2 order-book engine on the futures market stream + REST snapshots:
    * best bid/ask, spread, microprice, imbalance, VWAP — all decimal-exact.
@@ -642,12 +692,18 @@ export class BinanceClient {
     this.spot.wsUser.close();
     this.coinm.ws.close();
     this.coinm.wsUser.close();
+    // Wave 8 — Options + Portfolio Margin WS cleanup.
+    this.options.ws.close();
+    this.options.wsUser.close();
+    this.portfolioMargin.wsUser.close();
     this.closeUserStream();
     this.closeSpotUserStream();
     this.closeCoinMUserStream();
+    this.closeOptionsUserStream();
+    this.closePortfolioMarginUserStream();
   }
 
-  reconnectWebSocket(target: 'ws' | 'wsUser' | 'spot' | 'spotUser' | 'coinm' | 'coinmUser'): void {
+  reconnectWebSocket(target: 'ws' | 'wsUser' | 'spot' | 'spotUser' | 'coinm' | 'coinmUser' | 'options' | 'optionsUser' | 'pmUser'): void {
     if (target === 'ws') {
       this.futures.ws.reconnect();
       this.futures.wsPublic.reconnect();
@@ -656,7 +712,10 @@ export class BinanceClient {
     else if (target === 'spot') this.spot.ws.reconnect();
     else if (target === 'spotUser') this.spot.wsUser.reconnect();
     else if (target === 'coinm') this.coinm.ws.reconnect();
-    else this.coinm.wsUser.reconnect();
+    else if (target === 'coinmUser') this.coinm.wsUser.reconnect();
+    else if (target === 'options') this.options.ws.reconnect();
+    else if (target === 'optionsUser') this.options.wsUser.reconnect();
+    else if (target === 'pmUser') this.portfolioMargin.wsUser.reconnect();
   }
 
   resetReconnectAttempts(): void {
