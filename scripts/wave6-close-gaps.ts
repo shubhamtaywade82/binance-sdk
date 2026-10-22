@@ -141,14 +141,67 @@ function resourceMethod(c: EndpointContract): string {
 
 function emitWave6ResourceFile(resourceClass: string, resourceFile: string, contracts: EndpointContract[], product: string): void {
   const filePath = join(RESOURCES_DIR, resourceFile);
-  // Detect duplicate method-name collisions and suffix the later ones.
+  // Check if the file already exists — if so, only append NEW methods.
+  if (existsSync(filePath)) {
+    const existing = readFileSync(filePath, 'utf8');
+    // Find which paths are already implemented by grepping for the path strings.
+    const existingPaths = new Set<string>();
+    for (const c of contracts) {
+      if (existing.includes(JSON.stringify(c.path))) {
+        existingPaths.add(`${c.method} ${c.path}`);
+      }
+    }
+    const newContracts = contracts.filter((c) => !existingPaths.has(`${c.method} ${c.path}`));
+    if (newContracts.length === 0) {
+      console.log(`  • ${resourceFile} (no new methods to add)`);
+      return;
+    }
+    // Append new methods before the closing `}` of the class.
+    const seenNames = new Map<string, number>();
+    // Also track names already in the file.
+    const existingMethodRe = /async\s+(\w+)\s*\(/g;
+    let m;
+    while ((m = existingMethodRe.exec(existing)) !== null) {
+      seenNames.set(m[1], 1);
+    }
+    const newMethods = newContracts.map((c) => {
+      let name = tsMethodName(c);
+      if (seenNames.has(name)) {
+        const count = seenNames.get(name)! + 1;
+        seenNames.set(name, count);
+        const pathSeg = c.path.split('/').filter(Boolean).slice(-2, -1)[0] ?? `dup${count}`;
+        name = `${name}${toPascal(pathSeg)}`;
+      } else {
+        seenNames.set(name, 1);
+      }
+      const params = [...c.queryParams, ...c.bodyParams]
+        .filter((p) => p.name !== 'signature' && p.name !== 'timestamp' && p.name !== 'recvWindow');
+      const paramSig = params.length === 0
+        ? ''
+        : `params: { ${params.map((p) => `${p.name}${p.required ? '' : '?'}: ${guessTsType(p.exampleValue, p.name)}`).join('; ')} }`;
+      const argsForCall = params.length === 0 ? 'undefined' : 'params';
+      const call = httpVerbCall(c).replace('params', argsForCall);
+      const docRef = c.docRef.replace(/\n/g, ' ').slice(0, 200);
+      return `  /** ${docRef}. \`${c.method} ${c.path}\` (${c.auth.toUpperCase()}). */\n  async ${name}(${paramSig}): Promise<unknown> {\n    return ${call};\n  }`;
+    }).join('\n\n');
+    // Insert before the last `}` in the file.
+    const lastBrace = existing.lastIndexOf('\n}');
+    if (lastBrace >= 0) {
+      const updated = existing.slice(0, lastBrace) + '\n\n' + newMethods + '\n' + existing.slice(lastBrace);
+      writeFileSync(filePath, updated);
+      console.log(`  ✓ ${resourceFile} (+${newContracts.length} new methods appended)`);
+    } else {
+      console.warn(`  ⚠ ${resourceFile}: could not find class closing brace — skipping`);
+    }
+    return;
+  }
+  // File doesn't exist — create from scratch.
   const seenNames = new Map<string, number>();
   const methods = contracts.map((c) => {
     let name = tsMethodName(c);
     if (seenNames.has(name)) {
       const count = seenNames.get(name)! + 1;
       seenNames.set(name, count);
-      // Suffix with the next segment of the path to disambiguate.
       const pathSeg = c.path.split('/').filter(Boolean).slice(-2, -1)[0] ?? `dup${count}`;
       name = `${name}${toPascal(pathSeg)}`;
     } else {

@@ -231,6 +231,14 @@
 
 ## Margin
 
+- DELETE /sapi/v2/margin/listen-key (API_KEY) → margin.closeUserDataStreamV2UserStream
+- GET /sapi/v1/margin/liquidation-loan (SIGNED) → margin.queryLiquidationLoanUserData
+- GET /sapi/v1/margin/liquidation-loan/repay-history (SIGNED) → margin.queryLiquidationLoanRepayHistoryUserData
+- GET /sapi/v1/margin/oto/openOrderList (SIGNED) → margin.queryMarginAccountSOpenOtoOtocoOrderListsUserData
+- POST /sapi/v1/margin/exit-special-key-mode (SIGNED) → margin.exitSpecialKeyModeTrade
+- POST /sapi/v1/margin/liquidation-loan/repay (SIGNED) → margin.liquidationLoanRepayMargin
+- POST /sapi/v2/margin/listen-key (API_KEY) → margin.startUserDataStreamV2UserStream
+- PUT /sapi/v2/margin/listen-key (API_KEY) → margin.keepaliveUserDataStreamV2UserStream
 - DELETE /sapi/v1/margin/apiKey (SIGNED) → margin.deleteSpecialKeyLowLatencyTradingTrade
 - DELETE /sapi/v1/margin/isolated/account (SIGNED) → margin.disableIsolatedMarginAccountTrade
 - DELETE /sapi/v1/margin/listen-key (API_KEY) → margin.closeUserDataStreamUserStream
@@ -297,6 +305,9 @@
 
 ## Wallet
 
+- GET /sapi/v1/localentity/country/list (SIGNED) → wallet.getCountryListUserData
+- GET /sapi/v1/localentity/region/list (SIGNED) → wallet.getRegionListUserData
+- GET /sapi/v1/spot/asset/tags (API_KEY) → wallet.getSpotAssetTagsMarketData
 - GET /sapi/v1/account/apiTradingStatus (SIGNED) → wallet.accountApiTradingStatusUserData
 - GET /sapi/v1/account/info (SIGNED) → wallet.accountInfoUserData
 - GET /sapi/v1/account/status (SIGNED) → wallet.accountStatusUserData
@@ -347,6 +358,10 @@
 
 ## Sub-account
 
+- DELETE /sapi/v1/sub-account/subAccountApi (SIGNED) → subaccount.deleteSubAccountApiKeyForMasterAccountUserData
+- GET /sapi/v1/sub-account/subAccountApi (SIGNED) → subaccount.querySubAccountApiKeyForMasterAccountUserData
+- POST /sapi/v1/sub-account/subAccountApi (SIGNED) → subaccount.createSubAccountApiKeyForMasterAccountUserData
+- POST /sapi/v1/sub-account/subAccountApiPermission (SIGNED) → subaccount.modifySubAccountApiKeyPermissionForMasterAccountUserData
 - DELETE /sapi/v1/sub-account/subAccountApi/ipRestriction/ipList (SIGNED) → subaccount.deleteIpListForASubAccountApiKeyForMasterAccountUserData
 - GET /sapi/v1/managed-subaccount/accountSnapshot (SIGNED) → subaccount.queryManagedSubAccountSnapshotForInvestorMasterAccountUserData
 - GET /sapi/v1/managed-subaccount/asset (SIGNED) → subaccount.queryManagedSubAccountAssetDetailsForInvestorMasterAccountUserData
@@ -396,6 +411,7 @@
 
 ## Options
 
+- POST /eapi/v1/stock/contract (SIGNED) → options.tradfiOptionsContractUserData
 - DELETE /eapi/v1/allOpenOrdersByUnderlying (SIGNED) → options.cancelAllOptionOrdersByUnderlyingTrade
 - DELETE /eapi/v1/block/order/create (SIGNED) → options.cancelBlockTradeOrderTrade
 - GET /eapi/v1/block/order/execute (SIGNED) → options.queryBlockTradeDetailsUserData
@@ -676,6 +692,7 @@
 - GET /sapi/v1/algo/futures/subOrders (SIGNED) → algo.futures.subOrders
 - GET /sapi/v1/algo/spot/historicalOrders (SIGNED) → algo.spot.historicalOrders
 - POST /sapi/v1/algo/spot/newOrderTwap (SIGNED) → algo.spot.newOrderTwap
+- POST /sapi/v1/algo/spot/newOrderVp (SIGNED) → algo.spot.newOrderVp
 - GET /sapi/v1/algo/spot/openOrders (SIGNED) → algo.spot.openOrders
 - DELETE /sapi/v1/algo/spot/order (SIGNED) → algo.spot.cancelOrder
 - GET /sapi/v1/algo/spot/subOrders (SIGNED) → algo.spot.subOrders
@@ -694,6 +711,7 @@
 - GET /bapi/defi/v1/public/alpha-trade/get-exchange-info (PUBLIC) → alpha.exchangeInfo
 - GET /bapi/defi/v1/public/alpha-trade/klines (PUBLIC) → alpha.klines
 - GET /bapi/defi/v1/public/alpha-trade/ticker (PUBLIC) → alpha.ticker
+- GET /bapi/defi/v1/public/alpha-trade/fullDepth (PUBLIC) → alpha.fullDepth
 - GET /bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list (PUBLIC) → alpha.tokenList
 
 ## Copy Trading
@@ -795,6 +813,7 @@
 - GET /sapi/v1/rwusd/quota (SIGNED) → simpleEarn.getRwusdQuotaDetailsUserData
 - POST /sapi/v1/rwusd/redeem (SIGNED) → simpleEarn.redeemRwusdTrade
 - POST /sapi/v1/rwusd/subscribe (SIGNED) → simpleEarn.subscribeRwusdTrade
+- GET /sapi/v1/earn/arena/activities (SIGNED) → simpleEarn.getArenaActivities
 
 ## Staking
 
@@ -849,3 +868,6 @@
 - GET /sapi/v1/loan/vip/interestRateHistory (SIGNED) → vipLoan.getVipLoanInterestRateHistoryUserData
 - GET /sapi/v1/loan/vip/loanable/data (SIGNED) → vipLoan.getLoanableAssetsDataUserData
 - GET /sapi/v1/loan/vip/request/interestRate (SIGNED) → vipLoan.getBorrowInterestRateUserData
+- GET /sapi/v1/loan/vip/fixed/market (SIGNED) → vipLoan.getFixedMarketDataUserData
+- GET /sapi/v1/loan/vip/repay/history (SIGNED) → vipLoan.getRepayHistoryUserData
+- POST /sapi/v1/loan/vip/fixed/borrow (SIGNED) → vipLoan.borrowFixedTrade

@@ -10,6 +10,9 @@ type Row = [operation: string, method: EndpointMethod, path: string, auth: Endpo
 
 const rows: Row[] = [
   // ---- Wave 6: contract-first gap closure (Postman-driven) ----
+  ["options.tradfiOptionsContractUserData", "POST", "/eapi/v1/stock/contract", "signed", "options.tradfiOptionsContractUserData"],
+
+  // ---- Wave 6: contract-first gap closure (Postman-driven) ----
   ["options.cancelAllOptionOrdersByUnderlyingTrade", "DELETE", "/eapi/v1/allOpenOrdersByUnderlying", "signed", "options.cancelAllOptionOrdersByUnderlyingTrade"],
   ["options.cancelBlockTradeOrderTrade", "DELETE", "/eapi/v1/block/order/create", "signed", "options.cancelBlockTradeOrderTrade"],
   ["options.queryBlockTradeDetailsUserData", "GET", "/eapi/v1/block/order/execute", "signed", "options.queryBlockTradeDetailsUserData"],

@@ -53,4 +53,9 @@ export class Alpha {
   async tokenList(): Promise<AlphaToken[]> {
     return AlphaTokenListResponseSchema.parse(await this.http.get('/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list'));
   }
+
+  /** Full depth order book for an Alpha token. `GET /bapi/defi/v1/public/alpha-trade/fullDepth` (PUBLIC). */
+  async fullDepth(options: { symbol: string; limit?: number }): Promise<unknown> {
+    return this.http.get('/bapi/defi/v1/public/alpha-trade/fullDepth', options);
+  }
 }

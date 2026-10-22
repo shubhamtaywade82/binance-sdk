@@ -14,6 +14,7 @@ const rows: Row[] = [
   // ---- Spot algo ----
   ['spot.historicalOrders', 'GET', '/sapi/v1/algo/spot/historicalOrders', 'signed', 'algo.spot.historicalOrders'],
   ['spot.newOrderTwap', 'POST', '/sapi/v1/algo/spot/newOrderTwap', 'signed', 'algo.spot.newOrderTwap'],
+  ['spot.newOrderVp', 'POST', '/sapi/v1/algo/spot/newOrderVp', 'signed', 'algo.spot.newOrderVp'],
   ['spot.openOrders', 'GET', '/sapi/v1/algo/spot/openOrders', 'signed', 'algo.spot.openOrders'],
   ['spot.cancelOrder', 'DELETE', '/sapi/v1/algo/spot/order', 'signed', 'algo.spot.cancelOrder'],
   ['spot.subOrders', 'GET', '/sapi/v1/algo/spot/subOrders', 'signed', 'algo.spot.subOrders'],

@@ -1,6 +1,6 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-10-22T04:24:47.695Z",
+  "generatedAt": "2026-10-22T05:22:12.711Z",
   "endpoints": [
     {
       "product": "spot",
@@ -2204,6 +2204,86 @@
     },
     {
       "product": "margin",
+      "operation": "margin.closeUserDataStreamV2UserStream",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/sapi/v2/margin/listen-key",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.closeUserDataStreamV2UserStream"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryLiquidationLoanUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/liquidation-loan",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryLiquidationLoanUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryLiquidationLoanRepayHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/liquidation-loan/repay-history",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryLiquidationLoanRepayHistoryUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryMarginAccountSOpenOtoOtocoOrderListsUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/oto/openOrderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryMarginAccountSOpenOtoOtocoOrderListsUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.exitSpecialKeyModeTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/exit-special-key-mode",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.exitSpecialKeyModeTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.liquidationLoanRepayMargin",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/liquidation-loan/repay",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.liquidationLoanRepayMargin"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.startUserDataStreamV2UserStream",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v2/margin/listen-key",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.startUserDataStreamV2UserStream"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.keepaliveUserDataStreamV2UserStream",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/sapi/v2/margin/listen-key",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.keepaliveUserDataStreamV2UserStream"
+    },
+    {
+      "product": "margin",
       "operation": "margin.deleteSpecialKeyLowLatencyTradingTrade",
       "transport": "rest",
       "method": "DELETE",
@@ -2834,6 +2914,36 @@
     },
     {
       "product": "wallet",
+      "operation": "wallet.getCountryListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/localentity/country/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.getCountryListUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.getRegionListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/localentity/region/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.getRegionListUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.getSpotAssetTagsMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/spot/asset/tags",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "wallet.getSpotAssetTagsMarketData"
+    },
+    {
+      "product": "wallet",
       "operation": "wallet.accountApiTradingStatusUserData",
       "transport": "rest",
       "method": "GET",
@@ -3304,6 +3414,46 @@
     },
     {
       "product": "subaccount",
+      "operation": "subaccount.deleteSubAccountApiKeyForMasterAccountUserData",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/sapi/v1/sub-account/subAccountApi",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.deleteSubAccountApiKeyForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.querySubAccountApiKeyForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/subAccountApi",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.querySubAccountApiKeyForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.createSubAccountApiKeyForMasterAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/subAccountApi",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.createSubAccountApiKeyForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.modifySubAccountApiKeyPermissionForMasterAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/subAccountApiPermission",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.modifySubAccountApiKeyPermissionForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
       "operation": "subaccount.deleteIpListForASubAccountApiKeyForMasterAccountUserData",
       "transport": "rest",
       "method": "DELETE",
@@ -3761,6 +3911,16 @@
       "security": "SIGNED",
       "weight": null,
       "implementedBy": "subaccount.depositHistory"
+    },
+    {
+      "product": "options",
+      "operation": "options.tradfiOptionsContractUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/eapi/v1/stock/contract",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "options.tradfiOptionsContractUserData"
     },
     {
       "product": "options",
@@ -6414,6 +6574,16 @@
     },
     {
       "product": "algo",
+      "operation": "spot.newOrderVp",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/algo/spot/newOrderVp",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "algo.spot.newOrderVp"
+    },
+    {
+      "product": "algo",
       "operation": "spot.openOrders",
       "transport": "rest",
       "method": "GET",
@@ -6531,6 +6701,16 @@
       "security": "PUBLIC",
       "weight": null,
       "implementedBy": "alpha.ticker"
+    },
+    {
+      "product": "alpha",
+      "operation": "alpha.fullDepth",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/bapi/defi/v1/public/alpha-trade/fullDepth",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "alpha.fullDepth"
     },
     {
       "product": "alpha",
@@ -7273,6 +7453,16 @@
       "implementedBy": "simpleEarn.subscribeRwusdTrade"
     },
     {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getArenaActivities",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/earn/arena/activities",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getArenaActivities"
+    },
+    {
       "product": "staking",
       "operation": "staking.onChainYieldsAccountUserData",
       "transport": "rest",
@@ -7751,6 +7941,36 @@
       "security": "SIGNED",
       "weight": null,
       "implementedBy": "vipLoan.getBorrowInterestRateUserData"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.getFixedMarketDataUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/loan/vip/fixed/market",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.getFixedMarketDataUserData"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.getRepayHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/loan/vip/repay/history",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.getRepayHistoryUserData"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.borrowFixedTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/loan/vip/fixed/borrow",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.borrowFixedTrade"
     }
   ]
 }

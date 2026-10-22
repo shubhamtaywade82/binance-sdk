@@ -5,6 +5,12 @@ type Row = [operation: string, method: EndpointMethod, path: string, auth: Endpo
 
 const rows: Row[] = [
   // ---- Wave 6: contract-first gap closure (Postman-driven) ----
+  ["subaccount.deleteSubAccountApiKeyForMasterAccountUserData", "DELETE", "/sapi/v1/sub-account/subAccountApi", "signed", "subaccount.deleteSubAccountApiKeyForMasterAccountUserData"],
+  ["subaccount.querySubAccountApiKeyForMasterAccountUserData", "GET", "/sapi/v1/sub-account/subAccountApi", "signed", "subaccount.querySubAccountApiKeyForMasterAccountUserData"],
+  ["subaccount.createSubAccountApiKeyForMasterAccountUserData", "POST", "/sapi/v1/sub-account/subAccountApi", "signed", "subaccount.createSubAccountApiKeyForMasterAccountUserData"],
+  ["subaccount.modifySubAccountApiKeyPermissionForMasterAccountUserData", "POST", "/sapi/v1/sub-account/subAccountApiPermission", "signed", "subaccount.modifySubAccountApiKeyPermissionForMasterAccountUserData"],
+
+  // ---- Wave 6: contract-first gap closure (Postman-driven) ----
   ["subaccount.deleteIpListForASubAccountApiKeyForMasterAccountUserData", "DELETE", "/sapi/v1/sub-account/subAccountApi/ipRestriction/ipList", "signed", "subaccount.deleteIpListForASubAccountApiKeyForMasterAccountUserData"],
   ["subaccount.queryManagedSubAccountSnapshotForInvestorMasterAccountUserData", "GET", "/sapi/v1/managed-subaccount/accountSnapshot", "signed", "subaccount.queryManagedSubAccountSnapshotForInvestorMasterAccountUserData"],
   ["subaccount.queryManagedSubAccountAssetDetailsForInvestorMasterAccountUserData", "GET", "/sapi/v1/managed-subaccount/asset", "signed", "subaccount.queryManagedSubAccountAssetDetailsForInvestorMasterAccountUserData"],

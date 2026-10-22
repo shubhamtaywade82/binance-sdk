@@ -5,6 +5,16 @@ type Row = [operation: string, method: EndpointMethod, path: string, auth: Endpo
 
 const rows: Row[] = [
   // ---- Wave 6: contract-first gap closure (Postman-driven) ----
+  ["margin.closeUserDataStreamV2UserStream", "DELETE", "/sapi/v2/margin/listen-key", "apiKey", "margin.closeUserDataStreamV2UserStream"],
+  ["margin.queryLiquidationLoanUserData", "GET", "/sapi/v1/margin/liquidation-loan", "signed", "margin.queryLiquidationLoanUserData"],
+  ["margin.queryLiquidationLoanRepayHistoryUserData", "GET", "/sapi/v1/margin/liquidation-loan/repay-history", "signed", "margin.queryLiquidationLoanRepayHistoryUserData"],
+  ["margin.queryMarginAccountSOpenOtoOtocoOrderListsUserData", "GET", "/sapi/v1/margin/oto/openOrderList", "signed", "margin.queryMarginAccountSOpenOtoOtocoOrderListsUserData"],
+  ["margin.exitSpecialKeyModeTrade", "POST", "/sapi/v1/margin/exit-special-key-mode", "signed", "margin.exitSpecialKeyModeTrade"],
+  ["margin.liquidationLoanRepayMargin", "POST", "/sapi/v1/margin/liquidation-loan/repay", "signed", "margin.liquidationLoanRepayMargin"],
+  ["margin.startUserDataStreamV2UserStream", "POST", "/sapi/v2/margin/listen-key", "apiKey", "margin.startUserDataStreamV2UserStream"],
+  ["margin.keepaliveUserDataStreamV2UserStream", "PUT", "/sapi/v2/margin/listen-key", "apiKey", "margin.keepaliveUserDataStreamV2UserStream"],
+
+  // ---- Wave 6: contract-first gap closure (Postman-driven) ----
   ["margin.deleteSpecialKeyLowLatencyTradingTrade", "DELETE", "/sapi/v1/margin/apiKey", "signed", "margin.deleteSpecialKeyLowLatencyTradingTrade"],
   ["margin.disableIsolatedMarginAccountTrade", "DELETE", "/sapi/v1/margin/isolated/account", "signed", "margin.disableIsolatedMarginAccountTrade"],
   ["margin.closeUserDataStreamUserStream", "DELETE", "/sapi/v1/margin/listen-key", "apiKey", "margin.closeUserDataStreamUserStream"],

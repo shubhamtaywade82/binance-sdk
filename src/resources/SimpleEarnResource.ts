@@ -214,4 +214,10 @@ export class SimpleEarnResource {
   async subscribeRwusdTrade(params: { asset: string; amount: number }): Promise<simpleEarnTypes.subscribeRwusdTradeResponse> {
     return this.http.post("/sapi/v1/rwusd/subscribe", params, 'signed').then(d => simpleEarnTypes.subscribeRwusdTradeResponseSchema.parse(d));
   }
+
+  /** Get Earn Arena activities. `GET /sapi/v1/earn/arena/activities` (SIGNED). */
+  async getArenaActivities(): Promise<unknown> {
+    return this.http.get("/sapi/v1/earn/arena/activities", undefined, "signed");
+  }
+
 }

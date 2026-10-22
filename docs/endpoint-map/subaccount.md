@@ -2,10 +2,14 @@
 
 > Generated from `src/registry/*.endpoints.ts` by `npm run docs:generate` — do not edit by hand.
 
-46 implemented endpoints.
+50 implemented endpoints.
 
 | Operation | Method | Path | Auth | SDK surface |
 |---|---|---|---|---|
+| `subaccount.deleteSubAccountApiKeyForMasterAccountUserData` | DELETE | `/sapi/v1/sub-account/subAccountApi` | SIGNED | `subaccount.deleteSubAccountApiKeyForMasterAccountUserData` |
+| `subaccount.querySubAccountApiKeyForMasterAccountUserData` | GET | `/sapi/v1/sub-account/subAccountApi` | SIGNED | `subaccount.querySubAccountApiKeyForMasterAccountUserData` |
+| `subaccount.createSubAccountApiKeyForMasterAccountUserData` | POST | `/sapi/v1/sub-account/subAccountApi` | SIGNED | `subaccount.createSubAccountApiKeyForMasterAccountUserData` |
+| `subaccount.modifySubAccountApiKeyPermissionForMasterAccountUserData` | POST | `/sapi/v1/sub-account/subAccountApiPermission` | SIGNED | `subaccount.modifySubAccountApiKeyPermissionForMasterAccountUserData` |
 | `subaccount.deleteIpListForASubAccountApiKeyForMasterAccountUserData` | DELETE | `/sapi/v1/sub-account/subAccountApi/ipRestriction/ipList` | SIGNED | `subaccount.deleteIpListForASubAccountApiKeyForMasterAccountUserData` |
 | `subaccount.queryManagedSubAccountSnapshotForInvestorMasterAccountUserData` | GET | `/sapi/v1/managed-subaccount/accountSnapshot` | SIGNED | `subaccount.queryManagedSubAccountSnapshotForInvestorMasterAccountUserData` |
 | `subaccount.queryManagedSubAccountAssetDetailsForInvestorMasterAccountUserData` | GET | `/sapi/v1/managed-subaccount/asset` | SIGNED | `subaccount.queryManagedSubAccountAssetDetailsForInvestorMasterAccountUserData` |

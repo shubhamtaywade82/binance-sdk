@@ -2,7 +2,7 @@
 
 > Generated from `src/registry/*.endpoints.ts` by `npm run docs:generate` — do not edit by hand.
 
-40 implemented endpoints.
+41 implemented endpoints.
 
 | Operation | Method | Path | Auth | SDK surface |
 |---|---|---|---|---|
@@ -46,3 +46,4 @@
 | `simpleEarn.getRwusdQuotaDetailsUserData` | GET | `/sapi/v1/rwusd/quota` | SIGNED | `simpleEarn.getRwusdQuotaDetailsUserData` |
 | `simpleEarn.redeemRwusdTrade` | POST | `/sapi/v1/rwusd/redeem` | SIGNED | `simpleEarn.redeemRwusdTrade` |
 | `simpleEarn.subscribeRwusdTrade` | POST | `/sapi/v1/rwusd/subscribe` | SIGNED | `simpleEarn.subscribeRwusdTrade` |
+| `simpleEarn.getArenaActivities` | GET | `/sapi/v1/earn/arena/activities` | SIGNED | `simpleEarn.getArenaActivities` |

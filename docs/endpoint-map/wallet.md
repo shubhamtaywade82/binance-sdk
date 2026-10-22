@@ -2,10 +2,13 @@
 
 > Generated from `src/registry/*.endpoints.ts` by `npm run docs:generate` — do not edit by hand.
 
-47 implemented endpoints.
+50 implemented endpoints.
 
 | Operation | Method | Path | Auth | SDK surface |
 |---|---|---|---|---|
+| `wallet.getCountryListUserData` | GET | `/sapi/v1/localentity/country/list` | SIGNED | `wallet.getCountryListUserData` |
+| `wallet.getRegionListUserData` | GET | `/sapi/v1/localentity/region/list` | SIGNED | `wallet.getRegionListUserData` |
+| `wallet.getSpotAssetTagsMarketData` | GET | `/sapi/v1/spot/asset/tags` | API_KEY | `wallet.getSpotAssetTagsMarketData` |
 | `wallet.accountApiTradingStatusUserData` | GET | `/sapi/v1/account/apiTradingStatus` | SIGNED | `wallet.accountApiTradingStatusUserData` |
 | `wallet.accountInfoUserData` | GET | `/sapi/v1/account/info` | SIGNED | `wallet.accountInfoUserData` |
 | `wallet.accountStatusUserData` | GET | `/sapi/v1/account/status` | SIGNED | `wallet.accountStatusUserData` |

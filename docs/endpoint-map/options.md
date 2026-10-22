@@ -2,10 +2,11 @@
 
 > Generated from `src/registry/*.endpoints.ts` by `npm run docs:generate` — do not edit by hand.
 
-43 implemented endpoints.
+44 implemented endpoints.
 
 | Operation | Method | Path | Auth | SDK surface |
 |---|---|---|---|---|
+| `options.tradfiOptionsContractUserData` | POST | `/eapi/v1/stock/contract` | SIGNED | `options.tradfiOptionsContractUserData` |
 | `options.cancelAllOptionOrdersByUnderlyingTrade` | DELETE | `/eapi/v1/allOpenOrdersByUnderlying` | SIGNED | `options.cancelAllOptionOrdersByUnderlyingTrade` |
 | `options.cancelBlockTradeOrderTrade` | DELETE | `/eapi/v1/block/order/create` | SIGNED | `options.cancelBlockTradeOrderTrade` |
 | `options.queryBlockTradeDetailsUserData` | GET | `/eapi/v1/block/order/execute` | SIGNED | `options.queryBlockTradeDetailsUserData` |

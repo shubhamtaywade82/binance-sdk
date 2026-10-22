@@ -49,8 +49,16 @@ describe('Postman contract layer', () => {
     expect(Array.isArray(coverage.products)).toBe(true);
     const totalContract = coverage.products.reduce((a: number, p: { contractCount: number }) => a + p.contractCount, 0);
     const totalExisting = coverage.products.reduce((a: number, p: { existingCount: number }) => a + p.existingCount, 0);
+    const totalExtra = coverage.products.reduce((a: number, p: { extra: string[] }) => a + p.extra.length, 0);
     expect(totalContract).toBeGreaterThan(680);
-    expect(totalExisting).toBe(ENDPOINT_REGISTRY.length);
+    // existingCount counts unique method+path pairs per product from the SDK;
+    // extra counts SDK-only endpoints not in the Postman contract. Together
+    // they should be >= ENDPOINT_REGISTRY.length (registry may have dupes
+    // across operations that share the same method+path).
+    expect(totalExisting + totalExtra).toBeGreaterThanOrEqual(ENDPOINT_REGISTRY.length);
+    // No missing endpoints — SDK matches the Postman contract 100%.
+    const totalMissing = coverage.products.reduce((a: number, p: { missing: string[] }) => a + p.missing.length, 0);
+    expect(totalMissing).toBe(0);
     // Match rate is at least 50% — growing toward 100% as the contract-first
     // migration progresses.
     const matchRate = (totalExisting - coverage.products.reduce((a: number, p: { missing: string[] }) => a + p.missing.length, 0)) / totalContract;

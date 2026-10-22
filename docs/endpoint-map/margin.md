@@ -2,10 +2,18 @@
 
 > Generated from `src/registry/*.endpoints.ts` by `npm run docs:generate` — do not edit by hand.
 
-63 implemented endpoints.
+71 implemented endpoints.
 
 | Operation | Method | Path | Auth | SDK surface |
 |---|---|---|---|---|
+| `margin.closeUserDataStreamV2UserStream` | DELETE | `/sapi/v2/margin/listen-key` | API_KEY | `margin.closeUserDataStreamV2UserStream` |
+| `margin.queryLiquidationLoanUserData` | GET | `/sapi/v1/margin/liquidation-loan` | SIGNED | `margin.queryLiquidationLoanUserData` |
+| `margin.queryLiquidationLoanRepayHistoryUserData` | GET | `/sapi/v1/margin/liquidation-loan/repay-history` | SIGNED | `margin.queryLiquidationLoanRepayHistoryUserData` |
+| `margin.queryMarginAccountSOpenOtoOtocoOrderListsUserData` | GET | `/sapi/v1/margin/oto/openOrderList` | SIGNED | `margin.queryMarginAccountSOpenOtoOtocoOrderListsUserData` |
+| `margin.exitSpecialKeyModeTrade` | POST | `/sapi/v1/margin/exit-special-key-mode` | SIGNED | `margin.exitSpecialKeyModeTrade` |
+| `margin.liquidationLoanRepayMargin` | POST | `/sapi/v1/margin/liquidation-loan/repay` | SIGNED | `margin.liquidationLoanRepayMargin` |
+| `margin.startUserDataStreamV2UserStream` | POST | `/sapi/v2/margin/listen-key` | API_KEY | `margin.startUserDataStreamV2UserStream` |
+| `margin.keepaliveUserDataStreamV2UserStream` | PUT | `/sapi/v2/margin/listen-key` | API_KEY | `margin.keepaliveUserDataStreamV2UserStream` |
 | `margin.deleteSpecialKeyLowLatencyTradingTrade` | DELETE | `/sapi/v1/margin/apiKey` | SIGNED | `margin.deleteSpecialKeyLowLatencyTradingTrade` |
 | `margin.disableIsolatedMarginAccountTrade` | DELETE | `/sapi/v1/margin/isolated/account` | SIGNED | `margin.disableIsolatedMarginAccountTrade` |
 | `margin.closeUserDataStreamUserStream` | DELETE | `/sapi/v1/margin/listen-key` | API_KEY | `margin.closeUserDataStreamUserStream` |

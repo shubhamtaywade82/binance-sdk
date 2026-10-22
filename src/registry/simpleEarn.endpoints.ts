@@ -50,6 +50,7 @@ const rows: Row[] = [
   ["simpleEarn.getRwusdQuotaDetailsUserData", "GET", "/sapi/v1/rwusd/quota", "signed", "simpleEarn.getRwusdQuotaDetailsUserData"],
   ["simpleEarn.redeemRwusdTrade", "POST", "/sapi/v1/rwusd/redeem", "signed", "simpleEarn.redeemRwusdTrade"],
   ["simpleEarn.subscribeRwusdTrade", "POST", "/sapi/v1/rwusd/subscribe", "signed", "simpleEarn.subscribeRwusdTrade"],
+  ["simpleEarn.getArenaActivities", "GET", "/sapi/v1/earn/arena/activities", "signed", "simpleEarn.getArenaActivities"],
 ];
 
 export const SIMPLE_EARN_ENDPOINTS: EndpointEntry[] = rows.map(

@@ -2,7 +2,7 @@
 
 > Generated from `src/registry/*.endpoints.ts` by `npm run docs:generate` — do not edit by hand.
 
-11 implemented endpoints.
+14 implemented endpoints.
 
 | Operation | Method | Path | Auth | SDK surface |
 |---|---|---|---|---|
@@ -17,3 +17,6 @@
 | `vipLoan.getVipLoanInterestRateHistoryUserData` | GET | `/sapi/v1/loan/vip/interestRateHistory` | SIGNED | `vipLoan.getVipLoanInterestRateHistoryUserData` |
 | `vipLoan.getLoanableAssetsDataUserData` | GET | `/sapi/v1/loan/vip/loanable/data` | SIGNED | `vipLoan.getLoanableAssetsDataUserData` |
 | `vipLoan.getBorrowInterestRateUserData` | GET | `/sapi/v1/loan/vip/request/interestRate` | SIGNED | `vipLoan.getBorrowInterestRateUserData` |
+| `vipLoan.getFixedMarketDataUserData` | GET | `/sapi/v1/loan/vip/fixed/market` | SIGNED | `vipLoan.getFixedMarketDataUserData` |
+| `vipLoan.getRepayHistoryUserData` | GET | `/sapi/v1/loan/vip/repay/history` | SIGNED | `vipLoan.getRepayHistoryUserData` |
+| `vipLoan.borrowFixedTrade` | POST | `/sapi/v1/loan/vip/fixed/borrow` | SIGNED | `vipLoan.borrowFixedTrade` |

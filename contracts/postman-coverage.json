@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "sourceUrl": "https://github.com/binance/binance-api-postman",
-  "generatedAt": "2026-10-22T04:24:48.474Z",
+  "generatedAt": "2026-10-22T05:27:25.347Z",
   "products": [
     {
       "product": "algo",
-      "contractCount": 11,
-      "existingCount": 11,
+      "contractCount": 12,
+      "existingCount": 12,
       "missing": [],
       "extra": []
     },
     {
       "product": "alpha",
-      "contractCount": 5,
-      "existingCount": 5,
+      "contractCount": 6,
+      "existingCount": 6,
       "missing": [],
       "extra": []
     },
@@ -40,35 +40,40 @@
     },
     {
       "product": "cryptoLoan",
-      "contractCount": 17,
+      "contractCount": 16,
       "existingCount": 17,
       "missing": [],
-      "extra": []
+      "extra": [
+        "GET /sapi/v1/loan/repay/collateral/rate"
+      ]
     },
     {
       "product": "coinm",
-      "contractCount": 65,
+      "contractCount": 64,
       "existingCount": 66,
       "missing": [],
       "extra": [
+        "GET /dapi/v1/pmAccountInfo",
         "POST /dapi/v1/order/test"
       ]
     },
     {
       "product": "options",
-      "contractCount": 43,
-      "existingCount": 43,
+      "contractCount": 44,
+      "existingCount": 44,
       "missing": [],
       "extra": []
     },
     {
       "product": "portfolio",
-      "contractCount": 109,
+      "contractCount": 102,
       "existingCount": 158,
       "missing": [],
       "extra": [
         "DELETE /papi/v1/cm/batchOrders",
         "DELETE /papi/v1/um/batchOrders",
+        "DELETE /papi/v1/um/conditional/allOpenOrders",
+        "DELETE /papi/v1/um/conditional/order",
         "GET /papi/v1/asset-collection",
         "GET /papi/v1/cm/balance",
         "GET /papi/v1/cm/fundingRate",
@@ -96,6 +101,10 @@
         "GET /papi/v1/um/accountV3",
         "GET /papi/v1/um/balance",
         "GET /papi/v1/um/balanceV3",
+        "GET /papi/v1/um/conditional/allOrders",
+        "GET /papi/v1/um/conditional/openOrder",
+        "GET /papi/v1/um/conditional/openOrders",
+        "GET /papi/v1/um/conditional/orderHistory",
         "GET /papi/v1/um/fundingRate",
         "GET /papi/v1/um/multiAssetsMargin",
         "GET /papi/v1/um/openInterest",
@@ -112,6 +121,7 @@
         "POST /papi/v1/portfolio/pmLoan",
         "POST /papi/v1/portfolio/repay",
         "POST /papi/v1/um/batchOrders",
+        "POST /papi/v1/um/conditional/order",
         "POST /papi/v1/um/countdownCancelAll",
         "POST /papi/v1/um/marginType",
         "POST /papi/v1/um/multiAssetsMargin",
@@ -147,10 +157,12 @@
     },
     {
       "product": "dualInvestment",
-      "contractCount": 5,
+      "contractCount": 4,
       "existingCount": 5,
       "missing": [],
-      "extra": []
+      "extra": [
+        "POST /sapi/v1/dci/product/auto_compound/edit-status"
+      ]
     },
     {
       "product": "fiat",
@@ -168,8 +180,8 @@
     },
     {
       "product": "margin",
-      "contractCount": 61,
-      "existingCount": 63,
+      "contractCount": 69,
+      "existingCount": 71,
       "missing": [],
       "extra": [
         "POST /sapi/v1/margin/isolated/transfer",
@@ -180,13 +192,6 @@
       "product": "mining",
       "contractCount": 13,
       "existingCount": 13,
-      "missing": [],
-      "extra": []
-    },
-    {
-      "product": "nft",
-      "contractCount": 4,
-      "existingCount": 4,
       "missing": [],
       "extra": []
     },
@@ -206,8 +211,8 @@
     },
     {
       "product": "simpleEarn",
-      "contractCount": 40,
-      "existingCount": 40,
+      "contractCount": 41,
+      "existingCount": 41,
       "missing": [],
       "extra": []
     },
@@ -234,8 +239,8 @@
     },
     {
       "product": "subaccount",
-      "contractCount": 45,
-      "existingCount": 46,
+      "contractCount": 49,
+      "existingCount": 50,
       "missing": [],
       "extra": [
         "POST /sapi/v1/sub-account/margin/enable"
@@ -243,15 +248,15 @@
     },
     {
       "product": "vipLoan",
-      "contractCount": 11,
-      "existingCount": 11,
+      "contractCount": 14,
+      "existingCount": 14,
       "missing": [],
       "extra": []
     },
     {
       "product": "wallet",
-      "contractCount": 47,
-      "existingCount": 47,
+      "contractCount": 50,
+      "existingCount": 50,
       "missing": [],
       "extra": []
     }

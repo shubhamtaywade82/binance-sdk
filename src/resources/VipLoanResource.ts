@@ -69,4 +69,20 @@ export class VipLoanResource {
   async getBorrowInterestRateUserData(params: { loanCoin: string | number }): Promise<vipLoanTypes.getBorrowInterestRateUserDataResponse> {
     return this.http.get("/sapi/v1/loan/vip/request/interestRate", params, 'signed').then(d => vipLoanTypes.getBorrowInterestRateUserDataResponseSchema.parse(d));
   }
+
+  /** Get VIP Loan fixed market data. `GET /sapi/v1/loan/vip/fixed/market` (SIGNED). */
+  async getFixedMarketDataUserData(): Promise<unknown> {
+    return this.http.get("/sapi/v1/loan/vip/fixed/market", undefined, "signed");
+  }
+
+  /** Get VIP Loan repay history. `GET /sapi/v1/loan/vip/repay/history` (SIGNED). */
+  async getRepayHistoryUserData(): Promise<unknown> {
+    return this.http.get("/sapi/v1/loan/vip/repay/history", undefined, "signed");
+  }
+
+  /** Borrow VIP Loan fixed rate. `POST /sapi/v1/loan/vip/fixed/borrow` (SIGNED). */
+  async borrowFixedTrade(): Promise<unknown> {
+    return this.http.post("/sapi/v1/loan/vip/fixed/borrow", undefined, "signed");
+  }
+
 }

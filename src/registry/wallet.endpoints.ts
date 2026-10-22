@@ -5,6 +5,11 @@ type Row = [operation: string, method: EndpointMethod, path: string, auth: Endpo
 
 const rows: Row[] = [
   // ---- Wave 6: contract-first gap closure (Postman-driven) ----
+  ["wallet.getCountryListUserData", "GET", "/sapi/v1/localentity/country/list", "signed", "wallet.getCountryListUserData"],
+  ["wallet.getRegionListUserData", "GET", "/sapi/v1/localentity/region/list", "signed", "wallet.getRegionListUserData"],
+  ["wallet.getSpotAssetTagsMarketData", "GET", "/sapi/v1/spot/asset/tags", "apiKey", "wallet.getSpotAssetTagsMarketData"],
+
+  // ---- Wave 6: contract-first gap closure (Postman-driven) ----
   ["wallet.accountApiTradingStatusUserData", "GET", "/sapi/v1/account/apiTradingStatus", "signed", "wallet.accountApiTradingStatusUserData"],
   ["wallet.accountInfoUserData", "GET", "/sapi/v1/account/info", "signed", "wallet.accountInfoUserData"],
   ["wallet.accountStatusUserData", "GET", "/sapi/v1/account/status", "signed", "wallet.accountStatusUserData"],

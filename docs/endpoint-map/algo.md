@@ -2,7 +2,7 @@
 
 > Generated from `src/registry/*.endpoints.ts` by `npm run docs:generate` — do not edit by hand.
 
-11 implemented endpoints.
+12 implemented endpoints.
 
 | Operation | Method | Path | Auth | SDK surface |
 |---|---|---|---|---|
@@ -14,6 +14,7 @@
 | `futures.subOrders` | GET | `/sapi/v1/algo/futures/subOrders` | SIGNED | `algo.futures.subOrders` |
 | `spot.historicalOrders` | GET | `/sapi/v1/algo/spot/historicalOrders` | SIGNED | `algo.spot.historicalOrders` |
 | `spot.newOrderTwap` | POST | `/sapi/v1/algo/spot/newOrderTwap` | SIGNED | `algo.spot.newOrderTwap` |
+| `spot.newOrderVp` | POST | `/sapi/v1/algo/spot/newOrderVp` | SIGNED | `algo.spot.newOrderVp` |
 | `spot.openOrders` | GET | `/sapi/v1/algo/spot/openOrders` | SIGNED | `algo.spot.openOrders` |
 | `spot.cancelOrder` | DELETE | `/sapi/v1/algo/spot/order` | SIGNED | `algo.spot.cancelOrder` |
 | `spot.subOrders` | GET | `/sapi/v1/algo/spot/subOrders` | SIGNED | `algo.spot.subOrders` |

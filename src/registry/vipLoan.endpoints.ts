@@ -21,6 +21,9 @@ const rows: Row[] = [
   ["vipLoan.getVipLoanInterestRateHistoryUserData", "GET", "/sapi/v1/loan/vip/interestRateHistory", "signed", "vipLoan.getVipLoanInterestRateHistoryUserData"],
   ["vipLoan.getLoanableAssetsDataUserData", "GET", "/sapi/v1/loan/vip/loanable/data", "signed", "vipLoan.getLoanableAssetsDataUserData"],
   ["vipLoan.getBorrowInterestRateUserData", "GET", "/sapi/v1/loan/vip/request/interestRate", "signed", "vipLoan.getBorrowInterestRateUserData"],
+  ["vipLoan.getFixedMarketDataUserData", "GET", "/sapi/v1/loan/vip/fixed/market", "signed", "vipLoan.getFixedMarketDataUserData"],
+  ["vipLoan.getRepayHistoryUserData", "GET", "/sapi/v1/loan/vip/repay/history", "signed", "vipLoan.getRepayHistoryUserData"],
+  ["vipLoan.borrowFixedTrade", "POST", "/sapi/v1/loan/vip/fixed/borrow", "signed", "vipLoan.borrowFixedTrade"],
 ];
 
 export const VIP_LOAN_ENDPOINTS: EndpointEntry[] = rows.map(
