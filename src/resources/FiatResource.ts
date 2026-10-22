@@ -1,4 +1,5 @@
 import { HttpClient } from '../client/HttpClient.js';
+import * as fiatTypes from '../types/fiat.wave7.types.js';
 
 /**
  * Binance fiat REST resource.
@@ -15,27 +16,27 @@ export class FiatResource {
   constructor(private readonly http: HttpClient) {}
 
   /** Binance Fiat REST API → Fiat > Deposit(TRADE). `POST /sapi/v1/fiat/deposit` (SIGNED). */
-  async depositTrade(params: { currency: string | number; apiPaymentMethod: string | number; amount: number; ext?: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/fiat/deposit", params, 'signed');
+  async depositTrade(params: { currency: string | number; apiPaymentMethod: string | number; amount: number; ext?: string | number }): Promise<fiatTypes.depositTradeResponse> {
+    return this.http.post("/sapi/v1/fiat/deposit", params, 'signed').then(d => fiatTypes.depositTradeResponseSchema.parse(d));
   }
 
   /** Binance Fiat REST API → Fiat > Get Order Detail(USER_DATA). `GET /sapi/v1/fiat/get-order-detail` (SIGNED). */
-  async getOrderDetailUserData(params: { orderNo: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/fiat/get-order-detail", params, 'signed');
+  async getOrderDetailUserData(params: { orderNo: string | number }): Promise<fiatTypes.getOrderDetailUserDataResponse> {
+    return this.http.get("/sapi/v1/fiat/get-order-detail", params, 'signed').then(d => fiatTypes.getOrderDetailUserDataResponseSchema.parse(d));
   }
 
   /** Binance Fiat REST API → Fiat > Get Fiat Deposit/Withdraw History (USER_DATA). `GET /sapi/v1/fiat/orders` (SIGNED). */
-  async getFiatDepositWithdrawHistoryUserData(params: { transactionType: string | number; beginTime?: number; endTime?: number; page?: number; rows?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/fiat/orders", params, 'signed');
+  async getFiatDepositWithdrawHistoryUserData(params: { transactionType: string | number; beginTime?: number; endTime?: number; page?: number; rows?: number }): Promise<fiatTypes.getFiatDepositWithdrawHistoryUserDataResponse> {
+    return this.http.get("/sapi/v1/fiat/orders", params, 'signed').then(d => fiatTypes.getFiatDepositWithdrawHistoryUserDataResponseSchema.parse(d));
   }
 
   /** Binance Fiat REST API → Fiat > Get Fiat Payments History (USER_DATA). `GET /sapi/v1/fiat/payments` (SIGNED). */
-  async getFiatPaymentsHistoryUserData(params: { transactionType: string | number; beginTime?: number; endTime?: number; page?: number; rows?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/fiat/payments", params, 'signed');
+  async getFiatPaymentsHistoryUserData(params: { transactionType: string | number; beginTime?: number; endTime?: number; page?: number; rows?: number }): Promise<fiatTypes.getFiatPaymentsHistoryUserDataResponse> {
+    return this.http.get("/sapi/v1/fiat/payments", params, 'signed').then(d => fiatTypes.getFiatPaymentsHistoryUserDataResponseSchema.parse(d));
   }
 
   /** Binance Fiat REST API → Fiat > Fiat Withdraw(WITHDRAW). `POST /sapi/v2/fiat/withdraw` (SIGNED). */
-  async fiatWithdrawWithdraw(params: { currency: string | number; apiPaymentMethod: string | number; amount: number; accountInfo: string | number; ext?: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v2/fiat/withdraw", params, 'signed');
+  async fiatWithdrawWithdraw(params: { currency: string | number; apiPaymentMethod: string | number; amount: number; accountInfo: string | number; ext?: string | number }): Promise<fiatTypes.fiatWithdrawWithdrawResponse> {
+    return this.http.post("/sapi/v2/fiat/withdraw", params, 'signed').then(d => fiatTypes.fiatWithdrawWithdrawResponseSchema.parse(d));
   }
 }

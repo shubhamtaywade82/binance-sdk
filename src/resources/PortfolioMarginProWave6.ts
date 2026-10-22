@@ -1,4 +1,5 @@
 import { HttpClient } from '../client/HttpClient.js';
+import * as portfolioProWave6Types from '../types/portfolioProWave6.wave7.types.js';
 
 /**
  * Binance portfolioPro Wave-6 gap-closure resource.
@@ -16,32 +17,32 @@ export class PortfolioMarginProWave6 {
   constructor(private readonly http: HttpClient) {}
 
   /** Binance Derivatives Trading Portfolio Margin Pro REST API → Account > Delete Margin Call Level (USER_DATA). `DELETE /sapi/v1/portfolio/margin-call-level` (SIGNED). */
-  async deleteMarginCallLevelUserData(): Promise<unknown> {
-    return this.http.delete("/sapi/v1/portfolio/margin-call-level", undefined, 'signed');
+  async deleteMarginCallLevelUserData(): Promise<portfolioProWave6Types.deleteMarginCallLevelUserDataResponse> {
+    return this.http.delete("/sapi/v1/portfolio/margin-call-level", undefined, 'signed').then(d => portfolioProWave6Types.deleteMarginCallLevelUserDataResponseSchema.parse(d));
   }
 
   /** Binance Derivatives Trading Portfolio Margin Pro REST API → Account > Query Portfolio Margin Pro Bankruptcy Loan Amount(USER_DATA). `GET /sapi/v1/portfolio/pmLoan` (SIGNED). */
-  async queryPortfolioMarginProBankruptcyLoanAmountUserData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/portfolio/pmLoan", undefined, 'signed');
+  async queryPortfolioMarginProBankruptcyLoanAmountUserData(): Promise<portfolioProWave6Types.queryPortfolioMarginProBankruptcyLoanAmountUserDataResponse> {
+    return this.http.get("/sapi/v1/portfolio/pmLoan", undefined, 'signed').then(d => portfolioProWave6Types.queryPortfolioMarginProBankruptcyLoanAmountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Derivatives Trading Portfolio Margin Pro REST API → Account > Get Auto-repay-futures Status(USER_DATA). `GET /sapi/v1/portfolio/repay-futures-switch` (SIGNED). */
-  async getAutoRepayFuturesStatusUserData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/portfolio/repay-futures-switch", undefined, 'signed');
+  async getAutoRepayFuturesStatusUserData(): Promise<portfolioProWave6Types.getAutoRepayFuturesStatusUserDataResponse> {
+    return this.http.get("/sapi/v1/portfolio/repay-futures-switch", undefined, 'signed').then(d => portfolioProWave6Types.getAutoRepayFuturesStatusUserDataResponseSchema.parse(d));
   }
 
   /** Binance Derivatives Trading Portfolio Margin Pro REST API → Account > Fund Collection by Asset(USER_DATA). `POST /sapi/v1/portfolio/asset-collection` (SIGNED). */
-  async fundCollectionByAssetUserData(params: { asset: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/portfolio/asset-collection", params, 'signed');
+  async fundCollectionByAssetUserData(params: { asset: string | number }): Promise<portfolioProWave6Types.fundCollectionByAssetUserDataResponse> {
+    return this.http.post("/sapi/v1/portfolio/asset-collection", params, 'signed').then(d => portfolioProWave6Types.fundCollectionByAssetUserDataResponseSchema.parse(d));
   }
 
   /** Binance Derivatives Trading Portfolio Margin Pro REST API → Account > Switch Delta Mode(TRADE). `POST /sapi/v1/portfolio/delta-mode` (SIGNED). */
-  async switchDeltaModeTrade(params: { deltaEnabled: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/portfolio/delta-mode", params, 'signed');
+  async switchDeltaModeTrade(params: { deltaEnabled: string | number }): Promise<portfolioProWave6Types.switchDeltaModeTradeResponse> {
+    return this.http.post("/sapi/v1/portfolio/delta-mode", params, 'signed').then(d => portfolioProWave6Types.switchDeltaModeTradeResponseSchema.parse(d));
   }
 
   /** Binance Derivatives Trading Portfolio Margin Pro REST API → Account > Set Margin Call Level (USER_DATA). `POST /sapi/v1/portfolio/margin-call-level` (SIGNED). */
-  async setMarginCallLevelUserData(params: { marginCallLevel: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/portfolio/margin-call-level", params, 'signed');
+  async setMarginCallLevelUserData(params: { marginCallLevel: number }): Promise<portfolioProWave6Types.setMarginCallLevelUserDataResponse> {
+    return this.http.post("/sapi/v1/portfolio/margin-call-level", params, 'signed').then(d => portfolioProWave6Types.setMarginCallLevelUserDataResponseSchema.parse(d));
   }
 }

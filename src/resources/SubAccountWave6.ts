@@ -1,4 +1,5 @@
 import { HttpClient } from '../client/HttpClient.js';
+import * as subaccountWave6Types from '../types/subaccountWave6.wave7.types.js';
 
 /**
  * Binance subaccount Wave-6 gap-closure resource.
@@ -16,167 +17,167 @@ export class SubAccountWave6 {
   constructor(private readonly http: HttpClient) {}
 
   /** Binance Sub Account REST API → Api-Management > Delete IP List For a Sub-account API Key (For Master Account) (USER_DATA). `DELETE /sapi/v1/sub-account/subAccountApi/ipRestriction/ipList` (SIGNED). */
-  async deleteIpListForASubAccountApiKeyForMasterAccountUserData(params: { email: string | number; subAccountApiKey: string | number; ipAddress: string | number }): Promise<unknown> {
-    return this.http.delete("/sapi/v1/sub-account/subAccountApi/ipRestriction/ipList", params, 'signed');
+  async deleteIpListForASubAccountApiKeyForMasterAccountUserData(params: { email: string | number; subAccountApiKey: string | number; ipAddress: string | number }): Promise<subaccountWave6Types.deleteIpListForASubAccountApiKeyForMasterAccountUserDataResponse> {
+    return this.http.delete("/sapi/v1/sub-account/subAccountApi/ipRestriction/ipList", params, 'signed').then(d => subaccountWave6Types.deleteIpListForASubAccountApiKeyForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Managed-Sub-Account > Query Managed Sub-account Snapshot (For Investor Master Account) (USER_DATA). `GET /sapi/v1/managed-subaccount/accountSnapshot` (SIGNED). */
-  async queryManagedSubAccountSnapshotForInvestorMasterAccountUserData(params: { email: string | number; type: string | number; startTime?: number; endTime?: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/managed-subaccount/accountSnapshot", params, 'signed');
+  async queryManagedSubAccountSnapshotForInvestorMasterAccountUserData(params: { email: string | number; type: string | number; startTime?: number; endTime?: number; limit?: number }): Promise<subaccountWave6Types.queryManagedSubAccountSnapshotForInvestorMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/managed-subaccount/accountSnapshot", params, 'signed').then(d => subaccountWave6Types.queryManagedSubAccountSnapshotForInvestorMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Managed-Sub-Account > Query Managed Sub-account Asset Details (For Investor Master Account) (USER_DATA). `GET /sapi/v1/managed-subaccount/asset` (SIGNED). */
-  async queryManagedSubAccountAssetDetailsForInvestorMasterAccountUserData(params: { email: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/managed-subaccount/asset", params, 'signed');
+  async queryManagedSubAccountAssetDetailsForInvestorMasterAccountUserData(params: { email: string | number }): Promise<subaccountWave6Types.queryManagedSubAccountAssetDetailsForInvestorMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/managed-subaccount/asset", params, 'signed').then(d => subaccountWave6Types.queryManagedSubAccountAssetDetailsForInvestorMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Managed-Sub-Account > Get Managed Sub-account Deposit Address (For Investor Master Account) (USER_DATA). `GET /sapi/v1/managed-subaccount/deposit/address` (SIGNED). */
-  async getManagedSubAccountDepositAddressForInvestorMasterAccountUserData(params: { email: string | number; coin: string | number; network?: string | number; amount?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/managed-subaccount/deposit/address", params, 'signed');
+  async getManagedSubAccountDepositAddressForInvestorMasterAccountUserData(params: { email: string | number; coin: string | number; network?: string | number; amount?: number }): Promise<subaccountWave6Types.getManagedSubAccountDepositAddressForInvestorMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/managed-subaccount/deposit/address", params, 'signed').then(d => subaccountWave6Types.getManagedSubAccountDepositAddressForInvestorMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Managed-Sub-Account > Query Managed Sub-account Futures Asset Details (For Investor Master Account) (USER_DATA). `GET /sapi/v1/managed-subaccount/fetch-future-asset` (SIGNED). */
-  async queryManagedSubAccountFuturesAssetDetailsForInvestorMasterAccountUserData(params: { email: string | number; accountType?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/managed-subaccount/fetch-future-asset", params, 'signed');
+  async queryManagedSubAccountFuturesAssetDetailsForInvestorMasterAccountUserData(params: { email: string | number; accountType?: string | number }): Promise<subaccountWave6Types.queryManagedSubAccountFuturesAssetDetailsForInvestorMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/managed-subaccount/fetch-future-asset", params, 'signed').then(d => subaccountWave6Types.queryManagedSubAccountFuturesAssetDetailsForInvestorMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Managed-Sub-Account > Query Managed Sub-account List (For Investor) (USER_DATA). `GET /sapi/v1/managed-subaccount/info` (SIGNED). */
-  async queryManagedSubAccountListForInvestorUserData(params: { email?: string | number; page?: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/managed-subaccount/info", params, 'signed');
+  async queryManagedSubAccountListForInvestorUserData(params: { email?: string | number; page?: number; limit?: number }): Promise<subaccountWave6Types.queryManagedSubAccountListForInvestorUserDataResponse> {
+    return this.http.get("/sapi/v1/managed-subaccount/info", params, 'signed').then(d => subaccountWave6Types.queryManagedSubAccountListForInvestorUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Managed-Sub-Account > Query Managed Sub-account Margin Asset Details (For Investor Master Account) (USER_DATA). `GET /sapi/v1/managed-subaccount/marginAsset` (SIGNED). */
-  async queryManagedSubAccountMarginAssetDetailsForInvestorMasterAccountUserData(params: { email: string | number; accountType?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/managed-subaccount/marginAsset", params, 'signed');
+  async queryManagedSubAccountMarginAssetDetailsForInvestorMasterAccountUserData(params: { email: string | number; accountType?: string | number }): Promise<subaccountWave6Types.queryManagedSubAccountMarginAssetDetailsForInvestorMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/managed-subaccount/marginAsset", params, 'signed').then(d => subaccountWave6Types.queryManagedSubAccountMarginAssetDetailsForInvestorMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Managed-Sub-Account > Query Managed Sub Account Transfer Log (For Trading Team Sub Account) (USER_DATA). `GET /sapi/v1/managed-subaccount/query-trans-log` (SIGNED). */
-  async queryManagedSubAccountTransferLogForTradingTeamSubAccountUserData(params: { startTime: number; endTime: number; page: number; limit: number; transfers?: string | number; transferFunctionAccountType?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/managed-subaccount/query-trans-log", params, 'signed');
+  async queryManagedSubAccountTransferLogForTradingTeamSubAccountUserData(params: { startTime: number; endTime: number; page: number; limit: number; transfers?: string | number; transferFunctionAccountType?: string | number }): Promise<subaccountWave6Types.queryManagedSubAccountTransferLogForTradingTeamSubAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/managed-subaccount/query-trans-log", params, 'signed').then(d => subaccountWave6Types.queryManagedSubAccountTransferLogForTradingTeamSubAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Managed-Sub-Account > Query Managed Sub Account Transfer Log (For Investor Master Account) (USER_DATA). `GET /sapi/v1/managed-subaccount/queryTransLogForInvestor` (SIGNED). */
-  async queryManagedSubAccountTransferLogForInvestorMasterAccountUserData(params: { email: string | number; startTime: number; endTime: number; page: number; limit: number; transfers?: string | number; transferFunctionAccountType?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/managed-subaccount/queryTransLogForInvestor", params, 'signed');
+  async queryManagedSubAccountTransferLogForInvestorMasterAccountUserData(params: { email: string | number; startTime: number; endTime: number; page: number; limit: number; transfers?: string | number; transferFunctionAccountType?: string | number }): Promise<subaccountWave6Types.queryManagedSubAccountTransferLogForInvestorMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/managed-subaccount/queryTransLogForInvestor", params, 'signed').then(d => subaccountWave6Types.queryManagedSubAccountTransferLogForInvestorMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Managed-Sub-Account > Query Managed Sub Account Transfer Log (For Trading Team Master Account) (USER_DATA). `GET /sapi/v1/managed-subaccount/queryTransLogForTradeParent` (SIGNED). */
-  async queryManagedSubAccountTransferLogForTradingTeamMasterAccountUserData(params: { email: string | number; startTime: number; endTime: number; page: number; limit: number; transfers?: string | number; transferFunctionAccountType?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/managed-subaccount/queryTransLogForTradeParent", params, 'signed');
+  async queryManagedSubAccountTransferLogForTradingTeamMasterAccountUserData(params: { email: string | number; startTime: number; endTime: number; page: number; limit: number; transfers?: string | number; transferFunctionAccountType?: string | number }): Promise<subaccountWave6Types.queryManagedSubAccountTransferLogForTradingTeamMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/managed-subaccount/queryTransLogForTradeParent", params, 'signed').then(d => subaccountWave6Types.queryManagedSubAccountTransferLogForTradingTeamMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Get Detail on Sub-account's Futures Account (For Master Account) (USER_DATA). `GET /sapi/v1/sub-account/futures/account` (SIGNED). */
-  async getDetailOnSubAccountSFuturesAccountForMasterAccountUserData(params: { email: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/sub-account/futures/account", params, 'signed');
+  async getDetailOnSubAccountSFuturesAccountForMasterAccountUserData(params: { email: string | number }): Promise<subaccountWave6Types.getDetailOnSubAccountSFuturesAccountForMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/sub-account/futures/account", params, 'signed').then(d => subaccountWave6Types.getDetailOnSubAccountSFuturesAccountForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Get Summary of Sub-account's Futures Account (For Master Account) (USER_DATA). `GET /sapi/v1/sub-account/futures/accountSummary` (SIGNED). */
-  async getSummaryOfSubAccountSFuturesAccountForMasterAccountUserData(params: { page: number; limit: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/sub-account/futures/accountSummary", params, 'signed');
+  async getSummaryOfSubAccountSFuturesAccountForMasterAccountUserData(params: { page: number; limit: number }): Promise<subaccountWave6Types.getSummaryOfSubAccountSFuturesAccountForMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/sub-account/futures/accountSummary", params, 'signed').then(d => subaccountWave6Types.getSummaryOfSubAccountSFuturesAccountForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Query Sub-account Futures Asset Transfer History (For Master Account) (USER_DATA). `GET /sapi/v1/sub-account/futures/internalTransfer` (SIGNED). */
-  async querySubAccountFuturesAssetTransferHistoryForMasterAccountUserData(params: { email: string | number; futuresType: number; startTime?: number; endTime?: number; page?: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/sub-account/futures/internalTransfer", params, 'signed');
+  async querySubAccountFuturesAssetTransferHistoryForMasterAccountUserData(params: { email: string | number; futuresType: number; startTime?: number; endTime?: number; page?: number; limit?: number }): Promise<subaccountWave6Types.querySubAccountFuturesAssetTransferHistoryForMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/sub-account/futures/internalTransfer", params, 'signed').then(d => subaccountWave6Types.querySubAccountFuturesAssetTransferHistoryForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Get Move Position History for Sub-account (For Master Account) (USER_DATA). `GET /sapi/v1/sub-account/futures/move-position` (SIGNED). */
-  async getMovePositionHistoryForSubAccountForMasterAccountUserData(params: { symbol: string | number; startTime?: number; endTime?: number; page: number; rows: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/sub-account/futures/move-position", params, 'signed');
+  async getMovePositionHistoryForSubAccountForMasterAccountUserData(params: { symbol: string | number; startTime?: number; endTime?: number; page: number; rows: number }): Promise<subaccountWave6Types.getMovePositionHistoryForSubAccountForMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/sub-account/futures/move-position", params, 'signed').then(d => subaccountWave6Types.getMovePositionHistoryForSubAccountForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Account-Management > Get Futures Position-Risk of Sub-account (For Master Account) (USER_DATA). `GET /sapi/v1/sub-account/futures/positionRisk` (SIGNED). */
-  async getFuturesPositionRiskOfSubAccountForMasterAccountUserData(params: { email: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/sub-account/futures/positionRisk", params, 'signed');
+  async getFuturesPositionRiskOfSubAccountForMasterAccountUserData(params: { email: string | number }): Promise<subaccountWave6Types.getFuturesPositionRiskOfSubAccountForMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/sub-account/futures/positionRisk", params, 'signed').then(d => subaccountWave6Types.getFuturesPositionRiskOfSubAccountForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Get Summary of Sub-account's Margin Account (For Master Account) (USER_DATA). `GET /sapi/v1/sub-account/margin/accountSummary` (SIGNED). */
-  async getSummaryOfSubAccountSMarginAccountForMasterAccountUserData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/sub-account/margin/accountSummary", undefined, 'signed');
+  async getSummaryOfSubAccountSMarginAccountForMasterAccountUserData(): Promise<subaccountWave6Types.getSummaryOfSubAccountSMarginAccountForMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/sub-account/margin/accountSummary", undefined, 'signed').then(d => subaccountWave6Types.getSummaryOfSubAccountSMarginAccountForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Query Sub-account Spot Asset Transfer History (For Master Account) (USER_DATA). `GET /sapi/v1/sub-account/sub/transfer/history` (SIGNED). */
-  async querySubAccountSpotAssetTransferHistoryForMasterAccountUserData(params: { fromEmail?: string | number; toEmail?: string | number; startTime?: number; endTime?: number; page?: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/sub-account/sub/transfer/history", params, 'signed');
+  async querySubAccountSpotAssetTransferHistoryForMasterAccountUserData(params: { fromEmail?: string | number; toEmail?: string | number; startTime?: number; endTime?: number; page?: number; limit?: number }): Promise<subaccountWave6Types.querySubAccountSpotAssetTransferHistoryForMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/sub-account/sub/transfer/history", params, 'signed').then(d => subaccountWave6Types.querySubAccountSpotAssetTransferHistoryForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Api-Management > Get IP Restriction for a Sub-account API Key (For Master Account) (USER_DATA). `GET /sapi/v1/sub-account/subAccountApi/ipRestriction` (SIGNED). */
-  async getIpRestrictionForASubAccountApiKeyForMasterAccountUserData(params: { email: string | number; subAccountApiKey: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/sub-account/subAccountApi/ipRestriction", params, 'signed');
+  async getIpRestrictionForASubAccountApiKeyForMasterAccountUserData(params: { email: string | number; subAccountApiKey: string | number }): Promise<subaccountWave6Types.getIpRestrictionForASubAccountApiKeyForMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/sub-account/subAccountApi/ipRestriction", params, 'signed').then(d => subaccountWave6Types.getIpRestrictionForASubAccountApiKeyForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Account-Management > Query Sub-account Transaction Statistics (For Master Account) (USER_DATA). `GET /sapi/v1/sub-account/transaction-statistics` (SIGNED). */
-  async querySubAccountTransactionStatisticsForMasterAccountUserData(params: { email?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/sub-account/transaction-statistics", params, 'signed');
+  async querySubAccountTransactionStatisticsForMasterAccountUserData(params: { email?: string | number }): Promise<subaccountWave6Types.querySubAccountTransactionStatisticsForMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/sub-account/transaction-statistics", params, 'signed').then(d => subaccountWave6Types.querySubAccountTransactionStatisticsForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Sub-account Transfer History (For Sub-account) (USER_DATA). `GET /sapi/v1/sub-account/transfer/subUserHistory` (SIGNED). */
-  async subAccountTransferHistoryForSubAccountUserData(params: { asset?: string | number; type?: number; startTime?: number; endTime?: number; limit?: number; returnFailHistory?: boolean }): Promise<unknown> {
-    return this.http.get("/sapi/v1/sub-account/transfer/subUserHistory", params, 'signed');
+  async subAccountTransferHistoryForSubAccountUserData(params: { asset?: string | number; type?: number; startTime?: number; endTime?: number; limit?: number; returnFailHistory?: boolean }): Promise<subaccountWave6Types.subAccountTransferHistoryForSubAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/sub-account/transfer/subUserHistory", params, 'signed').then(d => subaccountWave6Types.subAccountTransferHistoryForSubAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Get Detail on Sub-account's Futures Account V2 (For Master Account) (USER_DATA). `GET /sapi/v2/sub-account/futures/account` (SIGNED). */
-  async getDetailOnSubAccountSFuturesAccountV2ForMasterAccountUserData(params: { email: string | number; futuresType: number }): Promise<unknown> {
-    return this.http.get("/sapi/v2/sub-account/futures/account", params, 'signed');
+  async getDetailOnSubAccountSFuturesAccountV2ForMasterAccountUserData(params: { email: string | number; futuresType: number }): Promise<subaccountWave6Types.getDetailOnSubAccountSFuturesAccountV2ForMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v2/sub-account/futures/account", params, 'signed').then(d => subaccountWave6Types.getDetailOnSubAccountSFuturesAccountV2ForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Account-Management > Get Futures Position-Risk of Sub-account V2 (For Master Account) (USER_DATA). `GET /sapi/v2/sub-account/futures/positionRisk` (SIGNED). */
-  async getFuturesPositionRiskOfSubAccountV2ForMasterAccountUserData(params: { email: string | number; futuresType: number }): Promise<unknown> {
-    return this.http.get("/sapi/v2/sub-account/futures/positionRisk", params, 'signed');
+  async getFuturesPositionRiskOfSubAccountV2ForMasterAccountUserData(params: { email: string | number; futuresType: number }): Promise<subaccountWave6Types.getFuturesPositionRiskOfSubAccountV2ForMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v2/sub-account/futures/positionRisk", params, 'signed').then(d => subaccountWave6Types.getFuturesPositionRiskOfSubAccountV2ForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Query Sub-account Assets (For Master Account) (USER_DATA). `GET /sapi/v4/sub-account/assets` (SIGNED). */
-  async querySubAccountAssetsForMasterAccountUserData(params: { email: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v4/sub-account/assets", params, 'signed');
+  async querySubAccountAssetsForMasterAccountUserData(params: { email: string | number }): Promise<subaccountWave6Types.querySubAccountAssetsForMasterAccountUserDataResponse> {
+    return this.http.get("/sapi/v4/sub-account/assets", params, 'signed').then(d => subaccountWave6Types.querySubAccountAssetsForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Managed-Sub-Account > Deposit Assets Into The Managed Sub-account (For Investor Master Account) (USER_DATA). `POST /sapi/v1/managed-subaccount/deposit` (SIGNED). */
-  async depositAssetsIntoTheManagedSubAccountForInvestorMasterAccountUserData(params: { toEmail: string | number; asset: string | number; amount: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/managed-subaccount/deposit", params, 'signed');
+  async depositAssetsIntoTheManagedSubAccountForInvestorMasterAccountUserData(params: { toEmail: string | number; asset: string | number; amount: number }): Promise<subaccountWave6Types.depositAssetsIntoTheManagedSubAccountForInvestorMasterAccountUserDataResponse> {
+    return this.http.post("/sapi/v1/managed-subaccount/deposit", params, 'signed').then(d => subaccountWave6Types.depositAssetsIntoTheManagedSubAccountForInvestorMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Managed-Sub-Account > Withdrawl Assets From The Managed Sub-account (For Investor Master Account) (USER_DATA). `POST /sapi/v1/managed-subaccount/withdraw` (SIGNED). */
-  async withdrawlAssetsFromTheManagedSubAccountForInvestorMasterAccountUserData(params: { fromEmail: string | number; asset: string | number; amount: number; transferDate?: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/managed-subaccount/withdraw", params, 'signed');
+  async withdrawlAssetsFromTheManagedSubAccountForInvestorMasterAccountUserData(params: { fromEmail: string | number; asset: string | number; amount: number; transferDate?: number }): Promise<subaccountWave6Types.withdrawlAssetsFromTheManagedSubAccountForInvestorMasterAccountUserDataResponse> {
+    return this.http.post("/sapi/v1/managed-subaccount/withdraw", params, 'signed').then(d => subaccountWave6Types.withdrawlAssetsFromTheManagedSubAccountForInvestorMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Account-Management > Enable Options for Sub-account (For Master Account) (USER_DATA). `POST /sapi/v1/sub-account/eoptions/enable` (SIGNED). */
-  async enableOptionsForSubAccountForMasterAccountUserData(params: { email: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/sub-account/eoptions/enable", params, 'signed');
+  async enableOptionsForSubAccountForMasterAccountUserData(params: { email: string | number }): Promise<subaccountWave6Types.enableOptionsForSubAccountForMasterAccountUserDataResponse> {
+    return this.http.post("/sapi/v1/sub-account/eoptions/enable", params, 'signed').then(d => subaccountWave6Types.enableOptionsForSubAccountForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Sub-account Futures Asset Transfer (For Master Account) (USER_DATA). `POST /sapi/v1/sub-account/futures/internalTransfer` (SIGNED). */
-  async subAccountFuturesAssetTransferForMasterAccountUserData(params: { fromEmail: string | number; toEmail: string | number; futuresType: number; asset: string | number; amount: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/sub-account/futures/internalTransfer", params, 'signed');
+  async subAccountFuturesAssetTransferForMasterAccountUserData(params: { fromEmail: string | number; toEmail: string | number; futuresType: number; asset: string | number; amount: number }): Promise<subaccountWave6Types.subAccountFuturesAssetTransferForMasterAccountUserDataResponse> {
+    return this.http.post("/sapi/v1/sub-account/futures/internalTransfer", params, 'signed').then(d => subaccountWave6Types.subAccountFuturesAssetTransferForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Move Position for Sub-account (For Master Account) (USER_DATA). `POST /sapi/v1/sub-account/futures/move-position` (SIGNED). */
-  async movePositionForSubAccountForMasterAccountUserData(params: { fromUserEmail: string | number; toUserEmail: string | number; productType: string | number; orderArgs: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/sub-account/futures/move-position", params, 'signed');
+  async movePositionForSubAccountForMasterAccountUserData(params: { fromUserEmail: string | number; toUserEmail: string | number; productType: string | number; orderArgs: string | number }): Promise<subaccountWave6Types.movePositionForSubAccountForMasterAccountUserDataResponse> {
+    return this.http.post("/sapi/v1/sub-account/futures/move-position", params, 'signed').then(d => subaccountWave6Types.movePositionForSubAccountForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Futures Transfer for Sub-account (For Master Account) (USER_DATA). `POST /sapi/v1/sub-account/futures/transfer` (SIGNED). */
-  async futuresTransferForSubAccountForMasterAccountUserData(params: { email: string | number; asset: string | number; amount: number; type: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/sub-account/futures/transfer", params, 'signed');
+  async futuresTransferForSubAccountForMasterAccountUserData(params: { email: string | number; asset: string | number; amount: number; type: number }): Promise<subaccountWave6Types.futuresTransferForSubAccountForMasterAccountUserDataResponse> {
+    return this.http.post("/sapi/v1/sub-account/futures/transfer", params, 'signed').then(d => subaccountWave6Types.futuresTransferForSubAccountForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Margin Transfer for Sub-account (For Master Account) (USER_DATA). `POST /sapi/v1/sub-account/margin/transfer` (SIGNED). */
-  async marginTransferForSubAccountForMasterAccountUserData(params: { email: string | number; asset: string | number; amount: number; type: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/sub-account/margin/transfer", params, 'signed');
+  async marginTransferForSubAccountForMasterAccountUserData(params: { email: string | number; asset: string | number; amount: number; type: number }): Promise<subaccountWave6Types.marginTransferForSubAccountForMasterAccountUserDataResponse> {
+    return this.http.post("/sapi/v1/sub-account/margin/transfer", params, 'signed').then(d => subaccountWave6Types.marginTransferForSubAccountForMasterAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Transfer to Master (For Sub-account) (USER_DATA). `POST /sapi/v1/sub-account/transfer/subToMaster` (SIGNED). */
-  async transferToMasterForSubAccountUserData(params: { asset: string | number; amount: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/sub-account/transfer/subToMaster", params, 'signed');
+  async transferToMasterForSubAccountUserData(params: { asset: string | number; amount: number }): Promise<subaccountWave6Types.transferToMasterForSubAccountUserDataResponse> {
+    return this.http.post("/sapi/v1/sub-account/transfer/subToMaster", params, 'signed').then(d => subaccountWave6Types.transferToMasterForSubAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Asset-Management > Transfer to Sub-account of Same Master (For Sub-account) (USER_DATA). `POST /sapi/v1/sub-account/transfer/subToSub` (SIGNED). */
-  async transferToSubAccountOfSameMasterForSubAccountUserData(params: { toEmail: string | number; asset: string | number; amount: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/sub-account/transfer/subToSub", params, 'signed');
+  async transferToSubAccountOfSameMasterForSubAccountUserData(params: { toEmail: string | number; asset: string | number; amount: number }): Promise<subaccountWave6Types.transferToSubAccountOfSameMasterForSubAccountUserDataResponse> {
+    return this.http.post("/sapi/v1/sub-account/transfer/subToSub", params, 'signed').then(d => subaccountWave6Types.transferToSubAccountOfSameMasterForSubAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Sub Account REST API → Api-Management > Add IP Restriction for Sub-Account API key (For Master Account) (USER_DATA). `POST /sapi/v2/sub-account/subAccountApi/ipRestriction` (SIGNED). */
-  async addIpRestrictionForSubAccountApiKeyForMasterAccountUserData(params: { email: string | number; subAccountApiKey: string | number; status: string | number; ipAddress?: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v2/sub-account/subAccountApi/ipRestriction", params, 'signed');
+  async addIpRestrictionForSubAccountApiKeyForMasterAccountUserData(params: { email: string | number; subAccountApiKey: string | number; status: string | number; ipAddress?: string | number }): Promise<subaccountWave6Types.addIpRestrictionForSubAccountApiKeyForMasterAccountUserDataResponse> {
+    return this.http.post("/sapi/v2/sub-account/subAccountApi/ipRestriction", params, 'signed').then(d => subaccountWave6Types.addIpRestrictionForSubAccountApiKeyForMasterAccountUserDataResponseSchema.parse(d));
   }
 }

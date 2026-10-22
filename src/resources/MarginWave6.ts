@@ -1,4 +1,5 @@
 import { HttpClient } from '../client/HttpClient.js';
+import * as marginWave6Types from '../types/marginWave6.wave7.types.js';
 
 /**
  * Binance margin Wave-6 gap-closure resource.
@@ -16,227 +17,227 @@ export class MarginWave6 {
   constructor(private readonly http: HttpClient) {}
 
   /** Binance Margin Trading REST API → Trade > Delete Special Key(Low-Latency Trading)(TRADE). `DELETE /sapi/v1/margin/apiKey` (SIGNED). */
-  async deleteSpecialKeyLowLatencyTradingTrade(params: { apiName?: string | number; symbol?: string | number }): Promise<unknown> {
-    return this.http.delete("/sapi/v1/margin/apiKey", params, 'signed');
+  async deleteSpecialKeyLowLatencyTradingTrade(params: { apiName?: string | number; symbol?: string | number }): Promise<marginWave6Types.deleteSpecialKeyLowLatencyTradingTradeResponse> {
+    return this.http.delete("/sapi/v1/margin/apiKey", params, 'signed').then(d => marginWave6Types.deleteSpecialKeyLowLatencyTradingTradeResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Account > Disable Isolated Margin Account (TRADE). `DELETE /sapi/v1/margin/isolated/account` (SIGNED). */
-  async disableIsolatedMarginAccountTrade(params: { symbol: string | number }): Promise<unknown> {
-    return this.http.delete("/sapi/v1/margin/isolated/account", params, 'signed');
+  async disableIsolatedMarginAccountTrade(params: { symbol: string | number }): Promise<marginWave6Types.disableIsolatedMarginAccountTradeResponse> {
+    return this.http.delete("/sapi/v1/margin/isolated/account", params, 'signed').then(d => marginWave6Types.disableIsolatedMarginAccountTradeResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Risk-Data-Stream > Close User Data Stream (USER_STREAM). `DELETE /sapi/v1/margin/listen-key` (APIKEY). */
-  async closeUserDataStreamUserStream(): Promise<unknown> {
-    return this.http.delete("/sapi/v1/margin/listen-key", undefined, 'apiKey');
+  async closeUserDataStreamUserStream(): Promise<marginWave6Types.closeUserDataStreamUserStreamResponse> {
+    return this.http.delete("/sapi/v1/margin/listen-key", undefined, 'apiKey').then(d => marginWave6Types.closeUserDataStreamUserStreamResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Margin Account Cancel OCO (TRADE). `DELETE /sapi/v1/margin/orderList` (SIGNED). */
-  async marginAccountCancelOcoTrade(params: { symbol: string | number; isIsolated?: boolean; orderListId?: number; listClientOrderId?: number; newClientOrderId?: number }): Promise<unknown> {
-    return this.http.delete("/sapi/v1/margin/orderList", params, 'signed');
+  async marginAccountCancelOcoTrade(params: { symbol: string | number; isIsolated?: boolean; orderListId?: number; listClientOrderId?: number; newClientOrderId?: number }): Promise<marginWave6Types.marginAccountCancelOcoTradeResponse> {
+    return this.http.delete("/sapi/v1/margin/orderList", params, 'signed').then(d => marginWave6Types.marginAccountCancelOcoTradeResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Account > Get BNB Burn Status (USER_DATA). `GET /sapi/v1/bnbBurn` (SIGNED). */
-  async getBnbBurnStatusUserData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/bnbBurn", undefined, 'signed');
+  async getBnbBurnStatusUserData(): Promise<marginWave6Types.getBnbBurnStatusUserDataResponse> {
+    return this.http.get("/sapi/v1/bnbBurn", undefined, 'signed').then(d => marginWave6Types.getBnbBurnStatusUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Market-Data > Get All Margin Assets (MARKET_DATA). `GET /sapi/v1/margin/allAssets` (APIKEY). */
-  async getAllMarginAssetsMarketData(params: { asset?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/allAssets", params, 'apiKey');
+  async getAllMarginAssetsMarketData(params: { asset?: string | number }): Promise<marginWave6Types.getAllMarginAssetsMarketDataResponse> {
+    return this.http.get("/sapi/v1/margin/allAssets", params, 'apiKey').then(d => marginWave6Types.getAllMarginAssetsMarketDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Query Margin Account's all OCO (USER_DATA). `GET /sapi/v1/margin/allOrderList` (SIGNED). */
-  async queryMarginAccountSAllOcoUserData(params: { isIsolated?: boolean; symbol?: string | number; fromId?: number; startTime?: number; endTime?: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/allOrderList", params, 'signed');
+  async queryMarginAccountSAllOcoUserData(params: { isIsolated?: boolean; symbol?: string | number; fromId?: number; startTime?: number; endTime?: number; limit?: number }): Promise<marginWave6Types.queryMarginAccountSAllOcoUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/allOrderList", params, 'signed').then(d => marginWave6Types.queryMarginAccountSAllOcoUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Market-Data > Get All Cross Margin Pairs (MARKET_DATA). `GET /sapi/v1/margin/allPairs` (APIKEY). */
-  async getAllCrossMarginPairsMarketData(params: { symbol?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/allPairs", params, 'apiKey');
+  async getAllCrossMarginPairsMarketData(params: { symbol?: string | number }): Promise<marginWave6Types.getAllCrossMarginPairsMarketDataResponse> {
+    return this.http.get("/sapi/v1/margin/allPairs", params, 'apiKey').then(d => marginWave6Types.getAllCrossMarginPairsMarketDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Query Special key List(Low Latency Trading)(TRADE). `GET /sapi/v1/margin/api-key-list` (SIGNED). */
-  async querySpecialKeyListLowLatencyTradingTrade(params: { symbol?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/api-key-list", params, 'signed');
+  async querySpecialKeyListLowLatencyTradingTrade(params: { symbol?: string | number }): Promise<marginWave6Types.querySpecialKeyListLowLatencyTradingTradeResponse> {
+    return this.http.get("/sapi/v1/margin/api-key-list", params, 'signed').then(d => marginWave6Types.querySpecialKeyListLowLatencyTradingTradeResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Query Special key(Low Latency Trading)(TRADE). `GET /sapi/v1/margin/apiKey` (SIGNED). */
-  async querySpecialKeyLowLatencyTradingTrade(params: { symbol?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/apiKey", params, 'signed');
+  async querySpecialKeyLowLatencyTradingTrade(params: { symbol?: string | number }): Promise<marginWave6Types.querySpecialKeyLowLatencyTradingTradeResponse> {
+    return this.http.get("/sapi/v1/margin/apiKey", params, 'signed').then(d => marginWave6Types.querySpecialKeyLowLatencyTradingTradeResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Market-Data > Query Margin Available Inventory(USER_DATA). `GET /sapi/v1/margin/available-inventory` (SIGNED). */
-  async queryMarginAvailableInventoryUserData(params: { type: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/available-inventory", params, 'signed');
+  async queryMarginAvailableInventoryUserData(params: { type: string | number }): Promise<marginWave6Types.queryMarginAvailableInventoryUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/available-inventory", params, 'signed').then(d => marginWave6Types.queryMarginAvailableInventoryUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Account > Query Cross Isolated Margin Capital Flow (USER_DATA). `GET /sapi/v1/margin/capital-flow` (SIGNED). */
-  async queryCrossIsolatedMarginCapitalFlowUserData(params: { asset?: string | number; symbol?: string | number; type?: string | number; startTime?: number; endTime?: number; fromId?: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/capital-flow", params, 'signed');
+  async queryCrossIsolatedMarginCapitalFlowUserData(params: { asset?: string | number; symbol?: string | number; type?: string | number; startTime?: number; endTime?: number; fromId?: number; limit?: number }): Promise<marginWave6Types.queryCrossIsolatedMarginCapitalFlowUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/capital-flow", params, 'signed').then(d => marginWave6Types.queryCrossIsolatedMarginCapitalFlowUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Market-Data > Cross margin collateral ratio (MARKET_DATA). `GET /sapi/v1/margin/crossMarginCollateralRatio` (APIKEY). */
-  async crossMarginCollateralRatioMarketData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/crossMarginCollateralRatio", undefined, 'apiKey');
+  async crossMarginCollateralRatioMarketData(): Promise<marginWave6Types.crossMarginCollateralRatioMarketDataResponse> {
+    return this.http.get("/sapi/v1/margin/crossMarginCollateralRatio", undefined, 'apiKey').then(d => marginWave6Types.crossMarginCollateralRatioMarketDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Account > Query Cross Margin Fee Data (USER_DATA). `GET /sapi/v1/margin/crossMarginData` (SIGNED). */
-  async queryCrossMarginFeeDataUserData(params: { vipLevel?: number; coin?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/crossMarginData", params, 'signed');
+  async queryCrossMarginFeeDataUserData(params: { vipLevel?: number; coin?: string | number }): Promise<marginWave6Types.queryCrossMarginFeeDataUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/crossMarginData", params, 'signed').then(d => marginWave6Types.queryCrossMarginFeeDataUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Market-Data > Get Delist Schedule (MARKET_DATA). `GET /sapi/v1/margin/delist-schedule` (APIKEY). */
-  async getDelistScheduleMarketData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/delist-schedule", undefined, 'apiKey');
+  async getDelistScheduleMarketData(): Promise<marginWave6Types.getDelistScheduleMarketDataResponse> {
+    return this.http.get("/sapi/v1/margin/delist-schedule", undefined, 'apiKey').then(d => marginWave6Types.getDelistScheduleMarketDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Get Small Liability Exchange Coin List (USER_DATA). `GET /sapi/v1/margin/exchange-small-liability` (SIGNED). */
-  async getSmallLiabilityExchangeCoinListUserData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/exchange-small-liability", undefined, 'signed');
+  async getSmallLiabilityExchangeCoinListUserData(): Promise<marginWave6Types.getSmallLiabilityExchangeCoinListUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/exchange-small-liability", undefined, 'signed').then(d => marginWave6Types.getSmallLiabilityExchangeCoinListUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Get Small Liability Exchange History (USER_DATA). `GET /sapi/v1/margin/exchange-small-liability-history` (SIGNED). */
-  async getSmallLiabilityExchangeHistoryUserData(params: { current: number; size: number; startTime?: number; endTime?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/exchange-small-liability-history", params, 'signed');
+  async getSmallLiabilityExchangeHistoryUserData(params: { current: number; size: number; startTime?: number; endTime?: number }): Promise<marginWave6Types.getSmallLiabilityExchangeHistoryUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/exchange-small-liability-history", params, 'signed').then(d => marginWave6Types.getSmallLiabilityExchangeHistoryUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Borrow-Repay > Query Margin Interest Rate History (USER_DATA). `GET /sapi/v1/margin/interestRateHistory` (SIGNED). */
-  async queryMarginInterestRateHistoryUserData(params: { asset: string | number; vipLevel?: number; startTime?: number; endTime?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/interestRateHistory", params, 'signed');
+  async queryMarginInterestRateHistoryUserData(params: { asset: string | number; vipLevel?: number; startTime?: number; endTime?: number }): Promise<marginWave6Types.queryMarginInterestRateHistoryUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/interestRateHistory", params, 'signed').then(d => marginWave6Types.queryMarginInterestRateHistoryUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Account > Query Enabled Isolated Margin Account Limit (USER_DATA). `GET /sapi/v1/margin/isolated/accountLimit` (SIGNED). */
-  async queryEnabledIsolatedMarginAccountLimitUserData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/isolated/accountLimit", undefined, 'signed');
+  async queryEnabledIsolatedMarginAccountLimitUserData(): Promise<marginWave6Types.queryEnabledIsolatedMarginAccountLimitUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/isolated/accountLimit", undefined, 'signed').then(d => marginWave6Types.queryEnabledIsolatedMarginAccountLimitUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Market-Data > Get All Isolated Margin Symbol(MARKET_DATA). `GET /sapi/v1/margin/isolated/allPairs` (APIKEY). */
-  async getAllIsolatedMarginSymbolMarketData(params: { symbol?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/isolated/allPairs", params, 'apiKey');
+  async getAllIsolatedMarginSymbolMarketData(params: { symbol?: string | number }): Promise<marginWave6Types.getAllIsolatedMarginSymbolMarketDataResponse> {
+    return this.http.get("/sapi/v1/margin/isolated/allPairs", params, 'apiKey').then(d => marginWave6Types.getAllIsolatedMarginSymbolMarketDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Account > Query Isolated Margin Fee Data (USER_DATA). `GET /sapi/v1/margin/isolatedMarginData` (SIGNED). */
-  async queryIsolatedMarginFeeDataUserData(params: { vipLevel?: number; symbol?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/isolatedMarginData", params, 'signed');
+  async queryIsolatedMarginFeeDataUserData(params: { vipLevel?: number; symbol?: string | number }): Promise<marginWave6Types.queryIsolatedMarginFeeDataUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/isolatedMarginData", params, 'signed').then(d => marginWave6Types.queryIsolatedMarginFeeDataUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Market-Data > Query Isolated Margin Tier Data (USER_DATA). `GET /sapi/v1/margin/isolatedMarginTier` (SIGNED). */
-  async queryIsolatedMarginTierDataUserData(params: { symbol: string | number; tier?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/isolatedMarginTier", params, 'signed');
+  async queryIsolatedMarginTierDataUserData(params: { symbol: string | number; tier?: number }): Promise<marginWave6Types.queryIsolatedMarginTierDataUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/isolatedMarginTier", params, 'signed').then(d => marginWave6Types.queryIsolatedMarginTierDataUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Market-Data > Query Liability Coin Leverage Bracket in Cross Margin Pro Mode(MARKET_DATA). `GET /sapi/v1/margin/leverageBracket` (APIKEY). */
-  async queryLiabilityCoinLeverageBracketInCrossMarginProModeMarketData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/leverageBracket", undefined, 'apiKey');
+  async queryLiabilityCoinLeverageBracketInCrossMarginProModeMarketData(): Promise<marginWave6Types.queryLiabilityCoinLeverageBracketInCrossMarginProModeMarketDataResponse> {
+    return this.http.get("/sapi/v1/margin/leverageBracket", undefined, 'apiKey').then(d => marginWave6Types.queryLiabilityCoinLeverageBracketInCrossMarginProModeMarketDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Market-Data > Get Limit Price Pairs(MARKET_DATA). `GET /sapi/v1/margin/limit-price-pairs` (APIKEY). */
-  async getLimitPricePairsMarketData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/limit-price-pairs", undefined, 'apiKey');
+  async getLimitPricePairsMarketData(): Promise<marginWave6Types.getLimitPricePairsMarketDataResponse> {
+    return this.http.get("/sapi/v1/margin/limit-price-pairs", undefined, 'apiKey').then(d => marginWave6Types.getLimitPricePairsMarketDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Market-Data > Get list Schedule (MARKET_DATA). `GET /sapi/v1/margin/list-schedule` (APIKEY). */
-  async getListScheduleMarketData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/list-schedule", undefined, 'apiKey');
+  async getListScheduleMarketData(): Promise<marginWave6Types.getListScheduleMarketDataResponse> {
+    return this.http.get("/sapi/v1/margin/list-schedule", undefined, 'apiKey').then(d => marginWave6Types.getListScheduleMarketDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Query Prevented Matches(USER_DATA). `GET /sapi/v1/margin/myPreventedMatches` (SIGNED). */
-  async queryPreventedMatchesUserData(params: { symbol: string | number; preventedMatchId?: number; orderId?: number; fromPreventedMatchId?: number; isIsolated?: boolean }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/myPreventedMatches", params, 'signed');
+  async queryPreventedMatchesUserData(params: { symbol: string | number; preventedMatchId?: number; orderId?: number; fromPreventedMatchId?: number; isIsolated?: boolean }): Promise<marginWave6Types.queryPreventedMatchesUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/myPreventedMatches", params, 'signed').then(d => marginWave6Types.queryPreventedMatchesUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Borrow-Repay > Get future hourly interest rate (USER_DATA). `GET /sapi/v1/margin/next-hourly-interest-rate` (SIGNED). */
-  async getFutureHourlyInterestRateUserData(params: { assets: string | number; isIsolated: boolean }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/next-hourly-interest-rate", params, 'signed');
+  async getFutureHourlyInterestRateUserData(params: { assets: string | number; isIsolated: boolean }): Promise<marginWave6Types.getFutureHourlyInterestRateUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/next-hourly-interest-rate", params, 'signed').then(d => marginWave6Types.getFutureHourlyInterestRateUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Query Margin Account's Open OCO (USER_DATA). `GET /sapi/v1/margin/openOrderList` (SIGNED). */
-  async queryMarginAccountSOpenOcoUserData(params: { isIsolated?: boolean; symbol?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/openOrderList", params, 'signed');
+  async queryMarginAccountSOpenOcoUserData(params: { isIsolated?: boolean; symbol?: string | number }): Promise<marginWave6Types.queryMarginAccountSOpenOcoUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/openOrderList", params, 'signed').then(d => marginWave6Types.queryMarginAccountSOpenOcoUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Query Margin Account's OCO (USER_DATA). `GET /sapi/v1/margin/orderList` (SIGNED). */
-  async queryMarginAccountSOcoUserData(params: { isIsolated?: boolean; symbol?: string | number; orderListId?: number; origClientOrderId?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/orderList", params, 'signed');
+  async queryMarginAccountSOcoUserData(params: { isIsolated?: boolean; symbol?: string | number; orderListId?: number; origClientOrderId?: number }): Promise<marginWave6Types.queryMarginAccountSOcoUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/orderList", params, 'signed').then(d => marginWave6Types.queryMarginAccountSOcoUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Query Current Margin Order Count Usage (TRADE). `GET /sapi/v1/margin/rateLimit/order` (SIGNED). */
-  async queryCurrentMarginOrderCountUsageTrade(params: { isIsolated?: boolean; symbol?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/rateLimit/order", params, 'signed');
+  async queryCurrentMarginOrderCountUsageTrade(params: { isIsolated?: boolean; symbol?: string | number }): Promise<marginWave6Types.queryCurrentMarginOrderCountUsageTradeResponse> {
+    return this.http.get("/sapi/v1/margin/rateLimit/order", params, 'signed').then(d => marginWave6Types.queryCurrentMarginOrderCountUsageTradeResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Market-Data > Get Margin Restricted Assets (MARKET_DATA). `GET /sapi/v1/margin/restricted-asset` (APIKEY). */
-  async getMarginRestrictedAssetsMarketData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/restricted-asset", undefined, 'apiKey');
+  async getMarginRestrictedAssetsMarketData(): Promise<marginWave6Types.getMarginRestrictedAssetsMarketDataResponse> {
+    return this.http.get("/sapi/v1/margin/restricted-asset", undefined, 'apiKey').then(d => marginWave6Types.getMarginRestrictedAssetsMarketDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Market-Data > Get Margin Asset Risk-Based Liquidation Ratio (MARKET_DATA). `GET /sapi/v1/margin/risk-based-liquidation-ratio` (APIKEY). */
-  async getMarginAssetRiskBasedLiquidationRatioMarketData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/risk-based-liquidation-ratio", undefined, 'apiKey');
+  async getMarginAssetRiskBasedLiquidationRatioMarketData(): Promise<marginWave6Types.getMarginAssetRiskBasedLiquidationRatioMarketDataResponse> {
+    return this.http.get("/sapi/v1/margin/risk-based-liquidation-ratio", undefined, 'apiKey').then(d => marginWave6Types.getMarginAssetRiskBasedLiquidationRatioMarketDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Account > Get Summary of Margin account (USER_DATA). `GET /sapi/v1/margin/tradeCoeff` (SIGNED). */
-  async getSummaryOfMarginAccountUserData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/tradeCoeff", undefined, 'signed');
+  async getSummaryOfMarginAccountUserData(): Promise<marginWave6Types.getSummaryOfMarginAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/tradeCoeff", undefined, 'signed').then(d => marginWave6Types.getSummaryOfMarginAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Transfer > Get Cross Margin Transfer History (USER_DATA). `GET /sapi/v1/margin/transfer` (SIGNED). */
-  async getCrossMarginTransferHistoryUserData(params: { asset?: string | number; type?: string | number; startTime?: number; endTime?: number; current?: number; size?: number; isolatedSymbol?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/margin/transfer", params, 'signed');
+  async getCrossMarginTransferHistoryUserData(params: { asset?: string | number; type?: string | number; startTime?: number; endTime?: number; current?: number; size?: number; isolatedSymbol?: string | number }): Promise<marginWave6Types.getCrossMarginTransferHistoryUserDataResponse> {
+    return this.http.get("/sapi/v1/margin/transfer", params, 'signed').then(d => marginWave6Types.getCrossMarginTransferHistoryUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Create Special Key(Low-Latency Trading)(TRADE). `POST /sapi/v1/margin/apiKey` (SIGNED). */
-  async createSpecialKeyLowLatencyTradingTrade(params: { apiName: string | number; symbol?: string | number; ip?: string | number; publicKey?: string | number; permissionMode?: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/margin/apiKey", params, 'signed');
+  async createSpecialKeyLowLatencyTradingTrade(params: { apiName: string | number; symbol?: string | number; ip?: string | number; publicKey?: string | number; permissionMode?: string | number }): Promise<marginWave6Types.createSpecialKeyLowLatencyTradingTradeResponse> {
+    return this.http.post("/sapi/v1/margin/apiKey", params, 'signed').then(d => marginWave6Types.createSpecialKeyLowLatencyTradingTradeResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Small Liability Exchange (MARGIN). `POST /sapi/v1/margin/exchange-small-liability` (SIGNED). */
-  async smallLiabilityExchangeMargin(params: { assetNames: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/margin/exchange-small-liability", params, 'signed');
+  async smallLiabilityExchangeMargin(params: { assetNames: string | number }): Promise<marginWave6Types.smallLiabilityExchangeMarginResponse> {
+    return this.http.post("/sapi/v1/margin/exchange-small-liability", params, 'signed').then(d => marginWave6Types.smallLiabilityExchangeMarginResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Account > Enable Isolated Margin Account (TRADE). `POST /sapi/v1/margin/isolated/account` (SIGNED). */
-  async enableIsolatedMarginAccountTrade(params: { symbol: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/margin/isolated/account", params, 'signed');
+  async enableIsolatedMarginAccountTrade(params: { symbol: string | number }): Promise<marginWave6Types.enableIsolatedMarginAccountTradeResponse> {
+    return this.http.post("/sapi/v1/margin/isolated/account", params, 'signed').then(d => marginWave6Types.enableIsolatedMarginAccountTradeResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Risk-Data-Stream > Start User Data Stream (USER_STREAM). `POST /sapi/v1/margin/listen-key` (APIKEY). */
-  async startUserDataStreamUserStream(): Promise<unknown> {
-    return this.http.post("/sapi/v1/margin/listen-key", undefined, 'apiKey');
+  async startUserDataStreamUserStream(): Promise<marginWave6Types.startUserDataStreamUserStreamResponse> {
+    return this.http.post("/sapi/v1/margin/listen-key", undefined, 'apiKey').then(d => marginWave6Types.startUserDataStreamUserStreamResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Margin Manual Liquidation(MARGIN). `POST /sapi/v1/margin/manual-liquidation` (SIGNED). */
-  async marginManualLiquidationMargin(params: { type: string | number; symbol?: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/margin/manual-liquidation", params, 'signed');
+  async marginManualLiquidationMargin(params: { type: string | number; symbol?: string | number }): Promise<marginWave6Types.marginManualLiquidationMarginResponse> {
+    return this.http.post("/sapi/v1/margin/manual-liquidation", params, 'signed').then(d => marginWave6Types.marginManualLiquidationMarginResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Account > Adjust cross margin max leverage (USER_DATA). `POST /sapi/v1/margin/max-leverage` (SIGNED). */
-  async adjustCrossMarginMaxLeverageUserData(params: { maxLeverage: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/margin/max-leverage", params, 'signed');
+  async adjustCrossMarginMaxLeverageUserData(params: { maxLeverage: number }): Promise<marginWave6Types.adjustCrossMarginMaxLeverageUserDataResponse> {
+    return this.http.post("/sapi/v1/margin/max-leverage", params, 'signed').then(d => marginWave6Types.adjustCrossMarginMaxLeverageUserDataResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Margin Account New OCO (TRADE). `POST /sapi/v1/margin/order/oco` (SIGNED). */
-  async marginAccountNewOcoTrade(params: { symbol: string | number; isIsolated?: boolean; listClientOrderId?: number; side: 'BUY' | 'SELL'; quantity: number; limitClientOrderId?: number; price: number; limitIcebergQty?: number; stopClientOrderId?: number; stopPrice: number; stopLimitPrice?: number; stopIcebergQty?: number; stopLimitTimeInForce?: string | number; newOrderRespType?: string | number; sideEffectType?: string | number; selfTradePreventionMode?: string | number; autoRepayAtCancel?: boolean }): Promise<unknown> {
-    return this.http.post("/sapi/v1/margin/order/oco", params, 'signed');
+  async marginAccountNewOcoTrade(params: { symbol: string | number; isIsolated?: boolean; listClientOrderId?: number; side: 'BUY' | 'SELL'; quantity: number; limitClientOrderId?: number; price: number; limitIcebergQty?: number; stopClientOrderId?: number; stopPrice: number; stopLimitPrice?: number; stopIcebergQty?: number; stopLimitTimeInForce?: string | number; newOrderRespType?: string | number; sideEffectType?: string | number; selfTradePreventionMode?: string | number; autoRepayAtCancel?: boolean }): Promise<marginWave6Types.marginAccountNewOcoTradeResponse> {
+    return this.http.post("/sapi/v1/margin/order/oco", params, 'signed').then(d => marginWave6Types.marginAccountNewOcoTradeResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Margin Account New OTO (TRADE). `POST /sapi/v1/margin/order/oto` (SIGNED). */
-  async marginAccountNewOtoTrade(params: { symbol: string | number; isIsolated?: boolean; listClientOrderId?: number; newOrderRespType?: string | number; sideEffectType?: string | number; selfTradePreventionMode?: string | number; autoRepayAtCancel?: boolean; workingType: string | number; workingSide: string | number; workingClientOrderId?: number; workingPrice: number; workingQuantity: number; workingIcebergQty: number; workingTimeInForce?: string | number; pendingType: string | number; pendingSide: string | number; pendingClientOrderId?: number; pendingPrice?: number; pendingStopPrice?: number; pendingTrailingDelta?: number; pendingQuantity: number; pendingIcebergQty?: number; pendingTimeInForce?: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/margin/order/oto", params, 'signed');
+  async marginAccountNewOtoTrade(params: { symbol: string | number; isIsolated?: boolean; listClientOrderId?: number; newOrderRespType?: string | number; sideEffectType?: string | number; selfTradePreventionMode?: string | number; autoRepayAtCancel?: boolean; workingType: string | number; workingSide: string | number; workingClientOrderId?: number; workingPrice: number; workingQuantity: number; workingIcebergQty: number; workingTimeInForce?: string | number; pendingType: string | number; pendingSide: string | number; pendingClientOrderId?: number; pendingPrice?: number; pendingStopPrice?: number; pendingTrailingDelta?: number; pendingQuantity: number; pendingIcebergQty?: number; pendingTimeInForce?: string | number }): Promise<marginWave6Types.marginAccountNewOtoTradeResponse> {
+    return this.http.post("/sapi/v1/margin/order/oto", params, 'signed').then(d => marginWave6Types.marginAccountNewOtoTradeResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Margin Account New OTOCO (TRADE). `POST /sapi/v1/margin/order/otoco` (SIGNED). */
-  async marginAccountNewOtocoTrade(params: { symbol: string | number; isIsolated?: boolean; sideEffectType?: string | number; autoRepayAtCancel?: boolean; listClientOrderId?: number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number; workingType: string | number; workingSide: string | number; workingClientOrderId?: number; workingPrice: number; workingQuantity: number; workingIcebergQty?: number; workingTimeInForce?: string | number; pendingSide: string | number; pendingQuantity: number; pendingAboveType: string | number; pendingAboveClientOrderId?: number; pendingAbovePrice?: number; pendingAboveStopPrice?: number; pendingAboveTrailingDelta?: number; pendingAboveIcebergQty?: number; pendingAboveTimeInForce?: string | number; pendingBelowType?: string | number; pendingBelowClientOrderId?: number; pendingBelowPrice?: number; pendingBelowStopPrice?: number; pendingBelowTrailingDelta?: number; pendingBelowIcebergQty?: number; pendingBelowTimeInForce?: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/margin/order/otoco", params, 'signed');
+  async marginAccountNewOtocoTrade(params: { symbol: string | number; isIsolated?: boolean; sideEffectType?: string | number; autoRepayAtCancel?: boolean; listClientOrderId?: number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number; workingType: string | number; workingSide: string | number; workingClientOrderId?: number; workingPrice: number; workingQuantity: number; workingIcebergQty?: number; workingTimeInForce?: string | number; pendingSide: string | number; pendingQuantity: number; pendingAboveType: string | number; pendingAboveClientOrderId?: number; pendingAbovePrice?: number; pendingAboveStopPrice?: number; pendingAboveTrailingDelta?: number; pendingAboveIcebergQty?: number; pendingAboveTimeInForce?: string | number; pendingBelowType?: string | number; pendingBelowClientOrderId?: number; pendingBelowPrice?: number; pendingBelowStopPrice?: number; pendingBelowTrailingDelta?: number; pendingBelowIcebergQty?: number; pendingBelowTimeInForce?: string | number }): Promise<marginWave6Types.marginAccountNewOtocoTradeResponse> {
+    return this.http.post("/sapi/v1/margin/order/otoco", params, 'signed').then(d => marginWave6Types.marginAccountNewOtocoTradeResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Trade > Edit ip for Special Key(Low-Latency Trading)(TRADE). `PUT /sapi/v1/margin/apiKey/ip` (SIGNED). */
-  async editIpForSpecialKeyLowLatencyTradingTrade(params: { symbol?: string | number; ip: string | number }): Promise<unknown> {
-    return this.http.put("/sapi/v1/margin/apiKey/ip", params, 'signed');
+  async editIpForSpecialKeyLowLatencyTradingTrade(params: { symbol?: string | number; ip: string | number }): Promise<marginWave6Types.editIpForSpecialKeyLowLatencyTradingTradeResponse> {
+    return this.http.put("/sapi/v1/margin/apiKey/ip", params, 'signed').then(d => marginWave6Types.editIpForSpecialKeyLowLatencyTradingTradeResponseSchema.parse(d));
   }
 
   /** Binance Margin Trading REST API → Risk-Data-Stream > Keepalive User Data Stream (USER_STREAM). `PUT /sapi/v1/margin/listen-key` (APIKEY). */
-  async keepaliveUserDataStreamUserStream(params: { listenKey: string | number }): Promise<unknown> {
-    return this.http.put("/sapi/v1/margin/listen-key", params, 'apiKey');
+  async keepaliveUserDataStreamUserStream(params: { listenKey: string | number }): Promise<marginWave6Types.keepaliveUserDataStreamUserStreamResponse> {
+    return this.http.put("/sapi/v1/margin/listen-key", params, 'apiKey').then(d => marginWave6Types.keepaliveUserDataStreamUserStreamResponseSchema.parse(d));
   }
 }

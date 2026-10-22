@@ -1,4 +1,5 @@
 import { HttpClient } from '../client/HttpClient.js';
+import * as payTypes from '../types/pay.wave7.types.js';
 
 /**
  * Binance pay REST resource.
@@ -15,7 +16,7 @@ export class PayResource {
   constructor(private readonly http: HttpClient) {}
 
   /** Binance Pay REST API → Pay > Get Pay Trade History. `GET /sapi/v1/pay/transactions` (SIGNED). */
-  async getPayTradeHistory(params: { startTime?: number; endTime?: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/pay/transactions", params, 'signed');
+  async getPayTradeHistory(params: { startTime?: number; endTime?: number; limit?: number }): Promise<payTypes.getPayTradeHistoryResponse> {
+    return this.http.get("/sapi/v1/pay/transactions", params, 'signed').then(d => payTypes.getPayTradeHistoryResponseSchema.parse(d));
   }
 }

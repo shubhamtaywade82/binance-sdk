@@ -1,4 +1,5 @@
 import { HttpClient } from '../client/HttpClient.js';
+import * as optionsWave6Types from '../types/optionsWave6.wave7.types.js';
 
 /**
  * Binance options Wave-6 gap-closure resource.
@@ -16,37 +17,37 @@ export class OptionsWave6 {
   constructor(private readonly http: HttpClient) {}
 
   /** Binance Derivatives Trading Options REST API → Trade > Cancel All Option Orders By Underlying (TRADE). `DELETE /eapi/v1/allOpenOrdersByUnderlying` (SIGNED). */
-  async cancelAllOptionOrdersByUnderlyingTrade(params: { underlying: string | number }): Promise<unknown> {
-    return this.http.delete("/eapi/v1/allOpenOrdersByUnderlying", params, 'signed');
+  async cancelAllOptionOrdersByUnderlyingTrade(params: { underlying: string | number }): Promise<optionsWave6Types.cancelAllOptionOrdersByUnderlyingTradeResponse> {
+    return this.http.delete("/eapi/v1/allOpenOrdersByUnderlying", params, 'signed').then(d => optionsWave6Types.cancelAllOptionOrdersByUnderlyingTradeResponseSchema.parse(d));
   }
 
   /** Binance Derivatives Trading Options REST API → Market-Maker-Block-Trade > Cancel Block Trade Order (TRADE). `DELETE /eapi/v1/block/order/create` (SIGNED). */
-  async cancelBlockTradeOrderTrade(params: { blockOrderMatchingKey: string | number }): Promise<unknown> {
-    return this.http.delete("/eapi/v1/block/order/create", params, 'signed');
+  async cancelBlockTradeOrderTrade(params: { blockOrderMatchingKey: string | number }): Promise<optionsWave6Types.cancelBlockTradeOrderTradeResponse> {
+    return this.http.delete("/eapi/v1/block/order/create", params, 'signed').then(d => optionsWave6Types.cancelBlockTradeOrderTradeResponseSchema.parse(d));
   }
 
   /** Binance Derivatives Trading Options REST API → Market-Maker-Block-Trade > Query Block Trade Details (USER_DATA). `GET /eapi/v1/block/order/execute` (SIGNED). */
-  async queryBlockTradeDetailsUserData(params: { blockOrderMatchingKey: string | number }): Promise<unknown> {
-    return this.http.get("/eapi/v1/block/order/execute", params, 'signed');
+  async queryBlockTradeDetailsUserData(params: { blockOrderMatchingKey: string | number }): Promise<optionsWave6Types.queryBlockTradeDetailsUserDataResponse> {
+    return this.http.get("/eapi/v1/block/order/execute", params, 'signed').then(d => optionsWave6Types.queryBlockTradeDetailsUserDataResponseSchema.parse(d));
   }
 
   /** Binance Derivatives Trading Options REST API → Market-Maker-Endpoints > Get Auto-Cancel All Open Orders (Kill-Switch) Config (TRADE). `GET /eapi/v1/countdownCancelAll` (SIGNED). */
-  async getAutoCancelAllOpenOrdersKillSwitchConfigTrade(params: { underlying?: string | number }): Promise<unknown> {
-    return this.http.get("/eapi/v1/countdownCancelAll", params, 'signed');
+  async getAutoCancelAllOpenOrdersKillSwitchConfigTrade(params: { underlying?: string | number }): Promise<optionsWave6Types.getAutoCancelAllOpenOrdersKillSwitchConfigTradeResponse> {
+    return this.http.get("/eapi/v1/countdownCancelAll", params, 'signed').then(d => optionsWave6Types.getAutoCancelAllOpenOrdersKillSwitchConfigTradeResponseSchema.parse(d));
   }
 
   /** Binance Derivatives Trading Options REST API → Trade > Query Single Order (TRADE). `GET /eapi/v1/order` (SIGNED). */
-  async querySingleOrderTrade(params: { symbol: string | number; orderId?: number; clientOrderId?: number }): Promise<unknown> {
-    return this.http.get("/eapi/v1/order", params, 'signed');
+  async querySingleOrderTrade(params: { symbol: string | number; orderId?: number; clientOrderId?: number }): Promise<optionsWave6Types.querySingleOrderTradeResponse> {
+    return this.http.get("/eapi/v1/order", params, 'signed').then(d => optionsWave6Types.querySingleOrderTradeResponseSchema.parse(d));
   }
 
   /** Binance Derivatives Trading Options REST API → Market-Maker-Endpoints > Auto-Cancel All Open Orders (Kill-Switch) Heartbeat (TRADE). `POST /eapi/v1/countdownCancelAllHeartBeat` (SIGNED). */
-  async autoCancelAllOpenOrdersKillSwitchHeartbeatTrade(params: { underlyings: string | number }): Promise<unknown> {
-    return this.http.post("/eapi/v1/countdownCancelAllHeartBeat", params, 'signed');
+  async autoCancelAllOpenOrdersKillSwitchHeartbeatTrade(params: { underlyings: string | number }): Promise<optionsWave6Types.autoCancelAllOpenOrdersKillSwitchHeartbeatTradeResponse> {
+    return this.http.post("/eapi/v1/countdownCancelAllHeartBeat", params, 'signed').then(d => optionsWave6Types.autoCancelAllOpenOrdersKillSwitchHeartbeatTradeResponseSchema.parse(d));
   }
 
   /** Binance Derivatives Trading Options REST API → Market-Maker-Block-Trade > Extend Block Trade Order (TRADE). `PUT /eapi/v1/block/order/create` (SIGNED). */
-  async extendBlockTradeOrderTrade(params: { blockOrderMatchingKey: string | number }): Promise<unknown> {
-    return this.http.put("/eapi/v1/block/order/create", params, 'signed');
+  async extendBlockTradeOrderTrade(params: { blockOrderMatchingKey: string | number }): Promise<optionsWave6Types.extendBlockTradeOrderTradeResponse> {
+    return this.http.put("/eapi/v1/block/order/create", params, 'signed').then(d => optionsWave6Types.extendBlockTradeOrderTradeResponseSchema.parse(d));
   }
 }

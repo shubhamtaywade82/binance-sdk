@@ -95,6 +95,7 @@
     "contracts:import-postman": "tsx scripts/import-postman-collections.ts",
     "contracts:generate-from-postman": "tsx scripts/generate-sdk-from-postman.ts",
     "contracts:wave6-close-gaps": "tsx scripts/wave6-close-gaps.ts",
+    "contracts:wave7-add-schemas": "tsx scripts/wave7-add-schemas.ts",
     "smoke": "tsx scripts/smoke-test.ts",
     "smoke:testnet": "tsx scripts/testnet-smoke.ts",
     "mcp": "tsx src/mcp/index.ts",

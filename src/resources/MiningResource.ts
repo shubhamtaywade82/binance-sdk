@@ -1,4 +1,5 @@
 import { HttpClient } from '../client/HttpClient.js';
+import * as miningTypes from '../types/mining.wave7.types.js';
 
 /**
  * Binance mining REST resource.
@@ -15,67 +16,67 @@ export class MiningResource {
   constructor(private readonly http: HttpClient) {}
 
   /** Binance Mining REST API → Mining > Hashrate Resale Request(USER_DATA). `POST /sapi/v1/mining/hash-transfer/config` (SIGNED). */
-  async hashrateResaleRequestUserData(params: { userName: string | number; algo: string | number; endDate: number; startDate: number; toPoolUser: string | number; hashRate: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/mining/hash-transfer/config", params, 'signed');
+  async hashrateResaleRequestUserData(params: { userName: string | number; algo: string | number; endDate: number; startDate: number; toPoolUser: string | number; hashRate: number }): Promise<miningTypes.hashrateResaleRequestUserDataResponse> {
+    return this.http.post("/sapi/v1/mining/hash-transfer/config", params, 'signed').then(d => miningTypes.hashrateResaleRequestUserDataResponseSchema.parse(d));
   }
 
   /** Binance Mining REST API → Mining > Cancel hashrate resale configuration(USER_DATA). `POST /sapi/v1/mining/hash-transfer/config/cancel` (SIGNED). */
-  async cancelHashrateResaleConfigurationUserData(params: { configId: number; userName: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/mining/hash-transfer/config/cancel", params, 'signed');
+  async cancelHashrateResaleConfigurationUserData(params: { configId: number; userName: string | number }): Promise<miningTypes.cancelHashrateResaleConfigurationUserDataResponse> {
+    return this.http.post("/sapi/v1/mining/hash-transfer/config/cancel", params, 'signed').then(d => miningTypes.cancelHashrateResaleConfigurationUserDataResponseSchema.parse(d));
   }
 
   /** Binance Mining REST API → Mining > Hashrate Resale List. `GET /sapi/v1/mining/hash-transfer/config/details/list` (SIGNED). */
-  async hashrateResaleList(params: { pageIndex?: number; pageSize?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/mining/hash-transfer/config/details/list", params, 'signed');
+  async hashrateResaleList(params: { pageIndex?: number; pageSize?: number }): Promise<miningTypes.hashrateResaleListResponse> {
+    return this.http.get("/sapi/v1/mining/hash-transfer/config/details/list", params, 'signed').then(d => miningTypes.hashrateResaleListResponseSchema.parse(d));
   }
 
   /** Binance Mining REST API → Mining > Hashrate Resale Detail(USER_DATA). `GET /sapi/v1/mining/hash-transfer/profit/details` (SIGNED). */
-  async hashrateResaleDetailUserData(params: { configId: number; pageIndex?: number; pageSize?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/mining/hash-transfer/profit/details", params, 'signed');
+  async hashrateResaleDetailUserData(params: { configId: number; pageIndex?: number; pageSize?: number }): Promise<miningTypes.hashrateResaleDetailUserDataResponse> {
+    return this.http.get("/sapi/v1/mining/hash-transfer/profit/details", params, 'signed').then(d => miningTypes.hashrateResaleDetailUserDataResponseSchema.parse(d));
   }
 
   /** Binance Mining REST API → Mining > Earnings List(USER_DATA). `GET /sapi/v1/mining/payment/list` (SIGNED). */
-  async earningsListUserData(params: { algo: string | number; userName: string | number; coin?: string; startDate?: number; endDate?: number; pageIndex?: number; pageSize?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/mining/payment/list", params, 'signed');
+  async earningsListUserData(params: { algo: string | number; userName: string | number; coin?: string; startDate?: number; endDate?: number; pageIndex?: number; pageSize?: number }): Promise<miningTypes.earningsListUserDataResponse> {
+    return this.http.get("/sapi/v1/mining/payment/list", params, 'signed').then(d => miningTypes.earningsListUserDataResponseSchema.parse(d));
   }
 
   /** Binance Mining REST API → Mining > Extra Bonus List(USER_DATA). `GET /sapi/v1/mining/payment/other` (SIGNED). */
-  async extraBonusListUserData(params: { algo: string | number; userName: string | number; coin?: string; startDate?: number; endDate?: number; pageIndex?: number; pageSize?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/mining/payment/other", params, 'signed');
+  async extraBonusListUserData(params: { algo: string | number; userName: string | number; coin?: string; startDate?: number; endDate?: number; pageIndex?: number; pageSize?: number }): Promise<miningTypes.extraBonusListUserDataResponse> {
+    return this.http.get("/sapi/v1/mining/payment/other", params, 'signed').then(d => miningTypes.extraBonusListUserDataResponseSchema.parse(d));
   }
 
   /** Binance Mining REST API → Mining > Mining Account Earning(USER_DATA). `GET /sapi/v1/mining/payment/uid` (SIGNED). */
-  async miningAccountEarningUserData(params: { algo: string | number; startDate?: number; endDate?: number; pageIndex?: number; pageSize?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/mining/payment/uid", params, 'signed');
+  async miningAccountEarningUserData(params: { algo: string | number; startDate?: number; endDate?: number; pageIndex?: number; pageSize?: number }): Promise<miningTypes.miningAccountEarningUserDataResponse> {
+    return this.http.get("/sapi/v1/mining/payment/uid", params, 'signed').then(d => miningTypes.miningAccountEarningUserDataResponseSchema.parse(d));
   }
 
   /** Binance Mining REST API → Mining > Acquiring Algorithm(MARKET_DATA). `GET /sapi/v1/mining/pub/algoList` (APIKEY). */
-  async acquiringAlgorithmMarketData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/mining/pub/algoList", undefined, 'apiKey');
+  async acquiringAlgorithmMarketData(): Promise<miningTypes.acquiringAlgorithmMarketDataResponse> {
+    return this.http.get("/sapi/v1/mining/pub/algoList", undefined, 'apiKey').then(d => miningTypes.acquiringAlgorithmMarketDataResponseSchema.parse(d));
   }
 
   /** Binance Mining REST API → Mining > Acquiring CoinName(MARKET_DATA). `GET /sapi/v1/mining/pub/coinList` (APIKEY). */
-  async acquiringCoinnameMarketData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/mining/pub/coinList", undefined, 'apiKey');
+  async acquiringCoinnameMarketData(): Promise<miningTypes.acquiringCoinnameMarketDataResponse> {
+    return this.http.get("/sapi/v1/mining/pub/coinList", undefined, 'apiKey').then(d => miningTypes.acquiringCoinnameMarketDataResponseSchema.parse(d));
   }
 
   /** Binance Mining REST API → Mining > Account List(USER_DATA). `GET /sapi/v1/mining/statistics/user/list` (SIGNED). */
-  async accountListUserData(params: { algo: string | number; userName: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/mining/statistics/user/list", params, 'signed');
+  async accountListUserData(params: { algo: string | number; userName: string | number }): Promise<miningTypes.accountListUserDataResponse> {
+    return this.http.get("/sapi/v1/mining/statistics/user/list", params, 'signed').then(d => miningTypes.accountListUserDataResponseSchema.parse(d));
   }
 
   /** Binance Mining REST API → Mining > Statistic List(USER_DATA). `GET /sapi/v1/mining/statistics/user/status` (SIGNED). */
-  async statisticListUserData(params: { algo: string | number; userName: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/mining/statistics/user/status", params, 'signed');
+  async statisticListUserData(params: { algo: string | number; userName: string | number }): Promise<miningTypes.statisticListUserDataResponse> {
+    return this.http.get("/sapi/v1/mining/statistics/user/status", params, 'signed').then(d => miningTypes.statisticListUserDataResponseSchema.parse(d));
   }
 
   /** Binance Mining REST API → Mining > Request for Detail Miner List(USER_DATA). `GET /sapi/v1/mining/worker/detail` (SIGNED). */
-  async requestForDetailMinerListUserData(params: { algo: string | number; userName: string | number; workerName: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/mining/worker/detail", params, 'signed');
+  async requestForDetailMinerListUserData(params: { algo: string | number; userName: string | number; workerName: string | number }): Promise<miningTypes.requestForDetailMinerListUserDataResponse> {
+    return this.http.get("/sapi/v1/mining/worker/detail", params, 'signed').then(d => miningTypes.requestForDetailMinerListUserDataResponseSchema.parse(d));
   }
 
   /** Binance Mining REST API → Mining > Request for Miner List(USER_DATA). `GET /sapi/v1/mining/worker/list` (SIGNED). */
-  async requestForMinerListUserData(params: { algo: string | number; userName: string | number; pageIndex?: number; sort?: number; sortColumn?: number; workerStatus?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/mining/worker/list", params, 'signed');
+  async requestForMinerListUserData(params: { algo: string | number; userName: string | number; pageIndex?: number; sort?: number; sortColumn?: number; workerStatus?: number }): Promise<miningTypes.requestForMinerListUserDataResponse> {
+    return this.http.get("/sapi/v1/mining/worker/list", params, 'signed').then(d => miningTypes.requestForMinerListUserDataResponseSchema.parse(d));
   }
 }

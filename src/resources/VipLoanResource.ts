@@ -1,4 +1,5 @@
 import { HttpClient } from '../client/HttpClient.js';
+import * as vipLoanTypes from '../types/vipLoan.wave7.types.js';
 
 /**
  * Binance vipLoan REST resource.
@@ -15,57 +16,57 @@ export class VipLoanResource {
   constructor(private readonly http: HttpClient) {}
 
   /** Binance VIP Loan REST API → Trade > VIP Loan Borrow(TRADE). `POST /sapi/v1/loan/vip/borrow` (SIGNED). */
-  async vipLoanBorrowTrade(params: { loanAccountId: number; loanCoin: string | number; loanAmount: number; collateralAccountId: number; collateralCoin: string | number; isFlexibleRate: boolean; loanTerm?: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/loan/vip/borrow", params, 'signed');
+  async vipLoanBorrowTrade(params: { loanAccountId: number; loanCoin: string | number; loanAmount: number; collateralAccountId: number; collateralCoin: string | number; isFlexibleRate: boolean; loanTerm?: number }): Promise<vipLoanTypes.vipLoanBorrowTradeResponse> {
+    return this.http.post("/sapi/v1/loan/vip/borrow", params, 'signed').then(d => vipLoanTypes.vipLoanBorrowTradeResponseSchema.parse(d));
   }
 
   /** Binance VIP Loan REST API → Trade > VIP Loan Renew(TRADE). `POST /sapi/v1/loan/vip/renew` (SIGNED). */
-  async vipLoanRenewTrade(params: { orderId: number; loanTerm: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/loan/vip/renew", params, 'signed');
+  async vipLoanRenewTrade(params: { orderId: number; loanTerm: number }): Promise<vipLoanTypes.vipLoanRenewTradeResponse> {
+    return this.http.post("/sapi/v1/loan/vip/renew", params, 'signed').then(d => vipLoanTypes.vipLoanRenewTradeResponseSchema.parse(d));
   }
 
   /** Binance VIP Loan REST API → Trade > VIP Loan Repay(TRADE). `POST /sapi/v1/loan/vip/repay` (SIGNED). */
-  async vipLoanRepayTrade(params: { orderId: number; amount: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/loan/vip/repay", params, 'signed');
+  async vipLoanRepayTrade(params: { orderId: number; amount: number }): Promise<vipLoanTypes.vipLoanRepayTradeResponse> {
+    return this.http.post("/sapi/v1/loan/vip/repay", params, 'signed').then(d => vipLoanTypes.vipLoanRepayTradeResponseSchema.parse(d));
   }
 
   /** Binance VIP Loan REST API → User-Information > Get VIP Loan Accrued Interest (USER_DATA). `GET /sapi/v1/loan/vip/accruedInterest` (SIGNED). */
-  async getVipLoanAccruedInterestUserData(params: { orderId?: number; loanCoin?: string | number; startTime?: number; endTime?: number; current?: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/loan/vip/accruedInterest", params, 'signed');
+  async getVipLoanAccruedInterestUserData(params: { orderId?: number; loanCoin?: string | number; startTime?: number; endTime?: number; current?: number; limit?: number }): Promise<vipLoanTypes.getVipLoanAccruedInterestUserDataResponse> {
+    return this.http.get("/sapi/v1/loan/vip/accruedInterest", params, 'signed').then(d => vipLoanTypes.getVipLoanAccruedInterestUserDataResponseSchema.parse(d));
   }
 
   /** Binance VIP Loan REST API → User-Information > Check VIP Loan Collateral Account (USER_DATA). `GET /sapi/v1/loan/vip/collateral/account` (SIGNED). */
-  async checkVipLoanCollateralAccountUserData(params: { orderId?: number; collateralAccountId?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/loan/vip/collateral/account", params, 'signed');
+  async checkVipLoanCollateralAccountUserData(params: { orderId?: number; collateralAccountId?: number }): Promise<vipLoanTypes.checkVipLoanCollateralAccountUserDataResponse> {
+    return this.http.get("/sapi/v1/loan/vip/collateral/account", params, 'signed').then(d => vipLoanTypes.checkVipLoanCollateralAccountUserDataResponseSchema.parse(d));
   }
 
   /** Binance VIP Loan REST API → User-Information > Get VIP Loan Ongoing Orders(USER_DATA). `GET /sapi/v1/loan/vip/ongoing/orders` (SIGNED). */
-  async getVipLoanOngoingOrdersUserData(params: { orderId?: number; collateralAccountId?: number; loanCoin?: string | number; collateralCoin?: string | number; current?: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/loan/vip/ongoing/orders", params, 'signed');
+  async getVipLoanOngoingOrdersUserData(params: { orderId?: number; collateralAccountId?: number; loanCoin?: string | number; collateralCoin?: string | number; current?: number; limit?: number }): Promise<vipLoanTypes.getVipLoanOngoingOrdersUserDataResponse> {
+    return this.http.get("/sapi/v1/loan/vip/ongoing/orders", params, 'signed').then(d => vipLoanTypes.getVipLoanOngoingOrdersUserDataResponseSchema.parse(d));
   }
 
   /** Binance VIP Loan REST API → User-Information > Query Application Status(USER_DATA). `GET /sapi/v1/loan/vip/request/data` (SIGNED). */
-  async queryApplicationStatusUserData(params: { current?: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/loan/vip/request/data", params, 'signed');
+  async queryApplicationStatusUserData(params: { current?: number; limit?: number }): Promise<vipLoanTypes.queryApplicationStatusUserDataResponse> {
+    return this.http.get("/sapi/v1/loan/vip/request/data", params, 'signed').then(d => vipLoanTypes.queryApplicationStatusUserDataResponseSchema.parse(d));
   }
 
   /** Binance VIP Loan REST API → Market-Data > Get Collateral Asset Data(USER_DATA). `GET /sapi/v1/loan/vip/collateral/data` (SIGNED). */
-  async getCollateralAssetDataUserData(params: { collateralCoin?: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/loan/vip/collateral/data", params, 'signed');
+  async getCollateralAssetDataUserData(params: { collateralCoin?: string | number }): Promise<vipLoanTypes.getCollateralAssetDataUserDataResponse> {
+    return this.http.get("/sapi/v1/loan/vip/collateral/data", params, 'signed').then(d => vipLoanTypes.getCollateralAssetDataUserDataResponseSchema.parse(d));
   }
 
   /** Binance VIP Loan REST API → Market-Data > Get VIP Loan Interest Rate History (USER_DATA). `GET /sapi/v1/loan/vip/interestRateHistory` (SIGNED). */
-  async getVipLoanInterestRateHistoryUserData(params: { coin: string; startTime?: number; endTime?: number; current?: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/loan/vip/interestRateHistory", params, 'signed');
+  async getVipLoanInterestRateHistoryUserData(params: { coin: string; startTime?: number; endTime?: number; current?: number; limit?: number }): Promise<vipLoanTypes.getVipLoanInterestRateHistoryUserDataResponse> {
+    return this.http.get("/sapi/v1/loan/vip/interestRateHistory", params, 'signed').then(d => vipLoanTypes.getVipLoanInterestRateHistoryUserDataResponseSchema.parse(d));
   }
 
   /** Binance VIP Loan REST API → Market-Data > Get Loanable Assets Data(USER_DATA). `GET /sapi/v1/loan/vip/loanable/data` (SIGNED). */
-  async getLoanableAssetsDataUserData(params: { loanCoin?: string | number; vipLevel?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/loan/vip/loanable/data", params, 'signed');
+  async getLoanableAssetsDataUserData(params: { loanCoin?: string | number; vipLevel?: number }): Promise<vipLoanTypes.getLoanableAssetsDataUserDataResponse> {
+    return this.http.get("/sapi/v1/loan/vip/loanable/data", params, 'signed').then(d => vipLoanTypes.getLoanableAssetsDataUserDataResponseSchema.parse(d));
   }
 
   /** Binance VIP Loan REST API → Market-Data > Get Borrow Interest Rate(USER_DATA). `GET /sapi/v1/loan/vip/request/interestRate` (SIGNED). */
-  async getBorrowInterestRateUserData(params: { loanCoin: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/loan/vip/request/interestRate", params, 'signed');
+  async getBorrowInterestRateUserData(params: { loanCoin: string | number }): Promise<vipLoanTypes.getBorrowInterestRateUserDataResponse> {
+    return this.http.get("/sapi/v1/loan/vip/request/interestRate", params, 'signed').then(d => vipLoanTypes.getBorrowInterestRateUserDataResponseSchema.parse(d));
   }
 }

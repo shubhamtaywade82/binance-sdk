@@ -1,4 +1,5 @@
 import { HttpClient } from '../client/HttpClient.js';
+import * as giftCardTypes from '../types/giftCard.wave7.types.js';
 
 /**
  * Binance giftCard REST resource.
@@ -15,32 +16,32 @@ export class GiftCardResource {
   constructor(private readonly http: HttpClient) {}
 
   /** Binance Gift Card REST API → Market-Data > Create a dual-token gift card(fixed value, discount feature)(TRADE). `POST /sapi/v1/giftcard/buyCode` (SIGNED). */
-  async createADualTokenGiftCardFixedValueDiscountFeatureTrade(params: { baseToken: string | number; faceToken: string | number; baseTokenAmount: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/giftcard/buyCode", params, 'signed');
+  async createADualTokenGiftCardFixedValueDiscountFeatureTrade(params: { baseToken: string | number; faceToken: string | number; baseTokenAmount: number }): Promise<giftCardTypes.createADualTokenGiftCardFixedValueDiscountFeatureTradeResponse> {
+    return this.http.post("/sapi/v1/giftcard/buyCode", params, 'signed').then(d => giftCardTypes.createADualTokenGiftCardFixedValueDiscountFeatureTradeResponseSchema.parse(d));
   }
 
   /** Binance Gift Card REST API → Market-Data > Fetch Token Limit(USER_DATA). `GET /sapi/v1/giftcard/buyCode/token-limit` (SIGNED). */
-  async fetchTokenLimitUserData(params: { baseToken: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/giftcard/buyCode/token-limit", params, 'signed');
+  async fetchTokenLimitUserData(params: { baseToken: string | number }): Promise<giftCardTypes.fetchTokenLimitUserDataResponse> {
+    return this.http.get("/sapi/v1/giftcard/buyCode/token-limit", params, 'signed').then(d => giftCardTypes.fetchTokenLimitUserDataResponseSchema.parse(d));
   }
 
   /** Binance Gift Card REST API → Market-Data > Create a single-token gift card (USER_DATA). `POST /sapi/v1/giftcard/createCode` (SIGNED). */
-  async createASingleTokenGiftCardUserData(params: { token: string | number; amount: number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/giftcard/createCode", params, 'signed');
+  async createASingleTokenGiftCardUserData(params: { token: string | number; amount: number }): Promise<giftCardTypes.createASingleTokenGiftCardUserDataResponse> {
+    return this.http.post("/sapi/v1/giftcard/createCode", params, 'signed').then(d => giftCardTypes.createASingleTokenGiftCardUserDataResponseSchema.parse(d));
   }
 
   /** Binance Gift Card REST API → Market-Data > Fetch RSA Public Key(USER_DATA). `GET /sapi/v1/giftcard/cryptography/rsa-public-key` (SIGNED). */
-  async fetchRsaPublicKeyUserData(): Promise<unknown> {
-    return this.http.get("/sapi/v1/giftcard/cryptography/rsa-public-key", undefined, 'signed');
+  async fetchRsaPublicKeyUserData(): Promise<giftCardTypes.fetchRsaPublicKeyUserDataResponse> {
+    return this.http.get("/sapi/v1/giftcard/cryptography/rsa-public-key", undefined, 'signed').then(d => giftCardTypes.fetchRsaPublicKeyUserDataResponseSchema.parse(d));
   }
 
   /** Binance Gift Card REST API → Market-Data > Redeem a Binance Gift Card(USER_DATA). `POST /sapi/v1/giftcard/redeemCode` (SIGNED). */
-  async redeemABinanceGiftCardUserData(params: { code: string | number; externalUid?: string | number }): Promise<unknown> {
-    return this.http.post("/sapi/v1/giftcard/redeemCode", params, 'signed');
+  async redeemABinanceGiftCardUserData(params: { code: string | number; externalUid?: string | number }): Promise<giftCardTypes.redeemABinanceGiftCardUserDataResponse> {
+    return this.http.post("/sapi/v1/giftcard/redeemCode", params, 'signed').then(d => giftCardTypes.redeemABinanceGiftCardUserDataResponseSchema.parse(d));
   }
 
   /** Binance Gift Card REST API → Market-Data > Verify Binance Gift Card by Gift Card Number(USER_DATA). `GET /sapi/v1/giftcard/verify` (SIGNED). */
-  async verifyBinanceGiftCardByGiftCardNumberUserData(params: { referenceNo: string | number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/giftcard/verify", params, 'signed');
+  async verifyBinanceGiftCardByGiftCardNumberUserData(params: { referenceNo: string | number }): Promise<giftCardTypes.verifyBinanceGiftCardByGiftCardNumberUserDataResponse> {
+    return this.http.get("/sapi/v1/giftcard/verify", params, 'signed').then(d => giftCardTypes.verifyBinanceGiftCardByGiftCardNumberUserDataResponseSchema.parse(d));
   }
 }

@@ -1,4 +1,5 @@
 import { HttpClient } from '../client/HttpClient.js';
+import * as spotWave6Types from '../types/spotWave6.wave7.types.js';
 
 /**
  * Binance spot Wave-6 gap-closure resource.
@@ -16,87 +17,87 @@ export class SpotWave6 {
   constructor(private readonly http: HttpClient) {}
 
   /** Binance Spot REST API → Account > Query all Order lists. `GET /api/v3/allOrderList` (SIGNED). */
-  async queryAllOrderLists(params: { fromId?: number; startTime?: number; endTime?: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/api/v3/allOrderList", params, 'signed');
+  async queryAllOrderLists(params: { fromId?: number; startTime?: number; endTime?: number; limit?: number }): Promise<spotWave6Types.queryAllOrderListsResponse> {
+    return this.http.get("/api/v3/allOrderList", params, 'signed').then(d => spotWave6Types.queryAllOrderListsResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → General > Query Execution Rules. `GET /api/v3/executionRules` (APIKEY). */
-  async queryExecutionRules(params: { symbol?: string | number; symbols?: string | number; symbolStatus?: string | number }): Promise<unknown> {
-    return this.http.get("/api/v3/executionRules", params, 'apiKey');
+  async queryExecutionRules(params: { symbol?: string | number; symbols?: string | number; symbolStatus?: string | number }): Promise<spotWave6Types.queryExecutionRulesResponse> {
+    return this.http.get("/api/v3/executionRules", params, 'apiKey').then(d => spotWave6Types.queryExecutionRulesResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Market > Historical Block Trades. `GET /api/v3/historicalBlockTrades` (APIKEY). */
-  async historicalBlockTrades(params: { symbol: string | number; fromId: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/api/v3/historicalBlockTrades", params, 'apiKey');
+  async historicalBlockTrades(params: { symbol: string | number; fromId: number; limit?: number }): Promise<spotWave6Types.historicalBlockTradesResponse> {
+    return this.http.get("/api/v3/historicalBlockTrades", params, 'apiKey').then(d => spotWave6Types.historicalBlockTradesResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Account > Query Allocations. `GET /api/v3/myAllocations` (SIGNED). */
-  async queryAllocations(params: { symbol: string | number; startTime?: number; endTime?: number; fromAllocationId?: number; limit?: number; orderId?: number }): Promise<unknown> {
-    return this.http.get("/api/v3/myAllocations", params, 'signed');
+  async queryAllocations(params: { symbol: string | number; startTime?: number; endTime?: number; fromAllocationId?: number; limit?: number; orderId?: number }): Promise<spotWave6Types.queryAllocationsResponse> {
+    return this.http.get("/api/v3/myAllocations", params, 'signed').then(d => spotWave6Types.queryAllocationsResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Account > Query relevant filters. `GET /api/v3/myFilters` (SIGNED). */
-  async queryRelevantFilters(params: { symbol: string | number }): Promise<unknown> {
-    return this.http.get("/api/v3/myFilters", params, 'signed');
+  async queryRelevantFilters(params: { symbol: string | number }): Promise<spotWave6Types.queryRelevantFiltersResponse> {
+    return this.http.get("/api/v3/myFilters", params, 'signed').then(d => spotWave6Types.queryRelevantFiltersResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Account > Query Open Order lists. `GET /api/v3/openOrderList` (SIGNED). */
-  async queryOpenOrderLists(): Promise<unknown> {
-    return this.http.get("/api/v3/openOrderList", undefined, 'signed');
+  async queryOpenOrderLists(): Promise<spotWave6Types.queryOpenOrderListsResponse> {
+    return this.http.get("/api/v3/openOrderList", undefined, 'signed').then(d => spotWave6Types.queryOpenOrderListsResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Account > Query Order Amendments. `GET /api/v3/order/amendments` (SIGNED). */
-  async queryOrderAmendments(params: { symbol: string | number; orderId: number; fromExecutionId?: number; limit?: number }): Promise<unknown> {
-    return this.http.get("/api/v3/order/amendments", params, 'signed');
+  async queryOrderAmendments(params: { symbol: string | number; orderId: number; fromExecutionId?: number; limit?: number }): Promise<spotWave6Types.queryOrderAmendmentsResponse> {
+    return this.http.get("/api/v3/order/amendments", params, 'signed').then(d => spotWave6Types.queryOrderAmendmentsResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Market > Query Reference Price. `GET /api/v3/referencePrice` (APIKEY). */
-  async queryReferencePrice(params: { symbol: string | number }): Promise<unknown> {
-    return this.http.get("/api/v3/referencePrice", params, 'apiKey');
+  async queryReferencePrice(params: { symbol: string | number }): Promise<spotWave6Types.queryReferencePriceResponse> {
+    return this.http.get("/api/v3/referencePrice", params, 'apiKey').then(d => spotWave6Types.queryReferencePriceResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Market > Query Reference Price Calculation. `GET /api/v3/referencePrice/calculation` (APIKEY). */
-  async queryReferencePriceCalculation(params: { symbol: string | number; symbolStatus?: string | number }): Promise<unknown> {
-    return this.http.get("/api/v3/referencePrice/calculation", params, 'apiKey');
+  async queryReferencePriceCalculation(params: { symbol: string | number; symbolStatus?: string | number }): Promise<spotWave6Types.queryReferencePriceCalculationResponse> {
+    return this.http.get("/api/v3/referencePrice/calculation", params, 'apiKey').then(d => spotWave6Types.queryReferencePriceCalculationResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Trade > New OCO - Deprecated. `POST /api/v3/order/oco` (SIGNED). */
-  async newOcoDeprecated(params: { symbol: string | number; listClientOrderId?: string | number; side: 'BUY' | 'SELL'; quantity: number; limitClientOrderId?: string | number; price: number; limitStrategyId?: number; limitStrategyType?: number; limitIcebergQty?: number; trailingDelta?: number; stopClientOrderId?: string | number; stopPrice: number; stopStrategyId?: number; stopStrategyType?: number; stopLimitPrice?: number; stopIcebergQty?: number; stopLimitTimeInForce?: string | number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number }): Promise<unknown> {
-    return this.http.post("/api/v3/order/oco", params, 'signed');
+  async newOcoDeprecated(params: { symbol: string | number; listClientOrderId?: string | number; side: 'BUY' | 'SELL'; quantity: number; limitClientOrderId?: string | number; price: number; limitStrategyId?: number; limitStrategyType?: number; limitIcebergQty?: number; trailingDelta?: number; stopClientOrderId?: string | number; stopPrice: number; stopStrategyId?: number; stopStrategyType?: number; stopLimitPrice?: number; stopIcebergQty?: number; stopLimitTimeInForce?: string | number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number }): Promise<spotWave6Types.newOcoDeprecatedResponse> {
+    return this.http.post("/api/v3/order/oco", params, 'signed').then(d => spotWave6Types.newOcoDeprecatedResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Trade > New Order List - OPO. `POST /api/v3/orderList/opo` (SIGNED). */
-  async newOrderListOpo(params: { symbol: string | number; listClientOrderId?: string | number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number; workingType: string | number; workingSide: 'BUY' | 'SELL'; workingClientOrderId?: string | number; workingPrice: number; workingQuantity: number; workingIcebergQty?: number; workingTimeInForce?: string | number; workingStrategyId?: number; workingStrategyType?: number; workingPegPriceType?: string | number; workingPegOffsetType?: string | number; workingPegOffsetValue?: number; pendingType: string | number; pendingSide: 'BUY' | 'SELL'; pendingClientOrderId?: string | number; pendingPrice?: number; pendingStopPrice?: number; pendingTrailingDelta?: number; pendingIcebergQty?: number; pendingTimeInForce?: string | number; pendingStrategyId?: number; pendingStrategyType?: number; pendingPegPriceType?: string | number; pendingPegOffsetType?: string | number; pendingPegOffsetValue?: number }): Promise<unknown> {
-    return this.http.post("/api/v3/orderList/opo", params, 'signed');
+  async newOrderListOpo(params: { symbol: string | number; listClientOrderId?: string | number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number; workingType: string | number; workingSide: 'BUY' | 'SELL'; workingClientOrderId?: string | number; workingPrice: number; workingQuantity: number; workingIcebergQty?: number; workingTimeInForce?: string | number; workingStrategyId?: number; workingStrategyType?: number; workingPegPriceType?: string | number; workingPegOffsetType?: string | number; workingPegOffsetValue?: number; pendingType: string | number; pendingSide: 'BUY' | 'SELL'; pendingClientOrderId?: string | number; pendingPrice?: number; pendingStopPrice?: number; pendingTrailingDelta?: number; pendingIcebergQty?: number; pendingTimeInForce?: string | number; pendingStrategyId?: number; pendingStrategyType?: number; pendingPegPriceType?: string | number; pendingPegOffsetType?: string | number; pendingPegOffsetValue?: number }): Promise<spotWave6Types.newOrderListOpoResponse> {
+    return this.http.post("/api/v3/orderList/opo", params, 'signed').then(d => spotWave6Types.newOrderListOpoResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Trade > New Order List - OPOCO. `POST /api/v3/orderList/opoco` (SIGNED). */
-  async newOrderListOpoco(params: { symbol: string | number; listClientOrderId?: string | number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number; workingType: string | number; workingSide: 'BUY' | 'SELL'; workingClientOrderId?: string | number; workingPrice: number; workingQuantity: number; workingIcebergQty?: number; workingTimeInForce?: string | number; workingStrategyId?: number; workingStrategyType?: number; workingPegPriceType?: string | number; workingPegOffsetType?: string | number; workingPegOffsetValue?: number; pendingSide: 'BUY' | 'SELL'; pendingAboveType: string | number; pendingAboveClientOrderId?: string | number; pendingAbovePrice?: number; pendingAboveStopPrice?: number; pendingAboveTrailingDelta?: number; pendingAboveIcebergQty?: number; pendingAboveTimeInForce?: string | number; pendingAboveStrategyId?: number; pendingAboveStrategyType?: number; pendingAbovePegPriceType?: string | number; pendingAbovePegOffsetType?: string | number; pendingAbovePegOffsetValue?: number; pendingBelowType?: string | number; pendingBelowClientOrderId?: string | number; pendingBelowPrice?: number; pendingBelowStopPrice?: number; pendingBelowTrailingDelta?: number; pendingBelowIcebergQty?: number; pendingBelowTimeInForce?: string | number; pendingBelowStrategyId?: number; pendingBelowStrategyType?: number; pendingBelowPegPriceType?: string | number; pendingBelowPegOffsetType?: string | number; pendingBelowPegOffsetValue?: number }): Promise<unknown> {
-    return this.http.post("/api/v3/orderList/opoco", params, 'signed');
+  async newOrderListOpoco(params: { symbol: string | number; listClientOrderId?: string | number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number; workingType: string | number; workingSide: 'BUY' | 'SELL'; workingClientOrderId?: string | number; workingPrice: number; workingQuantity: number; workingIcebergQty?: number; workingTimeInForce?: string | number; workingStrategyId?: number; workingStrategyType?: number; workingPegPriceType?: string | number; workingPegOffsetType?: string | number; workingPegOffsetValue?: number; pendingSide: 'BUY' | 'SELL'; pendingAboveType: string | number; pendingAboveClientOrderId?: string | number; pendingAbovePrice?: number; pendingAboveStopPrice?: number; pendingAboveTrailingDelta?: number; pendingAboveIcebergQty?: number; pendingAboveTimeInForce?: string | number; pendingAboveStrategyId?: number; pendingAboveStrategyType?: number; pendingAbovePegPriceType?: string | number; pendingAbovePegOffsetType?: string | number; pendingAbovePegOffsetValue?: number; pendingBelowType?: string | number; pendingBelowClientOrderId?: string | number; pendingBelowPrice?: number; pendingBelowStopPrice?: number; pendingBelowTrailingDelta?: number; pendingBelowIcebergQty?: number; pendingBelowTimeInForce?: string | number; pendingBelowStrategyId?: number; pendingBelowStrategyType?: number; pendingBelowPegPriceType?: string | number; pendingBelowPegOffsetType?: string | number; pendingBelowPegOffsetValue?: number }): Promise<spotWave6Types.newOrderListOpocoResponse> {
+    return this.http.post("/api/v3/orderList/opoco", params, 'signed').then(d => spotWave6Types.newOrderListOpocoResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Trade > New Order list - OTO. `POST /api/v3/orderList/oto` (SIGNED). */
-  async newOrderListOto(params: { symbol: string | number; listClientOrderId?: string | number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number; workingType: string | number; workingSide: 'BUY' | 'SELL'; workingClientOrderId?: string | number; workingPrice: number; workingQuantity: number; workingIcebergQty?: number; workingTimeInForce?: string | number; workingStrategyId?: number; workingStrategyType?: number; workingPegPriceType?: string | number; workingPegOffsetType?: string | number; workingPegOffsetValue?: number; pendingType: string | number; pendingSide: 'BUY' | 'SELL'; pendingClientOrderId?: string | number; pendingPrice?: number; pendingStopPrice?: number; pendingTrailingDelta?: number; pendingQuantity: number; pendingIcebergQty?: number; pendingTimeInForce?: string | number; pendingStrategyId?: number; pendingStrategyType?: number; pendingPegPriceType?: string | number; pendingPegOffsetType?: string | number; pendingPegOffsetValue?: number }): Promise<unknown> {
-    return this.http.post("/api/v3/orderList/oto", params, 'signed');
+  async newOrderListOto(params: { symbol: string | number; listClientOrderId?: string | number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number; workingType: string | number; workingSide: 'BUY' | 'SELL'; workingClientOrderId?: string | number; workingPrice: number; workingQuantity: number; workingIcebergQty?: number; workingTimeInForce?: string | number; workingStrategyId?: number; workingStrategyType?: number; workingPegPriceType?: string | number; workingPegOffsetType?: string | number; workingPegOffsetValue?: number; pendingType: string | number; pendingSide: 'BUY' | 'SELL'; pendingClientOrderId?: string | number; pendingPrice?: number; pendingStopPrice?: number; pendingTrailingDelta?: number; pendingQuantity: number; pendingIcebergQty?: number; pendingTimeInForce?: string | number; pendingStrategyId?: number; pendingStrategyType?: number; pendingPegPriceType?: string | number; pendingPegOffsetType?: string | number; pendingPegOffsetValue?: number }): Promise<spotWave6Types.newOrderListOtoResponse> {
+    return this.http.post("/api/v3/orderList/oto", params, 'signed').then(d => spotWave6Types.newOrderListOtoResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Trade > New Order list - OTOCO. `POST /api/v3/orderList/otoco` (SIGNED). */
-  async newOrderListOtoco(params: { symbol: string | number; listClientOrderId?: string | number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number; workingType: string | number; workingSide: 'BUY' | 'SELL'; workingClientOrderId?: string | number; workingPrice: number; workingQuantity: number; workingIcebergQty?: number; workingTimeInForce?: string | number; workingStrategyId?: number; workingStrategyType?: number; workingPegPriceType?: string | number; workingPegOffsetType?: string | number; workingPegOffsetValue?: number; pendingSide: 'BUY' | 'SELL'; pendingQuantity: number; pendingAboveType: string | number; pendingAboveClientOrderId?: string | number; pendingAbovePrice?: number; pendingAboveStopPrice?: number; pendingAboveTrailingDelta?: number; pendingAboveIcebergQty?: number; pendingAboveTimeInForce?: string | number; pendingAboveStrategyId?: number; pendingAboveStrategyType?: number; pendingAbovePegPriceType?: string | number; pendingAbovePegOffsetType?: string | number; pendingAbovePegOffsetValue?: number; pendingBelowType?: string | number; pendingBelowClientOrderId?: string | number; pendingBelowPrice?: number; pendingBelowStopPrice?: number; pendingBelowTrailingDelta?: number; pendingBelowIcebergQty?: number; pendingBelowTimeInForce?: string | number; pendingBelowStrategyId?: number; pendingBelowStrategyType?: number; pendingBelowPegPriceType?: string | number; pendingBelowPegOffsetType?: string | number; pendingBelowPegOffsetValue?: number }): Promise<unknown> {
-    return this.http.post("/api/v3/orderList/otoco", params, 'signed');
+  async newOrderListOtoco(params: { symbol: string | number; listClientOrderId?: string | number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number; workingType: string | number; workingSide: 'BUY' | 'SELL'; workingClientOrderId?: string | number; workingPrice: number; workingQuantity: number; workingIcebergQty?: number; workingTimeInForce?: string | number; workingStrategyId?: number; workingStrategyType?: number; workingPegPriceType?: string | number; workingPegOffsetType?: string | number; workingPegOffsetValue?: number; pendingSide: 'BUY' | 'SELL'; pendingQuantity: number; pendingAboveType: string | number; pendingAboveClientOrderId?: string | number; pendingAbovePrice?: number; pendingAboveStopPrice?: number; pendingAboveTrailingDelta?: number; pendingAboveIcebergQty?: number; pendingAboveTimeInForce?: string | number; pendingAboveStrategyId?: number; pendingAboveStrategyType?: number; pendingAbovePegPriceType?: string | number; pendingAbovePegOffsetType?: string | number; pendingAbovePegOffsetValue?: number; pendingBelowType?: string | number; pendingBelowClientOrderId?: string | number; pendingBelowPrice?: number; pendingBelowStopPrice?: number; pendingBelowTrailingDelta?: number; pendingBelowIcebergQty?: number; pendingBelowTimeInForce?: string | number; pendingBelowStrategyId?: number; pendingBelowStrategyType?: number; pendingBelowPegPriceType?: string | number; pendingBelowPegOffsetType?: string | number; pendingBelowPegOffsetValue?: number }): Promise<spotWave6Types.newOrderListOtocoResponse> {
+    return this.http.post("/api/v3/orderList/otoco", params, 'signed').then(d => spotWave6Types.newOrderListOtocoResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Trade > New order using SOR. `POST /api/v3/sor/order` (SIGNED). */
-  async newOrderUsingSor(params: { symbol: string | number; side: 'BUY' | 'SELL'; type: string | number; timeInForce?: string | number; quantity: number; price?: number; newClientOrderId?: string | number; strategyId?: number; strategyType?: number; icebergQty?: number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number }): Promise<unknown> {
-    return this.http.post("/api/v3/sor/order", params, 'signed');
+  async newOrderUsingSor(params: { symbol: string | number; side: 'BUY' | 'SELL'; type: string | number; timeInForce?: string | number; quantity: number; price?: number; newClientOrderId?: string | number; strategyId?: number; strategyType?: number; icebergQty?: number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number }): Promise<spotWave6Types.newOrderUsingSorResponse> {
+    return this.http.post("/api/v3/sor/order", params, 'signed').then(d => spotWave6Types.newOrderUsingSorResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Trade > Test new order using SOR. `POST /api/v3/sor/order/test` (SIGNED). */
-  async testNewOrderUsingSor(params: { computeCommissionRates?: boolean; symbol: string | number; side: 'BUY' | 'SELL'; type: string | number; timeInForce?: string | number; quantity: number; price?: number; newClientOrderId?: string | number; strategyId?: number; strategyType?: number; icebergQty?: number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number }): Promise<unknown> {
-    return this.http.post("/api/v3/sor/order/test", params, 'signed');
+  async testNewOrderUsingSor(params: { computeCommissionRates?: boolean; symbol: string | number; side: 'BUY' | 'SELL'; type: string | number; timeInForce?: string | number; quantity: number; price?: number; newClientOrderId?: string | number; strategyId?: number; strategyType?: number; icebergQty?: number; newOrderRespType?: string | number; selfTradePreventionMode?: string | number }): Promise<spotWave6Types.testNewOrderUsingSorResponse> {
+    return this.http.post("/api/v3/sor/order/test", params, 'signed').then(d => spotWave6Types.testNewOrderUsingSorResponseSchema.parse(d));
   }
 
   /** Binance Spot REST API → Trade > Order Amend Keep Priority. `PUT /api/v3/order/amend/keepPriority` (SIGNED). */
-  async orderAmendKeepPriority(params: { symbol: string | number; orderId?: number; origClientOrderId?: string | number; newClientOrderId?: string | number; newQty: number }): Promise<unknown> {
-    return this.http.put("/api/v3/order/amend/keepPriority", params, 'signed');
+  async orderAmendKeepPriority(params: { symbol: string | number; orderId?: number; origClientOrderId?: string | number; newClientOrderId?: string | number; newQty: number }): Promise<spotWave6Types.orderAmendKeepPriorityResponse> {
+    return this.http.put("/api/v3/order/amend/keepPriority", params, 'signed').then(d => spotWave6Types.orderAmendKeepPriorityResponseSchema.parse(d));
   }
 }

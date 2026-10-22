@@ -1,4 +1,5 @@
 import { HttpClient } from '../client/HttpClient.js';
+import * as rebateTypes from '../types/rebate.wave7.types.js';
 
 /**
  * Binance rebate REST resource.
@@ -15,7 +16,7 @@ export class RebateResource {
   constructor(private readonly http: HttpClient) {}
 
   /** Binance Rebate REST API → Rebate > Get Spot Rebate History Records (USER_DATA). `GET /sapi/v1/rebate/taxQuery` (SIGNED). */
-  async getSpotRebateHistoryRecordsUserData(params: { startTime?: number; endTime?: number; page?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/rebate/taxQuery", params, 'signed');
+  async getSpotRebateHistoryRecordsUserData(params: { startTime?: number; endTime?: number; page?: number }): Promise<rebateTypes.getSpotRebateHistoryRecordsUserDataResponse> {
+    return this.http.get("/sapi/v1/rebate/taxQuery", params, 'signed').then(d => rebateTypes.getSpotRebateHistoryRecordsUserDataResponseSchema.parse(d));
   }
 }

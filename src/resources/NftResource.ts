@@ -1,4 +1,5 @@
 import { HttpClient } from '../client/HttpClient.js';
+import * as nftTypes from '../types/nft.wave7.types.js';
 
 /**
  * Binance nft REST resource.
@@ -15,22 +16,22 @@ export class NftResource {
   constructor(private readonly http: HttpClient) {}
 
   /** Binance NFT REST API → NFT > Get NFT Deposit History(USER_DATA). `GET /sapi/v1/nft/history/deposit` (SIGNED). */
-  async getNftDepositHistoryUserData(params: { startTime?: number; endTime?: number; limit?: number; page?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/nft/history/deposit", params, 'signed');
+  async getNftDepositHistoryUserData(params: { startTime?: number; endTime?: number; limit?: number; page?: number }): Promise<nftTypes.getNftDepositHistoryUserDataResponse> {
+    return this.http.get("/sapi/v1/nft/history/deposit", params, 'signed').then(d => nftTypes.getNftDepositHistoryUserDataResponseSchema.parse(d));
   }
 
   /** Binance NFT REST API → NFT > Get NFT Transaction History(USER_DATA). `GET /sapi/v1/nft/history/transactions` (SIGNED). */
-  async getNftTransactionHistoryUserData(params: { orderType: number; startTime?: number; endTime?: number; limit?: number; page?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/nft/history/transactions", params, 'signed');
+  async getNftTransactionHistoryUserData(params: { orderType: number; startTime?: number; endTime?: number; limit?: number; page?: number }): Promise<nftTypes.getNftTransactionHistoryUserDataResponse> {
+    return this.http.get("/sapi/v1/nft/history/transactions", params, 'signed').then(d => nftTypes.getNftTransactionHistoryUserDataResponseSchema.parse(d));
   }
 
   /** Binance NFT REST API → NFT > Get NFT Withdraw History(USER_DATA). `GET /sapi/v1/nft/history/withdraw` (SIGNED). */
-  async getNftWithdrawHistoryUserData(params: { startTime?: number; endTime?: number; limit?: number; page?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/nft/history/withdraw", params, 'signed');
+  async getNftWithdrawHistoryUserData(params: { startTime?: number; endTime?: number; limit?: number; page?: number }): Promise<nftTypes.getNftWithdrawHistoryUserDataResponse> {
+    return this.http.get("/sapi/v1/nft/history/withdraw", params, 'signed').then(d => nftTypes.getNftWithdrawHistoryUserDataResponseSchema.parse(d));
   }
 
   /** Binance NFT REST API → NFT > Get NFT Asset(USER_DATA). `GET /sapi/v1/nft/user/getAsset` (SIGNED). */
-  async getNftAssetUserData(params: { limit?: number; page?: number }): Promise<unknown> {
-    return this.http.get("/sapi/v1/nft/user/getAsset", params, 'signed');
+  async getNftAssetUserData(params: { limit?: number; page?: number }): Promise<nftTypes.getNftAssetUserDataResponse> {
+    return this.http.get("/sapi/v1/nft/user/getAsset", params, 'signed').then(d => nftTypes.getNftAssetUserDataResponseSchema.parse(d));
   }
 }
