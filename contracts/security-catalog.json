@@ -1,6 +1,6 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-10-21T04:50:22.230Z",
+  "generatedAt": "2026-10-22T04:24:47.695Z",
   "products": {
     "algo": {
       "public": 0,
@@ -64,9 +64,9 @@
     },
     "margin": {
       "public": 1,
-      "apiKey": 0,
-      "signed": 17,
-      "total": 18
+      "apiKey": 13,
+      "signed": 49,
+      "total": 63
     },
     "mining": {
       "public": 0,
@@ -83,8 +83,8 @@
     "options": {
       "public": 11,
       "apiKey": 3,
-      "signed": 22,
-      "total": 36
+      "signed": 29,
+      "total": 43
     },
     "pay": {
       "public": 0,
@@ -94,15 +94,15 @@
     },
     "portfolio": {
       "public": 0,
-      "apiKey": 3,
-      "signed": 108,
-      "total": 111
+      "apiKey": 4,
+      "signed": 154,
+      "total": 158
     },
     "portfolioPro": {
       "public": 0,
       "apiKey": 0,
-      "signed": 24,
-      "total": 24
+      "signed": 30,
+      "total": 30
     },
     "rebate": {
       "public": 0,
@@ -118,9 +118,9 @@
     },
     "spot": {
       "public": 14,
-      "apiKey": 4,
-      "signed": 19,
-      "total": 37
+      "apiKey": 8,
+      "signed": 32,
+      "total": 54
     },
     "staking": {
       "public": 0,
@@ -131,8 +131,8 @@
     "subaccount": {
       "public": 0,
       "apiKey": 0,
-      "signed": 13,
-      "total": 13
+      "signed": 46,
+      "total": 46
     },
     "usdm": {
       "public": 39,
@@ -148,9 +148,9 @@
     },
     "wallet": {
       "public": 0,
-      "apiKey": 0,
-      "signed": 14,
-      "total": 14
+      "apiKey": 3,
+      "signed": 44,
+      "total": 47
     }
   }
 }

@@ -11,6 +11,14 @@ import type { EndpointEntry, EndpointAuth, EndpointMethod } from './endpoints.js
 type Row = [operation: string, method: EndpointMethod, path: string, auth: EndpointAuth, implementedBy: string];
 
 const rows: Row[] = [
+  // ---- Wave 6: contract-first gap closure (Postman-driven) ----
+  ["portfolioPro.deleteMarginCallLevelUserData", "DELETE", "/sapi/v1/portfolio/margin-call-level", "signed", "portfolioPro.deleteMarginCallLevelUserData"],
+  ["portfolioPro.queryPortfolioMarginProBankruptcyLoanAmountUserData", "GET", "/sapi/v1/portfolio/pmLoan", "signed", "portfolioPro.queryPortfolioMarginProBankruptcyLoanAmountUserData"],
+  ["portfolioPro.getAutoRepayFuturesStatusUserData", "GET", "/sapi/v1/portfolio/repay-futures-switch", "signed", "portfolioPro.getAutoRepayFuturesStatusUserData"],
+  ["portfolioPro.fundCollectionByAssetUserData", "POST", "/sapi/v1/portfolio/asset-collection", "signed", "portfolioPro.fundCollectionByAssetUserData"],
+  ["portfolioPro.switchDeltaModeTrade", "POST", "/sapi/v1/portfolio/delta-mode", "signed", "portfolioPro.switchDeltaModeTrade"],
+  ["portfolioPro.setMarginCallLevelUserData", "POST", "/sapi/v1/portfolio/margin-call-level", "signed", "portfolioPro.setMarginCallLevelUserData"],
+
   // ---- v1 ----
   ['account.account', 'GET', '/sapi/v1/portfolio/account', 'signed', 'portfolioPro.account.account'],
   ['account.balance', 'GET', '/sapi/v1/portfolio/balance', 'signed', 'portfolioPro.account.balance'],

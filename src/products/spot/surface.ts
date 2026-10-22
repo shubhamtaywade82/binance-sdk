@@ -3,6 +3,7 @@ import { RiskGateway } from '../../risk/RiskGateway.js';
 import { SpotAccount, SpotTrading } from '../../resources/SpotTrading.js';
 import { SpotMarket } from '../../resources/SpotMarket.js';
 import { SpotUserDataStream } from '../../resources/SpotUserDataStream.js';
+import { SpotWave6 } from '../../resources/SpotWave6.js';
 import { ExecutionManager } from '../../execution/ExecutionManager.js';
 import { SpotExecutionAdapter } from '../../execution/adapter.js';
 import { SpotMarketWS } from '../../ws/SpotMarketWS.js';
@@ -23,6 +24,13 @@ export interface SpotSurface {
   ws: SpotMarketWS;
   wsUser: SpotUserWS;
   wsApi: SpotWsApi;
+  /**
+   * Wave-6 contract-first gap closure — 17 Spot endpoints added from the
+   * official Binance Postman collection (OCO orders, OTO/OTOC/OPO lists,
+   * SOR orders, order amendments, myAllocations, myFilters,
+   * historicalBlockTrades, executionRules, referencePrice).
+   */
+  wave6: SpotWave6;
 }
 
 /** Shared Spot wiring (single construction path, same pattern as USDⓈ-M). */
@@ -56,5 +64,6 @@ export function buildSpotSurface(core: CoreContext, getListenKey: () => string |
       signatureAlgorithm: credentials.signatureAlgorithm,
       recvWindow: core.transport.recvWindow,
     }),
+    wave6: new SpotWave6(core.http('apiRoot')),
   };
 }

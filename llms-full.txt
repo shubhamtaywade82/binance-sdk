@@ -2,6 +2,23 @@
 
 ## Spot
 
+- GET /api/v3/allOrderList (SIGNED) → spot.queryAllOrderLists
+- GET /api/v3/executionRules (API_KEY) → spot.queryExecutionRules
+- GET /api/v3/historicalBlockTrades (API_KEY) → spot.historicalBlockTrades
+- GET /api/v3/myAllocations (SIGNED) → spot.queryAllocations
+- GET /api/v3/myFilters (SIGNED) → spot.queryRelevantFilters
+- GET /api/v3/openOrderList (SIGNED) → spot.queryOpenOrderLists
+- GET /api/v3/order/amendments (SIGNED) → spot.queryOrderAmendments
+- GET /api/v3/referencePrice (API_KEY) → spot.queryReferencePrice
+- GET /api/v3/referencePrice/calculation (API_KEY) → spot.queryReferencePriceCalculation
+- POST /api/v3/order/oco (SIGNED) → spot.newOcoDeprecated
+- POST /api/v3/orderList/opo (SIGNED) → spot.newOrderListOpo
+- POST /api/v3/orderList/opoco (SIGNED) → spot.newOrderListOpoco
+- POST /api/v3/orderList/oto (SIGNED) → spot.newOrderListOto
+- POST /api/v3/orderList/otoco (SIGNED) → spot.newOrderListOtoco
+- POST /api/v3/sor/order (SIGNED) → spot.newOrderUsingSor
+- POST /api/v3/sor/order/test (SIGNED) → spot.testNewOrderUsingSor
+- PUT /api/v3/order/amend/keepPriority (SIGNED) → spot.orderAmendKeepPriority
 - GET /api/v3/ping (PUBLIC) → spot.market.ping
 - GET /api/v3/time (PUBLIC) → spot.market.serverTime
 - GET /api/v3/exchangeInfo (PUBLIC) → spot.market.exchangeInfo
@@ -214,6 +231,51 @@
 
 ## Margin
 
+- DELETE /sapi/v1/margin/apiKey (SIGNED) → margin.deleteSpecialKeyLowLatencyTradingTrade
+- DELETE /sapi/v1/margin/isolated/account (SIGNED) → margin.disableIsolatedMarginAccountTrade
+- DELETE /sapi/v1/margin/listen-key (API_KEY) → margin.closeUserDataStreamUserStream
+- DELETE /sapi/v1/margin/orderList (SIGNED) → margin.marginAccountCancelOcoTrade
+- GET /sapi/v1/bnbBurn (SIGNED) → margin.getBnbBurnStatusUserData
+- GET /sapi/v1/margin/allAssets (API_KEY) → margin.getAllMarginAssetsMarketData
+- GET /sapi/v1/margin/allOrderList (SIGNED) → margin.queryMarginAccountSAllOcoUserData
+- GET /sapi/v1/margin/allPairs (API_KEY) → margin.getAllCrossMarginPairsMarketData
+- GET /sapi/v1/margin/api-key-list (SIGNED) → margin.querySpecialKeyListLowLatencyTradingTrade
+- GET /sapi/v1/margin/apiKey (SIGNED) → margin.querySpecialKeyLowLatencyTradingTrade
+- GET /sapi/v1/margin/available-inventory (SIGNED) → margin.queryMarginAvailableInventoryUserData
+- GET /sapi/v1/margin/capital-flow (SIGNED) → margin.queryCrossIsolatedMarginCapitalFlowUserData
+- GET /sapi/v1/margin/crossMarginCollateralRatio (API_KEY) → margin.crossMarginCollateralRatioMarketData
+- GET /sapi/v1/margin/crossMarginData (SIGNED) → margin.queryCrossMarginFeeDataUserData
+- GET /sapi/v1/margin/delist-schedule (API_KEY) → margin.getDelistScheduleMarketData
+- GET /sapi/v1/margin/exchange-small-liability (SIGNED) → margin.getSmallLiabilityExchangeCoinListUserData
+- GET /sapi/v1/margin/exchange-small-liability-history (SIGNED) → margin.getSmallLiabilityExchangeHistoryUserData
+- GET /sapi/v1/margin/interestRateHistory (SIGNED) → margin.queryMarginInterestRateHistoryUserData
+- GET /sapi/v1/margin/isolated/accountLimit (SIGNED) → margin.queryEnabledIsolatedMarginAccountLimitUserData
+- GET /sapi/v1/margin/isolated/allPairs (API_KEY) → margin.getAllIsolatedMarginSymbolMarketData
+- GET /sapi/v1/margin/isolatedMarginData (SIGNED) → margin.queryIsolatedMarginFeeDataUserData
+- GET /sapi/v1/margin/isolatedMarginTier (SIGNED) → margin.queryIsolatedMarginTierDataUserData
+- GET /sapi/v1/margin/leverageBracket (API_KEY) → margin.queryLiabilityCoinLeverageBracketInCrossMarginProModeMarketData
+- GET /sapi/v1/margin/limit-price-pairs (API_KEY) → margin.getLimitPricePairsMarketData
+- GET /sapi/v1/margin/list-schedule (API_KEY) → margin.getListScheduleMarketData
+- GET /sapi/v1/margin/myPreventedMatches (SIGNED) → margin.queryPreventedMatchesUserData
+- GET /sapi/v1/margin/next-hourly-interest-rate (SIGNED) → margin.getFutureHourlyInterestRateUserData
+- GET /sapi/v1/margin/openOrderList (SIGNED) → margin.queryMarginAccountSOpenOcoUserData
+- GET /sapi/v1/margin/orderList (SIGNED) → margin.queryMarginAccountSOcoUserData
+- GET /sapi/v1/margin/rateLimit/order (SIGNED) → margin.queryCurrentMarginOrderCountUsageTrade
+- GET /sapi/v1/margin/restricted-asset (API_KEY) → margin.getMarginRestrictedAssetsMarketData
+- GET /sapi/v1/margin/risk-based-liquidation-ratio (API_KEY) → margin.getMarginAssetRiskBasedLiquidationRatioMarketData
+- GET /sapi/v1/margin/tradeCoeff (SIGNED) → margin.getSummaryOfMarginAccountUserData
+- GET /sapi/v1/margin/transfer (SIGNED) → margin.getCrossMarginTransferHistoryUserData
+- POST /sapi/v1/margin/apiKey (SIGNED) → margin.createSpecialKeyLowLatencyTradingTrade
+- POST /sapi/v1/margin/exchange-small-liability (SIGNED) → margin.smallLiabilityExchangeMargin
+- POST /sapi/v1/margin/isolated/account (SIGNED) → margin.enableIsolatedMarginAccountTrade
+- POST /sapi/v1/margin/listen-key (API_KEY) → margin.startUserDataStreamUserStream
+- POST /sapi/v1/margin/manual-liquidation (SIGNED) → margin.marginManualLiquidationMargin
+- POST /sapi/v1/margin/max-leverage (SIGNED) → margin.adjustCrossMarginMaxLeverageUserData
+- POST /sapi/v1/margin/order/oco (SIGNED) → margin.marginAccountNewOcoTrade
+- POST /sapi/v1/margin/order/oto (SIGNED) → margin.marginAccountNewOtoTrade
+- POST /sapi/v1/margin/order/otoco (SIGNED) → margin.marginAccountNewOtocoTrade
+- PUT /sapi/v1/margin/apiKey/ip (SIGNED) → margin.editIpForSpecialKeyLowLatencyTradingTrade
+- PUT /sapi/v1/margin/listen-key (API_KEY) → margin.keepaliveUserDataStreamUserStream
 - GET /sapi/v1/margin/account (SIGNED) → margin.account.crossAccount
 - GET /sapi/v1/margin/isolated/account (SIGNED) → margin.account.isolatedAccount
 - GET /sapi/v1/margin/maxBorrowable (SIGNED) → margin.account.maxBorrowable
@@ -235,6 +297,39 @@
 
 ## Wallet
 
+- GET /sapi/v1/account/apiTradingStatus (SIGNED) → wallet.accountApiTradingStatusUserData
+- GET /sapi/v1/account/info (SIGNED) → wallet.accountInfoUserData
+- GET /sapi/v1/account/status (SIGNED) → wallet.accountStatusUserData
+- GET /sapi/v1/addressVerify/list (SIGNED) → wallet.fetchAddressVerificationListUserData
+- GET /sapi/v1/asset/assetDividend (SIGNED) → wallet.assetDividendRecordUserData
+- GET /sapi/v1/asset/custody/transfer-history (SIGNED) → wallet.queryUserDelegationHistoryForMasterAccountUserData
+- GET /sapi/v1/asset/ledger-transfer/cloud-mining/queryByPage (SIGNED) → wallet.getCloudMiningPaymentAndRefundHistoryUserData
+- GET /sapi/v1/asset/wallet/balance (SIGNED) → wallet.queryUserWalletBalanceUserData
+- GET /sapi/v1/capital/config/getall (SIGNED) → wallet.allCoinsInformationUserData
+- GET /sapi/v1/capital/deposit/address/list (SIGNED) → wallet.fetchDepositAddressListWithNetworkUserData
+- GET /sapi/v1/capital/withdraw/address/list (SIGNED) → wallet.fetchWithdrawAddressListUserData
+- GET /sapi/v1/capital/withdraw/quota (SIGNED) → wallet.fetchWithdrawQuotaUserData
+- GET /sapi/v1/localentity/deposit/history (SIGNED) → wallet.depositHistoryForLocalEntitiesThatRequiredTravelRuleSupportingNetworkUserData
+- GET /sapi/v1/localentity/questionnaire-requirements (SIGNED) → wallet.checkQuestionnaireRequirementsForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData
+- GET /sapi/v1/localentity/vasp (SIGNED) → wallet.vaspListForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData
+- GET /sapi/v1/localentity/withdraw/history (SIGNED) → wallet.withdrawHistoryForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData
+- GET /sapi/v1/spot/delist-schedule (API_KEY) → wallet.getSymbolsDelistScheduleForSpotMarketData
+- GET /sapi/v1/spot/open-symbol-list (API_KEY) → wallet.getOpenSymbolListMarketData
+- GET /sapi/v1/system/status (API_KEY) → wallet.systemStatusSystem
+- GET /sapi/v2/localentity/deposit/history (SIGNED) → wallet.depositHistoryV2ForLocalEntitiesThatRequiredTravelRuleSupportingNetworkUserData
+- GET /sapi/v2/localentity/withdraw/history (SIGNED) → wallet.withdrawHistoryV2ForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData
+- POST /sapi/v1/account/disableFastWithdrawSwitch (SIGNED) → wallet.disableFastWithdrawSwitchUserData
+- POST /sapi/v1/account/enableFastWithdrawSwitch (SIGNED) → wallet.enableFastWithdrawSwitchUserData
+- POST /sapi/v1/asset/dust-btc (SIGNED) → wallet.getAssetsThatCanBeConvertedIntoBnbUserData
+- POST /sapi/v1/asset/dust-convert/convert (SIGNED) → wallet.dustConvertUserData
+- POST /sapi/v1/asset/dust-convert/query-convertible-assets (SIGNED) → wallet.dustConvertibleAssetsUserData
+- POST /sapi/v1/bnbBurn (SIGNED) → wallet.toggleBnbBurnOnSpotTradeAndMarginInterestUserData
+- POST /sapi/v1/capital/deposit/credit-apply (SIGNED) → wallet.oneClickArrivalDepositApplyForExpiredAddressDepositUserData
+- POST /sapi/v1/localentity/broker/withdraw/apply (SIGNED) → wallet.brokerWithdrawForBrokersOfLocalEntitiesThatRequireTravelRuleUserData
+- POST /sapi/v1/localentity/withdraw/apply (SIGNED) → wallet.withdrawForLocalEntitiesThatRequireTravelRuleUserData
+- PUT /sapi/v1/localentity/broker/deposit/provide-info (SIGNED) → wallet.submitDepositQuestionnaireForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserDataBroker
+- PUT /sapi/v1/localentity/deposit/provide-info (SIGNED) → wallet.submitDepositQuestionnaireForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData
+- PUT /sapi/v2/localentity/deposit/provide-info (SIGNED) → wallet.submitDepositQuestionnaireV2ForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData
 - POST /sapi/v1/asset/transfer (SIGNED) → wallet.universalTransfer
 - GET /sapi/v1/asset/transfer (SIGNED) → wallet.universalTransferHistory
 - POST /sapi/v1/asset/get-funding-asset (SIGNED) → wallet.fundingWallet
@@ -252,6 +347,39 @@
 
 ## Sub-account
 
+- DELETE /sapi/v1/sub-account/subAccountApi/ipRestriction/ipList (SIGNED) → subaccount.deleteIpListForASubAccountApiKeyForMasterAccountUserData
+- GET /sapi/v1/managed-subaccount/accountSnapshot (SIGNED) → subaccount.queryManagedSubAccountSnapshotForInvestorMasterAccountUserData
+- GET /sapi/v1/managed-subaccount/asset (SIGNED) → subaccount.queryManagedSubAccountAssetDetailsForInvestorMasterAccountUserData
+- GET /sapi/v1/managed-subaccount/deposit/address (SIGNED) → subaccount.getManagedSubAccountDepositAddressForInvestorMasterAccountUserData
+- GET /sapi/v1/managed-subaccount/fetch-future-asset (SIGNED) → subaccount.queryManagedSubAccountFuturesAssetDetailsForInvestorMasterAccountUserData
+- GET /sapi/v1/managed-subaccount/info (SIGNED) → subaccount.queryManagedSubAccountListForInvestorUserData
+- GET /sapi/v1/managed-subaccount/marginAsset (SIGNED) → subaccount.queryManagedSubAccountMarginAssetDetailsForInvestorMasterAccountUserData
+- GET /sapi/v1/managed-subaccount/query-trans-log (SIGNED) → subaccount.queryManagedSubAccountTransferLogForTradingTeamSubAccountUserData
+- GET /sapi/v1/managed-subaccount/queryTransLogForInvestor (SIGNED) → subaccount.queryManagedSubAccountTransferLogForInvestorMasterAccountUserData
+- GET /sapi/v1/managed-subaccount/queryTransLogForTradeParent (SIGNED) → subaccount.queryManagedSubAccountTransferLogForTradingTeamMasterAccountUserData
+- GET /sapi/v1/sub-account/futures/account (SIGNED) → subaccount.getDetailOnSubAccountSFuturesAccountForMasterAccountUserData
+- GET /sapi/v1/sub-account/futures/accountSummary (SIGNED) → subaccount.getSummaryOfSubAccountSFuturesAccountForMasterAccountUserData
+- GET /sapi/v1/sub-account/futures/internalTransfer (SIGNED) → subaccount.querySubAccountFuturesAssetTransferHistoryForMasterAccountUserData
+- GET /sapi/v1/sub-account/futures/move-position (SIGNED) → subaccount.getMovePositionHistoryForSubAccountForMasterAccountUserData
+- GET /sapi/v1/sub-account/futures/positionRisk (SIGNED) → subaccount.getFuturesPositionRiskOfSubAccountForMasterAccountUserData
+- GET /sapi/v1/sub-account/margin/accountSummary (SIGNED) → subaccount.getSummaryOfSubAccountSMarginAccountForMasterAccountUserData
+- GET /sapi/v1/sub-account/sub/transfer/history (SIGNED) → subaccount.querySubAccountSpotAssetTransferHistoryForMasterAccountUserData
+- GET /sapi/v1/sub-account/subAccountApi/ipRestriction (SIGNED) → subaccount.getIpRestrictionForASubAccountApiKeyForMasterAccountUserData
+- GET /sapi/v1/sub-account/transaction-statistics (SIGNED) → subaccount.querySubAccountTransactionStatisticsForMasterAccountUserData
+- GET /sapi/v1/sub-account/transfer/subUserHistory (SIGNED) → subaccount.subAccountTransferHistoryForSubAccountUserData
+- GET /sapi/v2/sub-account/futures/account (SIGNED) → subaccount.getDetailOnSubAccountSFuturesAccountV2ForMasterAccountUserData
+- GET /sapi/v2/sub-account/futures/positionRisk (SIGNED) → subaccount.getFuturesPositionRiskOfSubAccountV2ForMasterAccountUserData
+- GET /sapi/v4/sub-account/assets (SIGNED) → subaccount.querySubAccountAssetsForMasterAccountUserData
+- POST /sapi/v1/managed-subaccount/deposit (SIGNED) → subaccount.depositAssetsIntoTheManagedSubAccountForInvestorMasterAccountUserData
+- POST /sapi/v1/managed-subaccount/withdraw (SIGNED) → subaccount.withdrawlAssetsFromTheManagedSubAccountForInvestorMasterAccountUserData
+- POST /sapi/v1/sub-account/eoptions/enable (SIGNED) → subaccount.enableOptionsForSubAccountForMasterAccountUserData
+- POST /sapi/v1/sub-account/futures/internalTransfer (SIGNED) → subaccount.subAccountFuturesAssetTransferForMasterAccountUserData
+- POST /sapi/v1/sub-account/futures/move-position (SIGNED) → subaccount.movePositionForSubAccountForMasterAccountUserData
+- POST /sapi/v1/sub-account/futures/transfer (SIGNED) → subaccount.futuresTransferForSubAccountForMasterAccountUserData
+- POST /sapi/v1/sub-account/margin/transfer (SIGNED) → subaccount.marginTransferForSubAccountForMasterAccountUserData
+- POST /sapi/v1/sub-account/transfer/subToMaster (SIGNED) → subaccount.transferToMasterForSubAccountUserData
+- POST /sapi/v1/sub-account/transfer/subToSub (SIGNED) → subaccount.transferToSubAccountOfSameMasterForSubAccountUserData
+- POST /sapi/v2/sub-account/subAccountApi/ipRestriction (SIGNED) → subaccount.addIpRestrictionForSubAccountApiKeyForMasterAccountUserData
 - GET /sapi/v1/sub-account/list (SIGNED) → subaccount.list
 - GET /sapi/v1/sub-account/status (SIGNED) → subaccount.status
 - GET /sapi/v3/sub-account/assets (SIGNED) → subaccount.spotAssets

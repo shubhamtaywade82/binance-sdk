@@ -2,10 +2,27 @@
 
 > Generated from `src/registry/*.endpoints.ts` by `npm run docs:generate` — do not edit by hand.
 
-37 implemented endpoints.
+54 implemented endpoints.
 
 | Operation | Method | Path | Auth | SDK surface |
 |---|---|---|---|---|
+| `spot.queryAllOrderLists` | GET | `/api/v3/allOrderList` | SIGNED | `spot.queryAllOrderLists` |
+| `spot.queryExecutionRules` | GET | `/api/v3/executionRules` | API_KEY | `spot.queryExecutionRules` |
+| `spot.historicalBlockTrades` | GET | `/api/v3/historicalBlockTrades` | API_KEY | `spot.historicalBlockTrades` |
+| `spot.queryAllocations` | GET | `/api/v3/myAllocations` | SIGNED | `spot.queryAllocations` |
+| `spot.queryRelevantFilters` | GET | `/api/v3/myFilters` | SIGNED | `spot.queryRelevantFilters` |
+| `spot.queryOpenOrderLists` | GET | `/api/v3/openOrderList` | SIGNED | `spot.queryOpenOrderLists` |
+| `spot.queryOrderAmendments` | GET | `/api/v3/order/amendments` | SIGNED | `spot.queryOrderAmendments` |
+| `spot.queryReferencePrice` | GET | `/api/v3/referencePrice` | API_KEY | `spot.queryReferencePrice` |
+| `spot.queryReferencePriceCalculation` | GET | `/api/v3/referencePrice/calculation` | API_KEY | `spot.queryReferencePriceCalculation` |
+| `spot.newOcoDeprecated` | POST | `/api/v3/order/oco` | SIGNED | `spot.newOcoDeprecated` |
+| `spot.newOrderListOpo` | POST | `/api/v3/orderList/opo` | SIGNED | `spot.newOrderListOpo` |
+| `spot.newOrderListOpoco` | POST | `/api/v3/orderList/opoco` | SIGNED | `spot.newOrderListOpoco` |
+| `spot.newOrderListOto` | POST | `/api/v3/orderList/oto` | SIGNED | `spot.newOrderListOto` |
+| `spot.newOrderListOtoco` | POST | `/api/v3/orderList/otoco` | SIGNED | `spot.newOrderListOtoco` |
+| `spot.newOrderUsingSor` | POST | `/api/v3/sor/order` | SIGNED | `spot.newOrderUsingSor` |
+| `spot.testNewOrderUsingSor` | POST | `/api/v3/sor/order/test` | SIGNED | `spot.testNewOrderUsingSor` |
+| `spot.orderAmendKeepPriority` | PUT | `/api/v3/order/amend/keepPriority` | SIGNED | `spot.orderAmendKeepPriority` |
 | `market.ping` | GET | `/api/v3/ping` | PUBLIC | `spot.market.ping` |
 | `market.serverTime` | GET | `/api/v3/time` | PUBLIC | `spot.market.serverTime` |
 | `market.exchangeInfo` | GET | `/api/v3/exchangeInfo` | PUBLIC | `spot.market.exchangeInfo` |

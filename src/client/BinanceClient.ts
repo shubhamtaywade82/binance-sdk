@@ -8,8 +8,11 @@ import { CoreContext } from '../core/context.js';
 import type { WsPlatform, WsPlatformOptions } from '../ws/platform/WsPlatform.js';
 import { resolveEnvironment } from './endpoints.js';
 import { MarginAccount, MarginTrading } from '../resources/Margin.js';
+import { MarginWave6 } from '../resources/MarginWave6.js';
 import { Wallet } from '../resources/Wallet.js';
+import { WalletWave6 } from '../resources/WalletWave6.js';
 import { SubAccount } from '../resources/SubAccount.js';
+import { SubAccountWave6 } from '../resources/SubAccountWave6.js';
 import { buildSpotSurface, type SpotSurface } from '../products/spot/surface.js';
 import {
   buildUsdmSurface,
@@ -122,6 +125,8 @@ export interface BinanceClientOptions {
 export interface MarginNamespace {
   account: MarginAccount;
   trading: MarginTrading;
+  /** Wave-6 gap closure (45 endpoints). */
+  wave6: MarginWave6;
 }
 
 export class BinanceClient {
@@ -156,6 +161,7 @@ export class BinanceClient {
     return this.cached('margin', () => ({
       account: new MarginAccount(this.core.http('apiRoot')),
       trading: new MarginTrading(this.core.http('apiRoot')),
+      wave6: new MarginWave6(this.core.http('apiRoot')),
     }));
   }
 
@@ -163,8 +169,32 @@ export class BinanceClient {
     return this.cached('wallet', () => new Wallet(this.core.http('apiRoot')));
   }
 
+  /**
+   * Wave-6 contract-first gap closure for the Wallet product — 33 endpoints
+   * added from the official Binance Postman collection (account status/info,
+   * apiTradingStatus, assetDividend, custody transfers, capital config,
+   * address verification, local-entity deposit/withdraw, fast-withdraw
+   * switches, dust-btc, dust-convert, bnbBurn, system status, etc.).
+   */
+  get walletWave6(): WalletWave6 {
+    return this.cached('walletWave6', () => new WalletWave6(this.core.http('apiRoot')));
+  }
+
   get subaccount(): SubAccount {
     return this.cached('subaccount', () => new SubAccount(this.core.http('apiRoot')));
+  }
+
+  /**
+   * Wave-6 contract-first gap closure for the Sub-Account product — 33
+   * endpoints added from the official Binance Postman collection (managed
+   * sub-account deposit/withdraw/asset/snapshot/info, futures account +
+   * position risk + internal transfer + move-position, margin account
+   * summary, sub-account transfer histories, transaction statistics,
+   * eoptions enable, v2/v4 sub-account endpoints, IP restriction
+   * management).
+   */
+  get subaccountWave6(): SubAccountWave6 {
+    return this.cached('subaccountWave6', () => new SubAccountWave6(this.core.http('apiRoot')));
   }
 
   /**

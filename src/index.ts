@@ -94,6 +94,18 @@ export { VipLoanClient } from './products/vipLoan/VipLoanClient.js';
 export type { VipLoanSurface } from './products/vipLoan/surface.js';
 export { VipLoanResource } from './resources/VipLoanResource.js';
 
+// ---- Wave 6 contract-first gap closure: 188 endpoints across 7 laggard
+// products (spot, options, portfolioPro, portfolio, margin, wallet,
+// subaccount). Each Wave-6 resource class lives alongside its
+// hand-curated sibling so the hand-written Zod schemas stay intact. ----
+export { SpotWave6 } from './resources/SpotWave6.js';
+export { OptionsWave6 } from './resources/OptionsWave6.js';
+export { PortfolioMarginProWave6 } from './resources/PortfolioMarginProWave6.js';
+export { PortfolioMarginWave6 } from './resources/PortfolioMarginWave6.js';
+export { MarginWave6 } from './resources/MarginWave6.js';
+export { WalletWave6 } from './resources/WalletWave6.js';
+export { SubAccountWave6 } from './resources/SubAccountWave6.js';
+
 // ---- Execution: idempotent placement + reconciliation ----
 export { ExecutionManager } from './execution/ExecutionManager.js';
 export type { ExecutionManagerOptions } from './execution/types.js';
