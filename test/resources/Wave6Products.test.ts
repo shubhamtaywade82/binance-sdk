@@ -102,7 +102,7 @@ describe('BinanceClient — Wave 6 gap closure (188 endpoints across 7 products)
     );
     const client = new BinanceClient({ apiKey: 'k', apiSecret: 's' });
     // Generated method `queryAllOrderLists`.
-    const r = await client.spot.wave6.queryAllOrderLists(undefined);
+    const r = await client.spot.wave6.queryAllOrderLists({});
     expect(r).toBeDefined();
   });
 });

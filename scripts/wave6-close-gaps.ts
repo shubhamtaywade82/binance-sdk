@@ -139,20 +139,6 @@ function resourceMethod(c: EndpointContract): string {
   return `  /** ${docRef}. \`${c.method} ${c.path}\` (${c.auth.toUpperCase()}). */\n  async ${name}(${paramSig}): Promise<unknown> {\n    return ${call};\n  }`;
 }
 
-function appendRegistryRows(product: string, registryFile: string, contracts: EndpointContract[]): void {
-  const filePath = join(REGISTRY_DIR, registryFile);
-  const existing = readFileSync(filePath, 'utf8');
-  const rows = contracts.map((c) => endpointRow(c, product)).join(',\n');
-  // Insert before the closing `];` of the rows array
-  const insertion = `\n  // ---- Wave 6: contract-first gap closure (Postman-driven) ----\n${rows},\n`;
-  const updated = existing.replace(
-    /^(\s*const rows: Row\[\] = \[)/m,
-    `$1${insertion}`,
-  );
-  writeFileSync(filePath, updated);
-  console.log(`  ✓ ${registryFile} (+${contracts.length} rows)`);
-}
-
 function emitWave6ResourceFile(resourceClass: string, resourceFile: string, contracts: EndpointContract[], product: string): void {
   const filePath = join(RESOURCES_DIR, resourceFile);
   // Detect duplicate method-name collisions and suffix the later ones.
