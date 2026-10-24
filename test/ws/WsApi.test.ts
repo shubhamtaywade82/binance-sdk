@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import { WebSocketServer } from 'ws';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { WsApi } from '../../src/ws/WsApi.js';
@@ -33,6 +34,12 @@ describe('WsApi', () => {
     expect(received?.params.apiKey).toBe('k');
     expect(received?.params.signature).toBeTruthy();
     expect(received?.params.timestamp).toBeTruthy();
+    const { signature, ...signedParams } = received!.params;
+    const payload = Object.keys(signedParams)
+      .sort()
+      .map((key) => `${key}=${encodeURIComponent(String(signedParams[key]))}`)
+      .join('&');
+    expect(signature).toBe(createHmac('sha256', 's').update(payload).digest('hex'));
     expect(res.result).toEqual({ orderId: 42 });
   });
 
