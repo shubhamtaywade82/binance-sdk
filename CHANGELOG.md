@@ -5,6 +5,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-10-24
+
 **Automated versioning with release-please.**
 
 - `.github/workflows/release-please.yml` keeps one release PR open with the
