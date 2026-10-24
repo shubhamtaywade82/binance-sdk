@@ -119,6 +119,7 @@ export class FuturesData {
     return this.http.get('/adlQuantile', params, 'signed');
   }
 
+  /** @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Binance leveraged tokens (BLVT) are discontinued. Removal planned for the next major version. */
   async blvtInfo(
     tokenName: string,
     interval: KlineInterval,
@@ -167,10 +168,12 @@ export class FuturesData {
     return this.http.get('/insuranceBalance', { symbol: options?.symbol });
   }
 
+  /** @deprecated Deprecated by Binance on 2024-11-15 with the legacy Portfolio Margin endpoints. Removal planned for the next major version. */
   async pmExchangeInfo(): Promise<unknown> {
     return this.http.get('/pmExchangeInfo');
   }
 
+  /** @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24). Removal planned for the next major version. */
   async delistSchedule(symbol?: string): Promise<unknown[]> {
     const params = symbol ? { symbol } : {};
     return this.http.get('/delistSchedule', params);

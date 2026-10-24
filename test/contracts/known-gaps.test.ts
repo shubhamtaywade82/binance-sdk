@@ -13,6 +13,7 @@ interface CatalogEndpoint {
 interface KnownGaps {
   endpoints: Array<{ method: string; path: string; reason: string }>;
   collections: Array<{ file: string; reason: string }>;
+  sdkOnlyEndpoints: Array<{ method: string; path: string; reason: string }>;
 }
 
 function readContract<T>(file: string): T {
@@ -26,6 +27,7 @@ const key = (e: { method: string; path: string }): string => `${e.method} ${e.pa
 const implemented = new Set(ENDPOINT_REGISTRY.map(key));
 const catalogKeys = new Set(catalog.endpoints.map(key));
 const gapKeys = new Set(knownGaps.endpoints.map(key));
+const sdkOnlyKeys = new Set(knownGaps.sdkOnlyEndpoints.map(key));
 
 describe('Postman known gaps', () => {
   it('should implement or record every upstream endpoint', () => {
@@ -38,13 +40,23 @@ describe('Postman known gaps', () => {
     expect(stale).toEqual([]);
   });
 
+  it('should record every SDK endpoint missing upstream', () => {
+    const unrecorded = [...implemented].filter((k) => !catalogKeys.has(k) && !sdkOnlyKeys.has(k));
+    expect(unrecorded, 'new endpoints must come from the upstream contracts, or be recorded in sdkOnlyEndpoints').toEqual([]);
+  });
+
+  it('should drop SDK-only entries that are removed from the SDK or now upstream', () => {
+    const stale = [...sdkOnlyKeys].filter((k) => !implemented.has(k) || catalogKeys.has(k));
+    expect(stale).toEqual([]);
+  });
+
   it('should record every unmapped upstream collection, and only those', () => {
     const recorded = knownGaps.collections.map((c) => c.file).sort();
     expect(recorded).toEqual([...sourceIndex.unmappedCollections].sort());
   });
 
   it('should give every known gap a reason', () => {
-    for (const gap of [...knownGaps.endpoints, ...knownGaps.collections]) {
+    for (const gap of [...knownGaps.endpoints, ...knownGaps.collections, ...knownGaps.sdkOnlyEndpoints]) {
       expect(gap.reason.trim(), JSON.stringify(gap)).not.toBe('');
     }
   });

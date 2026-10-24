@@ -91,12 +91,14 @@ export class MarginAccount {
     );
   }
 
+  /** @deprecated Removed by Binance on 2024-03-31; use the universal transfer `POST /sapi/v1/asset/transfer`. Removal planned for the next major version. */
   async transfer(asset: string, amount: number, type: 1 | 2): Promise<MarginTransferResult> {
     return MarginTransferResultSchema.parse(
       await this.http.post('/sapi/v1/margin/transfer', { asset, amount, type }, 'signed'),
     );
   }
 
+  /** @deprecated Removed by Binance on 2024-03-31; use the universal transfer `POST /sapi/v1/asset/transfer`. Removal planned for the next major version. */
   async isolatedTransfer(params: IsolatedTransferParams): Promise<MarginTransferResult> {
     return MarginTransferResultSchema.parse(
       await this.http.post('/sapi/v1/margin/isolated/transfer', params, 'signed'),

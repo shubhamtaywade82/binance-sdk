@@ -72,7 +72,10 @@ export class CryptoLoan {
     return CryptoLoanLtvAdjustmentHistoryResponseSchema.parse(await this.http.get('/sapi/v1/loan/ltv/adjustment/history', options ?? {}, 'signed'));
   }
 
-  /** Repay collateral rate. `GET /sapi/v1/loan/repay/collateral/rate` (SIGNED). */
+  /**
+   * Repay collateral rate. `GET /sapi/v1/loan/repay/collateral/rate` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /sapi/v2/loan/flexible/repay/rate`. Removal planned for the next major version.
+   */
   async repayCollateralRate(params: { loanCoin: string; collateralCoin: string; repayAmount: string }): Promise<CryptoLoanRepayCollateralRate> {
     return CryptoLoanRepayCollateralRateSchema.parse(await this.http.get('/sapi/v1/loan/repay/collateral/rate', params, 'signed'));
   }

@@ -1,5 +1,5 @@
 {
-  "$comment": "Every upstream Postman endpoint the SDK does not implement, and every upstream collection the importer does not map, with the reason. test/contracts/known-gaps.test.ts fails on an unrecorded gap and on a stale entry (implemented, or gone upstream). Entries recorded at the 2026-10-24 baseline carry that reason; every later gap needs a real one.",
+  "$comment": "Every upstream Postman endpoint the SDK does not implement, and every upstream collection the importer does not map, with the reason. test/contracts/known-gaps.test.ts fails on an unrecorded gap and on a stale entry (implemented, or gone upstream). Entries recorded at the 2026-10-24 baseline carry that reason; every later gap needs a real one. sdkOnlyEndpoints lists every SDK endpoint absent from the upstream Postman collections; each is @deprecated in src and slated for removal in the next major. known-gaps.test.ts fails on an unrecorded SDK-only endpoint and on a stale entry.",
   "schemaVersion": 1,
   "endpoints": [],
   "collections": [
@@ -10,6 +10,448 @@
     {
       "file": "Binance W3W Prediction API.json",
       "reason": "pre-existing (baseline 2026-10-24): collection has no COLLECTION_TO_PRODUCT mapping yet"
+    }
+  ],
+  "sdkOnlyEndpoints": [
+    {
+      "method": "GET",
+      "path": "/api/v3/allOrderLists",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); the path is `GET /api/v3/allOrderList` (`spot.queryAllOrderLists`)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v3/openOrderLists",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); `DELETE /api/v3/openOrders` cancels open order lists too"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/openOrderLists",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); the path is `GET /api/v3/openOrderList` (`spot.queryOpenOrderLists`)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v3/userDataStream",
+      "reason": "Retired by Binance on 2026-02-20; close the WebSocket API connection instead (`closeUserStream()`)"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/userDataStream",
+      "reason": "Retired by Binance on 2026-02-20; the Spot user stream now uses the WebSocket API subscription (`startUserStream()` / `wsUser.start()`)"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v3/userDataStream",
+      "reason": "Retired by Binance on 2026-02-20; WebSocket API subscriptions need no keep-alive"
+    },
+    {
+      "method": "POST",
+      "path": "/dapi/v1/order/test",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); COIN-M has no test-order endpoint"
+    },
+    {
+      "method": "GET",
+      "path": "/dapi/v1/pmAccountInfo",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); legacy Portfolio Margin endpoint, use the Portfolio Margin client"
+    },
+    {
+      "method": "GET",
+      "path": "/fapi/v1/delistSchedule",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24)"
+    },
+    {
+      "method": "GET",
+      "path": "/fapi/v1/lvtKlines",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Binance leveraged tokens (BLVT) are discontinued"
+    },
+    {
+      "method": "GET",
+      "path": "/fapi/v1/pmExchangeInfo",
+      "reason": "Deprecated by Binance on 2024-11-15 with the legacy Portfolio Margin endpoints"
+    },
+    {
+      "method": "GET",
+      "path": "/fapi/v1/tradingDayTicker",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); USDⓈ-M has no trading-day ticker"
+    },
+    {
+      "method": "GET",
+      "path": "/fapi/v2/ticker/bookTicker",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /fapi/v1/ticker/bookTicker`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/asset-collection",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); the endpoint is `POST /papi/v1/asset-collection`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/cm/balance",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /papi/v1/balance`"
+    },
+    {
+      "method": "DELETE",
+      "path": "/papi/v1/cm/batchOrders",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/cm/batchOrders",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/cm/countdownCancelAll",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/cm/fundingRate",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/cm/marginType",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/cm/openInterest",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/cm/openInterestHist",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/cm/positionMargin",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/cm/positionMargin/history",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/margin/account",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /papi/v1/account`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/margin/allAssets",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use the Margin client (`/sapi/v1/margin/allAssets`)"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/margin/allPairs",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use the Margin client (`/sapi/v1/margin/allPairs`)"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/margin/balance",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /papi/v1/balance`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/margin/loan",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /papi/v1/margin/marginLoan`"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/margin/loan",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `POST /papi/v1/marginLoan`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/margin/openOrder",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /papi/v1/margin/openOrders`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/margin/priceIndex",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use the Margin client (`/sapi/v1/margin/priceIndex`)"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/margin/repay",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /papi/v1/margin/repayLoan`"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/margin/repay",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `POST /papi/v1/repayLoan`"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/margin/transfer",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use the universal transfer `POST /sapi/v1/asset/transfer`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/portfolio/account",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/account`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/portfolio/asset-index-price",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/asset-index-price`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/portfolio/balance",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/balance`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/portfolio/collateralRate",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/collateralRate`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/portfolio/delta-mode",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/delta-mode`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/portfolio/earn-asset-balance",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/earn-asset-balance`"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/portfolio/earn-asset-transfer",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/earn-asset-transfer`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/portfolio/margin-asset-leverage",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/margin-asset-leverage`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/portfolio/margin-call-level",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/margin-call-level`"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/portfolio/pmLoan",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/pmLoan`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/portfolio/pmLoan-history",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/pmloan-history`"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/portfolio/repay",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/repay`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/um/accountV2",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /papi/v2/um/account`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/um/accountV3",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /papi/v1/um/account`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/um/balance",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /papi/v1/balance`"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/um/balanceV3",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /papi/v1/balance`"
+    },
+    {
+      "method": "DELETE",
+      "path": "/papi/v1/um/batchOrders",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/um/batchOrders",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "DELETE",
+      "path": "/papi/v1/um/conditional/allOpenOrders",
+      "reason": "Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`)"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/um/conditional/allOrders",
+      "reason": "Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`)"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/um/conditional/openOrder",
+      "reason": "Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`)"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/um/conditional/openOrders",
+      "reason": "Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`)"
+    },
+    {
+      "method": "DELETE",
+      "path": "/papi/v1/um/conditional/order",
+      "reason": "Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`)"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/um/conditional/order",
+      "reason": "Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`)"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/um/conditional/orderHistory",
+      "reason": "Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`)"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/um/countdownCancelAll",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/um/fundingRate",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/um/marginType",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/um/multiAssetsMargin",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/um/multiAssetsMargin",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/um/openInterest",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "POST",
+      "path": "/papi/v1/um/positionMargin",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/um/positionMargin/history",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/um/positionRiskV3",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /papi/v1/um/positionRisk`"
+    },
+    {
+      "method": "POST",
+      "path": "/sapi/v1/dci/product/auto_compound/edit-status",
+      "reason": "Removed by Binance on 2026-08-31; auto-compound is managed in the web UI only"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v1/loan/borrow/history",
+      "reason": "Retired by Binance on 2026-10-16 (HTTP 404)"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v1/loan/income",
+      "reason": "Retired by Binance on 2026-10-16 (HTTP 404)"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v1/loan/ltv/adjustment/history",
+      "reason": "Retired by Binance on 2026-10-16 (HTTP 404)"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v1/loan/repay/collateral/rate",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /sapi/v2/loan/flexible/repay/rate`"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v1/loan/repay/history",
+      "reason": "Retired by Binance on 2026-10-16 (HTTP 404)"
+    },
+    {
+      "method": "POST",
+      "path": "/sapi/v1/margin/isolated/transfer",
+      "reason": "Removed by Binance on 2024-03-31; use the universal transfer `POST /sapi/v1/asset/transfer`"
+    },
+    {
+      "method": "POST",
+      "path": "/sapi/v1/margin/transfer",
+      "reason": "Removed by Binance on 2024-03-31; use the universal transfer `POST /sapi/v1/asset/transfer`"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v1/nft/history/deposit",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Binance no longer documents the NFT API"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v1/nft/history/transactions",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Binance no longer documents the NFT API"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v1/nft/history/withdraw",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Binance no longer documents the NFT API"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v1/nft/user/getAsset",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Binance no longer documents the NFT API"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v1/portfolio/asset-collection",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); the endpoint is `POST /sapi/v1/portfolio/asset-collection`"
+    },
+    {
+      "method": "POST",
+      "path": "/sapi/v1/portfolio/pmLoan",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); query with `GET /sapi/v1/portfolio/pmLoan`, repay with `POST /sapi/v1/portfolio/repay`"
+    },
+    {
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/margin/enable",
+      "reason": "Removed by Binance on 2025-06-03; margin is enabled by the first transfer into the margin account"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v2/portfolio/asset-index-price",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/asset-index-price`"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v2/portfolio/balance",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/balance`"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v2/portfolio/margin-asset-leverage",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/margin-asset-leverage`"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v3/portfolio/collateralRate",
+      "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v2/portfolio/collateralRate`"
     }
   ]
 }

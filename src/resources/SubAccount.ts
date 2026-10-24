@@ -98,6 +98,7 @@ export class SubAccount {
     );
   }
 
+  /** @deprecated Removed by Binance on 2025-06-03; margin is enabled by the first transfer into the margin account. Removal planned for the next major version. */
   async enableMargin(email: string): Promise<SubAccountEnableResult> {
     return SubAccountEnableResultSchema.parse(
       await this.http.post('/sapi/v1/sub-account/margin/enable', { email }, 'signed'),

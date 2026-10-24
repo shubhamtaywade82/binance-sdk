@@ -88,6 +88,7 @@ export class FuturesMarket extends MarketDataBase {
     return DepthSnapshotSchema.parse(await this.http.get('/rpiDepth', { symbol, limit }));
   }
 
+  /** @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); USDⓈ-M has no trading-day ticker. Removal planned for the next major version. */
   async tradingDayTicker(symbol?: string): Promise<unknown[]> {
     const params = symbol ? { symbol } : {};
     return this.http.get('/tradingDayTicker', params);
@@ -110,6 +111,7 @@ export class FuturesMarket extends MarketDataBase {
     return TickerPriceSchema.parse(await this.rootHttp.get('/fapi/v2/ticker/price', params));
   }
 
+  /** @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /fapi/v1/ticker/bookTicker`. Removal planned for the next major version. */
   async bookTickerV2(symbol?: string): Promise<BookTicker[] | BookTicker> {
     const params = symbol ? { symbol } : {};
     return BookTickerSchema.parse(await this.rootHttp.get('/fapi/v2/ticker/bookTicker', params));

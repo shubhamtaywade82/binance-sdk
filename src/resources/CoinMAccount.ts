@@ -155,6 +155,7 @@ export class CoinMAccount {
   /**
    * Portfolio-margin account info for COIN-M, returning the margin-level
    * summary used by PM-mode accounts. Endpoint: `GET /dapi/v1/pmAccountInfo` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); legacy Portfolio Margin endpoint, use the Portfolio Margin client. Removal planned for the next major version.
    */
   async pmAccountInfo(asset?: string): Promise<Record<string, unknown>> {
     const params = asset ? { asset } : undefined;

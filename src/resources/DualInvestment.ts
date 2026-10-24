@@ -22,7 +22,10 @@ export class DualInvestment {
     return DualInvestmentAccountsResponseSchema.parse(await this.http.get('/sapi/v1/dci/product/accounts', options ?? {}, 'signed'));
   }
 
-  /** Toggle auto-compound for a position. `POST /sapi/v1/dci/product/auto_compound/edit-status` (SIGNED). */
+  /**
+   * Toggle auto-compound for a position. `POST /sapi/v1/dci/product/auto_compound/edit-status` (SIGNED).
+   * @deprecated Removed by Binance on 2026-08-31; auto-compound is managed in the web UI only. Removal planned for the next major version.
+   */
   async autoCompoundEditStatus(params: { positionId: number; status: boolean }): Promise<Record<string, unknown>> {
     return this.http.post('/sapi/v1/dci/product/auto_compound/edit-status', params, 'signed');
   }

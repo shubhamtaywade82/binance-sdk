@@ -49,7 +49,10 @@ export class PortfolioMarginCm {
     return this.http.post('/papi/v1/cm/positionSide/dual', { dualSidePosition }, 'signed');
   }
 
-  /** CM balance. `GET /papi/v1/cm/balance` (SIGNED). */
+  /**
+   * CM balance. `GET /papi/v1/cm/balance` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); use `GET /papi/v1/balance`. Removal planned for the next major version.
+   */
   async balance(): Promise<unknown[]> {
     return this.http.get('/papi/v1/cm/balance', undefined, 'signed');
   }
@@ -106,12 +109,18 @@ export class PortfolioMarginCm {
     return this.http.delete('/papi/v1/cm/allOpenOrders', { symbol }, 'signed');
   }
 
-  /** Place up to 5 CM orders in a single batch. `POST /papi/v1/cm/batchOrders` (SIGNED). */
+  /**
+   * Place up to 5 CM orders in a single batch. `POST /papi/v1/cm/batchOrders` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve. Removal planned for the next major version.
+   */
   async batchOrders(batchOrders: Record<string, unknown>[]): Promise<unknown[]> {
     return this.http.post('/papi/v1/cm/batchOrders', { batchOrders: JSON.stringify(batchOrders) }, 'signed');
   }
 
-  /** Cancel up to 5 CM orders in a single batch. `DELETE /papi/v1/cm/batchOrders` (SIGNED). */
+  /**
+   * Cancel up to 5 CM orders in a single batch. `DELETE /papi/v1/cm/batchOrders` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve. Removal planned for the next major version.
+   */
   async cancelBatchOrders(symbol: string, orderIdList?: number[], origClientOrderIdList?: string[]): Promise<unknown[]> {
     const params: Record<string, unknown> = { symbol };
     if (orderIdList?.length) params.orderIdList = JSON.stringify(orderIdList);
@@ -119,7 +128,10 @@ export class PortfolioMarginCm {
     return this.http.delete('/papi/v1/cm/batchOrders', params, 'signed');
   }
 
-  /** Auto-cancel countdown for CM. `POST /papi/v1/cm/countdownCancelAll` (SIGNED). */
+  /**
+   * Auto-cancel countdown for CM. `POST /papi/v1/cm/countdownCancelAll` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve. Removal planned for the next major version.
+   */
   async countdownCancelAll(symbol: string, countdownTime: number): Promise<Record<string, unknown>> {
     return this.http.post('/papi/v1/cm/countdownCancelAll', { symbol, countdownTime }, 'signed');
   }
@@ -129,17 +141,26 @@ export class PortfolioMarginCm {
     return this.http.post('/papi/v1/cm/leverage', { symbol, leverage, marginType }, 'signed');
   }
 
-  /** Set CM margin type. `POST /papi/v1/cm/marginType` (SIGNED). */
+  /**
+   * Set CM margin type. `POST /papi/v1/cm/marginType` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve. Removal planned for the next major version.
+   */
   async setMarginType(symbol: string, marginType: 'ISOLATED' | 'CROSSED'): Promise<Record<string, unknown>> {
     return this.http.post('/papi/v1/cm/marginType', { symbol, marginType }, 'signed');
   }
 
-  /** Modify CM position margin. `POST /papi/v1/cm/positionMargin` (SIGNED). */
+  /**
+   * Modify CM position margin. `POST /papi/v1/cm/positionMargin` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve. Removal planned for the next major version.
+   */
   async modifyPositionMargin(symbol: string, amount: number, type: number): Promise<Record<string, unknown>> {
     return this.http.post('/papi/v1/cm/positionMargin', { symbol, amount, type }, 'signed');
   }
 
-  /** CM position margin history. `GET /papi/v1/cm/positionMargin/history` (SIGNED). */
+  /**
+   * CM position margin history. `GET /papi/v1/cm/positionMargin/history` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve. Removal planned for the next major version.
+   */
   async positionMarginHistory(options: { symbol: string; type?: number; startTime?: number; endTime?: number; limit?: number }): Promise<unknown[]> {
     return this.http.get('/papi/v1/cm/positionMargin/history', options, 'signed');
   }
@@ -160,17 +181,26 @@ export class PortfolioMarginCm {
     return this.http.get('/papi/v1/cm/forceOrders', options ?? {}, 'signed');
   }
 
-  /** CM funding rate. `GET /papi/v1/cm/fundingRate` (SIGNED). */
+  /**
+   * CM funding rate. `GET /papi/v1/cm/fundingRate` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve. Removal planned for the next major version.
+   */
   async fundingRate(options: { symbol: string; startTime?: number; endTime?: number; limit?: number }): Promise<PmFundingRate[]> {
     return PmFundingRateResponseSchema.parse(await this.http.get('/papi/v1/cm/fundingRate', options, 'signed'));
   }
 
-  /** CM open interest. `GET /papi/v1/cm/openInterest` (SIGNED). */
+  /**
+   * CM open interest. `GET /papi/v1/cm/openInterest` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve. Removal planned for the next major version.
+   */
   async openInterest(symbol: string): Promise<PmOpenInterest> {
     return PmOpenInterestSchema.parse(await this.http.get('/papi/v1/cm/openInterest', { symbol }, 'signed'));
   }
 
-  /** CM open interest history. `GET /papi/v1/cm/openInterestHist` (SIGNED). */
+  /**
+   * CM open interest history. `GET /papi/v1/cm/openInterestHist` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); copies a USDⓈ-M/COIN-M futures path that Portfolio Margin does not serve. Removal planned for the next major version.
+   */
   async openInterestHist(options: { pair: string; contractType: string; period: string; limit?: number }): Promise<unknown[]> {
     return this.http.get('/papi/v1/cm/openInterestHist', options, 'signed');
   }

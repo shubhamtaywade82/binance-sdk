@@ -18,6 +18,47 @@ developers.binance.com and the official connector on 2026-10-24.
   not serve; use the REST client instead. Removal is planned for the next
   major version.
 
+**Spot user data stream moves to the WebSocket API.** Binance retired
+`POST/PUT/DELETE /api/v3/userDataStream` on 2026-02-20, so spot user streams
+have not worked since then.
+
+- **Fixed:** `SpotClient.startUserStream()`, `BinanceClient.startSpotUserStream()`
+  and `spot.executionPlatform.startUserSession()` now connect to the Spot
+  WebSocket API (`wsSpotApi`) and send a signed
+  `userDataStream.subscribe.signature`. The subscription is renewed on every
+  reconnect and 24h rotation, and needs no keep-alive. Event names and
+  payloads are unchanged.
+- **Changed:** `startUserStream()` / `startSpotUserStream()` now resolve with
+  the subscription id instead of a listen key, and reject when Binance refuses
+  the subscription. The `spot_ws_start_user_stream` MCP tool now returns
+  `{ subscriptionId }` instead of `{ listenKey }`. `SpotUserWS` takes
+  `{ wsApiUrl, signSubscription }` instead of `{ baseUserUrl, getListenKey }`.
+  The spot platform session's `listenKey` is now `null`.
+- `WsConnection.request()` accepts object params (WebSocket API requests), and
+  `{ id, error }` replies now reject the pending request instead of timing
+  out.
+
+**Fixed WebSocket API signatures.** `WsApi`, `SpotWsApi`, `WsApiClient` and
+`WsSession` signed params in insertion order. Binance requires them sorted by
+name, so signed WebSocket API requests (orders, account queries) were
+rejected with `-1022`. Signature payloads are now sorted.
+
+**Deprecated 84 endpoints that are not in Binance's API reference.** These
+were checked against developers.binance.com on 2026-10-24. Some were
+retired by Binance: margin `transfer`/`isolatedTransfer` (2024-03-31), sub-account
+`enableMargin` (2025-06-03), Portfolio Margin UM conditional orders
+(2026-04-28), Dual Investment `autoCompoundEditStatus` (2026-08-31), and
+`pmExchangeInfo`. Others were never Binance endpoints: about 50 Portfolio Margin
+paths that copy USDⓈ-M/COIN-M or Portfolio Margin Pro routes, wrong-version
+Portfolio Margin Pro calls, the plural spot `openOrderLists`/`allOrderLists`
+methods, `bookTickerV2`, `tradingDayTicker`, `delistSchedule`, `lvtKlines`, COIN-M
+`createTestOrder`, and the NFT history calls. Each `@deprecated` tag names the
+replacement where one exists. Removal is planned for the next major version.
+`contracts/postman-known-gaps.json` now records all 88 SDK-only endpoints
+(84 plus the four crypto-loan methods deprecated in 3.1.0) under
+`sdkOnlyEndpoints`. `known-gaps.test.ts` fails when a new endpoint is added
+without an upstream contract, or when an entry goes stale.
+
 ## [3.1.0] - 2026-10-24
 
 **Automated versioning with release-please.**

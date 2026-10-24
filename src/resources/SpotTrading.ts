@@ -88,12 +88,14 @@ export class SpotTrading {
     );
   }
 
+  /** @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); the path is `GET /api/v3/openOrderList` (`spot.queryOpenOrderLists`). Removal planned for the next major version. */
   async getOpenOCOOrders(): Promise<SpotOCOOrderAck[]> {
     return SpotOCOOrdersResponseSchema.parse(
       await this.http.get('/openOrderLists', undefined, 'signed'),
     );
   }
 
+  /** @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); the path is `GET /api/v3/allOrderList` (`spot.queryAllOrderLists`). Removal planned for the next major version. */
   async getAllOCOOrders(
     symbol: string,
     options?: { fromId?: number; startTime?: number; endTime?: number; limit?: number },
@@ -103,6 +105,7 @@ export class SpotTrading {
     );
   }
 
+  /** @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); `DELETE /api/v3/openOrders` cancels open order lists too. Removal planned for the next major version. */
   async cancelOpenOCOOrders(symbol: string): Promise<SpotOCOOrderAck[]> {
     return SpotOCOOrdersResponseSchema.parse(
       await this.http.delete('/openOrderLists', { symbol }, 'signed'),
