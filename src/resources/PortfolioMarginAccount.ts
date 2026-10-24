@@ -29,7 +29,10 @@ export class PortfolioMarginAccount {
     return PmBalanceResponseSchema.parse(await this.http.get('/papi/v1/balance', undefined, 'signed'));
   }
 
-  /** Query asset-collection status. `GET /papi/v1/asset-collection` (SIGNED). */
+  /**
+   * Query asset-collection status. `GET /papi/v1/asset-collection` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); the endpoint is `POST /papi/v1/asset-collection`. Removal planned for the next major version.
+   */
   async assetCollection(): Promise<PmAsset[]> {
     return z.array(PmAssetSchema).parse(await this.http.get('/papi/v1/asset-collection', undefined, 'signed'));
   }

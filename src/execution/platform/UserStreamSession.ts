@@ -1,6 +1,11 @@
 import type WebSocket from 'ws';
 import type { EventBus } from '../../core/events.js';
 import { WsConnection, type WsConnectionOptions } from '../../ws/WsConnection.js';
+import {
+  subscribeSpotUserData,
+  unwrapSpotUserFrame,
+  type SpotUserDataSigner,
+} from '../../ws/SpotUserWS.js';
 import { createUserEventParser, type UserEventParser } from './normalize.js';
 import {
   EXECUTION_PLATFORM_DEFAULTS,
@@ -12,9 +17,15 @@ import {
 export interface UserStreamSessionOptions {
   /** Product label used in events and errors ('usdm' | 'spot' | …). */
   product: string;
-  /** REST listen-key lifecycle the session drives. */
-  listenKeyApi: ListenKeyApi;
-  /** User-data stream base URL (the listen key is appended as the path). */
+  /** REST listen-key lifecycle the session drives. Omit when `wsApiSubscription` is set. */
+  listenKeyApi?: ListenKeyApi;
+  /**
+   * Spot WebSocket API mode: no listen key; the session connects to
+   * `userStreamUrl` as-is and sends a signed `userDataStream.subscribe.signature`
+   * on every open and rotation.
+   */
+  wsApiSubscription?: SpotUserDataSigner;
+  /** User-data stream base URL (the listen key is appended as the path in listen-key mode). */
   userStreamUrl: string;
   /** Observability bus; `execution.session.*` events are published to it. */
   events?: EventBus;
@@ -82,7 +93,9 @@ export interface UserStreamSessionOptions {
  * ```
  */
 export class UserStreamSession extends WsConnection {
-  private readonly api: ListenKeyApi;
+  private readonly api?: ListenKeyApi;
+  private readonly wsApiSubscription?: SpotUserDataSigner;
+  private subscription: Promise<number> | null = null;
   private readonly userStreamUrl: string;
   private readonly parse: UserEventParser;
   private readonly sessionProduct: string;
@@ -113,11 +126,16 @@ export class UserStreamSession extends WsConnection {
       socketFactory: options.socketFactory,
       ...options.connection,
       buildUrl: () => {
+        if (this.wsApiSubscription) return this.isClosed() ? null : this.userStreamUrl;
         const key = this.listenKeyValue;
         return key ? `${this.userStreamUrl}/${key}` : null;
       },
     });
+    if (!options.listenKeyApi === !options.wsApiSubscription) {
+      throw new Error('UserStreamSession needs exactly one of listenKeyApi or wsApiSubscription');
+    }
     this.api = options.listenKeyApi;
+    this.wsApiSubscription = options.wsApiSubscription;
     this.userStreamUrl = options.userStreamUrl;
     this.sessionProduct = options.product;
     this.onClose = options.onClose;
@@ -150,7 +168,9 @@ export class UserStreamSession extends WsConnection {
       this.openedAtMs = Date.now();
       this.framesSinceOpen = 0;
       this.setSessionState('live');
+      this.resubscribe();
     });
+    this.on('rotated', () => this.resubscribe());
     this.on('reconnecting', (attempt: number) => {
       this.setSessionState('reconnecting');
       const flapped =
@@ -206,12 +226,28 @@ export class UserStreamSession extends WsConnection {
     }
     if (this.startPromise) return this.startPromise;
     this.setSessionState('starting');
-    this.startPromise = this.api
+    const api = this.api;
+    this.startPromise = (api ? this.startListenKey(api) : this.startSubscription()).finally(() => {
+      this.startPromise = null;
+    });
+    return this.startPromise;
+  }
+
+  private async startSubscription(): Promise<string> {
+    this.connect();
+    await this.waitForOpen();
+    const subscriptionId = String(await this.subscription);
+    this.emitSessionEvent('started', { subscriptionId });
+    return subscriptionId;
+  }
+
+  private startListenKey(api: ListenKeyApi): Promise<string> {
+    return api
       .create()
       .then((key) => {
         if (this.sessionStateValue === 'closed') {
           // Closed while creating the key: dispose of it server-side.
-          this.api.close?.(key).catch(() => {
+          api.close?.(key).catch(() => {
             /* best-effort */
           });
           throw new Error(`[${this.name}] session closed during start`);
@@ -222,11 +258,15 @@ export class UserStreamSession extends WsConnection {
         this.scheduleNextKeepAlive();
         this.emitSessionEvent('started', { listenKey: key });
         return key;
-      })
-      .finally(() => {
-        this.startPromise = null;
       });
-    return this.startPromise;
+  }
+
+  private resubscribe(): void {
+    if (!this.wsApiSubscription) return;
+    this.subscription = subscribeSpotUserData(this, this.wsApiSubscription);
+    this.subscription.catch((err: unknown) => {
+      this.emit('error', err instanceof Error ? err : new Error(String(err)));
+    });
   }
 
   /**
@@ -244,7 +284,7 @@ export class UserStreamSession extends WsConnection {
     const key = this.listenKeyValue;
     this.listenKeyValue = null;
     if (key) {
-      this.api.close?.(key).catch(() => {
+      this.api?.close?.(key).catch(() => {
         /* best-effort cleanup */
       });
     }
@@ -257,8 +297,11 @@ export class UserStreamSession extends WsConnection {
     this.framesSinceOpen += 1; // any frame proves the stream is delivering
     const parsed = this.parseFrame(text);
     if (parsed === undefined) return;
+    if (this.wsApiSubscription && this.dispatchAck(parsed)) return;
+    const frame = this.wsApiSubscription ? unwrapSpotUserFrame(parsed) : parsed;
+    if (frame === undefined) return;
     try {
-      const event = this.parse(parsed);
+      const event = this.parse(frame);
       const type = (event as { e?: unknown })?.e;
       if (typeof type === 'string') {
         this.emit(type, event);
@@ -287,7 +330,7 @@ export class UserStreamSession extends WsConnection {
   private async keepAliveTick(): Promise<void> {
     if (this.sessionStateValue === 'closed') return;
     const key = this.listenKeyValue;
-    if (!key) return;
+    if (!key || !this.api) return;
     try {
       await this.api.keepAlive(key);
       this.keepAliveFailures = 0;
@@ -313,12 +356,13 @@ export class UserStreamSession extends WsConnection {
    * triggers (keep-alive failure + reconnect storm) rotate once.
    */
   private async rotateListenKey(reason: string): Promise<void> {
-    if (this.rotating || this.isClosed()) return;
+    const api = this.api;
+    if (!api || this.rotating || this.isClosed()) return;
     this.rotating = true;
     try {
-      const key = await this.api.create();
+      const key = await api.create();
       if (this.isClosed()) {
-        this.api.close?.(key).catch(() => {
+        api.close?.(key).catch(() => {
           /* best-effort */
         });
         return;

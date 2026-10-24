@@ -269,10 +269,11 @@ export class WsConnection extends EventEmitter {
 
   /**
    * Send a control request (`SUBSCRIBE`, `UNSUBSCRIBE`, `LIST_SUBSCRIPTIONS`)
-   * and await its ack envelope `{result, id}`. Replies are parsed with
-   * large-integer preservation.
+   * or a WebSocket API request (object params) and await its ack envelope
+   * `{result, id}` / `{error, id}`. Replies are parsed with large-integer
+   * preservation.
    */
-  request(method: string, params?: string[]): Promise<unknown> {
+  request(method: string, params?: string[] | Record<string, unknown>): Promise<unknown> {
     if (!this.isOpen()) {
       return Promise.reject(
         new Error(`[${this.label}] not OPEN (state=${this.state}); cannot ${method}`),
@@ -565,7 +566,8 @@ export class WsConnection extends EventEmitter {
       typeof parsed === 'object' &&
       !('stream' in (parsed as Record<string, unknown>)) &&
       'id' in (parsed as Record<string, unknown>) &&
-      'result' in (parsed as Record<string, unknown>)
+      ('result' in (parsed as Record<string, unknown>) ||
+        'error' in (parsed as Record<string, unknown>))
     ) {
       const { id, result, error } = parsed as {
         id: number;

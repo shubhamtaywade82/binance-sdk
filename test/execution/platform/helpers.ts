@@ -15,6 +15,8 @@ export interface MockUserStreamServer {
   connectionPaths: string[];
   /** Accepted sockets, in connect order. */
   sockets: WebSocket[];
+  /** Spot WS API requests received (`userDataStream.subscribe.signature` is auto-acked). */
+  wsApiRequests: Array<{ id: number; method: string; params: Record<string, unknown> }>;
   /** Send one raw frame to every currently-open socket. */
   send(frame: unknown): void;
   /** Terminate all client sockets (server stays up for reconnects). */
@@ -31,6 +33,7 @@ export async function startMockUserStreamServer(): Promise<MockUserStreamServer>
 
   const connectionPaths: string[] = [];
   const sockets: WebSocket[] = [];
+  const wsApiRequests: MockUserStreamServer['wsApiRequests'] = [];
   let rejectNew = false;
 
   server.on('connection', (socket, request) => {
@@ -40,6 +43,13 @@ export async function startMockUserStreamServer(): Promise<MockUserStreamServer>
       socket.terminate();
       return;
     }
+    socket.on('message', (raw) => {
+      const req = JSON.parse(raw.toString()) as MockUserStreamServer['wsApiRequests'][number];
+      wsApiRequests.push(req);
+      if (req.method === 'userDataStream.subscribe.signature') {
+        socket.send(JSON.stringify({ id: req.id, status: 200, result: { subscriptionId: 0 } }));
+      }
+    });
   });
 
   return {
@@ -47,6 +57,7 @@ export async function startMockUserStreamServer(): Promise<MockUserStreamServer>
     baseUrl: `ws://127.0.0.1:${port}`,
     connectionPaths,
     sockets,
+    wsApiRequests,
     send: (frame) => {
       const text = typeof frame === 'string' ? frame : JSON.stringify(frame);
       for (const socket of server.clients) {

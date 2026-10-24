@@ -22,8 +22,10 @@ interface WsApiRequestParams {
 }
 
 function buildQueryString(data: Record<string, unknown>): string {
+  // WS API signatures cover the params sorted by name (plain code-unit order).
   return Object.entries(data)
     .filter(([, val]) => val !== undefined && val !== null)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
     .map(([key, val]) => `${key}=${encodeURIComponent(String(val))}`)
     .join('&');
 }

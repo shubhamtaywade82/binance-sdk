@@ -7,7 +7,7 @@ import { SpotWave6 } from '../../resources/SpotWave6.js';
 import { ExecutionManager } from '../../execution/ExecutionManager.js';
 import { SpotExecutionAdapter } from '../../execution/adapter.js';
 import { SpotMarketWS } from '../../ws/SpotMarketWS.js';
-import { SpotUserWS } from '../../ws/SpotUserWS.js';
+import { SpotUserWS, createSpotUserDataSigner } from '../../ws/SpotUserWS.js';
 import { SpotWsApi } from '../../ws/SpotWsApi.js';
 
 /**
@@ -33,8 +33,11 @@ export interface SpotSurface {
   wave6: SpotWave6;
 }
 
-/** Shared Spot wiring (single construction path, same pattern as USDⓈ-M). */
-export function buildSpotSurface(core: CoreContext, getListenKey: () => string | null): SpotSurface {
+/**
+ * Shared Spot wiring (single construction path, same pattern as USDⓈ-M).
+ * The second parameter is ignored: the Spot user stream no longer uses listen keys.
+ */
+export function buildSpotSurface(core: CoreContext, _getListenKey?: () => string | null): SpotSurface {
   const events = core.events;
   const riskGateway = core.policy instanceof RiskGateway ? core.policy : undefined;
   const credentials = core.credentials;
@@ -52,8 +55,8 @@ export function buildSpotSurface(core: CoreContext, getListenKey: () => string |
     userStream: new SpotUserDataStream(spotHttp),
     ws: new SpotMarketWS(core.endpoints.wsSpotMarket, { events }),
     wsUser: new SpotUserWS({
-      baseUserUrl: core.endpoints.wsSpotUser,
-      getListenKey,
+      wsApiUrl: core.endpoints.wsSpotApi,
+      signSubscription: createSpotUserDataSigner(credentials),
       events,
     }),
     wsApi: new SpotWsApi({

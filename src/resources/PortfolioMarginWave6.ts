@@ -46,12 +46,18 @@ export class PortfolioMarginWave6 {
     return this.http.delete("/papi/v1/um/algo/order", params, 'signed').then(d => portfolioWave6Types.cancelUmAlgoOrderTradeResponseSchema.parse(d));
   }
 
-  /** Binance Derivatives Trading Portfolio Margin REST API → Trade > Cancel All UM Open Conditional Orders. `DELETE /papi/v1/um/conditional/allOpenOrders` (SIGNED). */
+  /**
+   * Binance Derivatives Trading Portfolio Margin REST API → Trade > Cancel All UM Open Conditional Orders. `DELETE /papi/v1/um/conditional/allOpenOrders` (SIGNED).
+   * @deprecated Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`). Removal planned for the next major version.
+   */
   async cancelAllUmOpenConditionalOrders(params: { symbol: string | number }): Promise<portfolioWave6Types.cancelAllUmOpenConditionalOrdersResponse> {
     return this.http.delete("/papi/v1/um/conditional/allOpenOrders", params, 'signed').then(d => portfolioWave6Types.cancelAllUmOpenConditionalOrdersResponseSchema.parse(d));
   }
 
-  /** Binance Derivatives Trading Portfolio Margin REST API → Trade > Cancel UM Conditional Order. `DELETE /papi/v1/um/conditional/order` (SIGNED). */
+  /**
+   * Binance Derivatives Trading Portfolio Margin REST API → Trade > Cancel UM Conditional Order. `DELETE /papi/v1/um/conditional/order` (SIGNED).
+   * @deprecated Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`). Removal planned for the next major version.
+   */
   async cancelUmConditionalOrder(params: { symbol: string | number; strategyId?: number; newClientStrategyId?: number }): Promise<portfolioWave6Types.cancelUmConditionalOrderResponse> {
     return this.http.delete("/papi/v1/um/conditional/order", params, 'signed').then(d => portfolioWave6Types.cancelUmConditionalOrderResponseSchema.parse(d));
   }
@@ -166,22 +172,34 @@ export class PortfolioMarginWave6 {
     return this.http.get("/papi/v1/um/algo/openAlgoOrders", params, 'signed').then(d => portfolioWave6Types.queryAllCurrentUmOpenAlgoOrdersUserDataResponseSchema.parse(d));
   }
 
-  /** Binance Derivatives Trading Portfolio Margin REST API → Trade > Query All UM Conditional Orders. `GET /papi/v1/um/conditional/allOrders` (SIGNED). */
+  /**
+   * Binance Derivatives Trading Portfolio Margin REST API → Trade > Query All UM Conditional Orders. `GET /papi/v1/um/conditional/allOrders` (SIGNED).
+   * @deprecated Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`). Removal planned for the next major version.
+   */
   async queryAllUmConditionalOrders(params: { symbol?: string | number; strategyId?: number; startTime?: number; endTime?: number; limit?: number }): Promise<portfolioWave6Types.queryAllUmConditionalOrdersResponse> {
     return this.http.get("/papi/v1/um/conditional/allOrders", params, 'signed').then(d => portfolioWave6Types.queryAllUmConditionalOrdersResponseSchema.parse(d));
   }
 
-  /** Binance Derivatives Trading Portfolio Margin REST API → Trade > Query Current UM Open Conditional Order. `GET /papi/v1/um/conditional/openOrder` (SIGNED). */
+  /**
+   * Binance Derivatives Trading Portfolio Margin REST API → Trade > Query Current UM Open Conditional Order. `GET /papi/v1/um/conditional/openOrder` (SIGNED).
+   * @deprecated Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`). Removal planned for the next major version.
+   */
   async queryCurrentUmOpenConditionalOrder(params: { symbol: string | number; strategyId?: number; newClientStrategyId?: number }): Promise<portfolioWave6Types.queryCurrentUmOpenConditionalOrderResponse> {
     return this.http.get("/papi/v1/um/conditional/openOrder", params, 'signed').then(d => portfolioWave6Types.queryCurrentUmOpenConditionalOrderResponseSchema.parse(d));
   }
 
-  /** Binance Derivatives Trading Portfolio Margin REST API → Trade > Query All Current UM Open Conditional Orders. `GET /papi/v1/um/conditional/openOrders` (SIGNED). */
+  /**
+   * Binance Derivatives Trading Portfolio Margin REST API → Trade > Query All Current UM Open Conditional Orders. `GET /papi/v1/um/conditional/openOrders` (SIGNED).
+   * @deprecated Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`). Removal planned for the next major version.
+   */
   async queryAllCurrentUmOpenConditionalOrders(params: { symbol?: string | number }): Promise<portfolioWave6Types.queryAllCurrentUmOpenConditionalOrdersResponse> {
     return this.http.get("/papi/v1/um/conditional/openOrders", params, 'signed').then(d => portfolioWave6Types.queryAllCurrentUmOpenConditionalOrdersResponseSchema.parse(d));
   }
 
-  /** Binance Derivatives Trading Portfolio Margin REST API → Trade > Query UM Conditional Order History. `GET /papi/v1/um/conditional/orderHistory` (SIGNED). */
+  /**
+   * Binance Derivatives Trading Portfolio Margin REST API → Trade > Query UM Conditional Order History. `GET /papi/v1/um/conditional/orderHistory` (SIGNED).
+   * @deprecated Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`). Removal planned for the next major version.
+   */
   async queryUmConditionalOrderHistory(params: { symbol: string | number; strategyId?: number; newClientStrategyId?: number }): Promise<portfolioWave6Types.queryUmConditionalOrderHistoryResponse> {
     return this.http.get("/papi/v1/um/conditional/orderHistory", params, 'signed').then(d => portfolioWave6Types.queryUmConditionalOrderHistoryResponseSchema.parse(d));
   }
@@ -241,7 +259,10 @@ export class PortfolioMarginWave6 {
     return this.http.post("/papi/v1/um/algo/order", params, 'signed').then(d => portfolioWave6Types.newUmAlgoOrderTradeResponseSchema.parse(d));
   }
 
-  /** Binance Derivatives Trading Portfolio Margin REST API → Trade > New UM Conditional Order. `POST /papi/v1/um/conditional/order` (SIGNED). */
+  /**
+   * Binance Derivatives Trading Portfolio Margin REST API → Trade > New UM Conditional Order. `POST /papi/v1/um/conditional/order` (SIGNED).
+   * @deprecated Binance deprecated the UM conditional order endpoints on 2026-04-28; use the UM algo order methods (`/papi/v1/um/algo/*`). Removal planned for the next major version.
+   */
   async newUmConditionalOrder(params: { symbol: string | number; side: 'BUY' | 'SELL'; positionSide?: string | number; strategyType: string | number; timeInForce?: string | number; quantity?: number; reduceOnly?: boolean; price?: number; workingType?: string | number; priceProtect?: boolean; newClientStrategyId?: number; stopPrice?: number; activationPrice?: number; callbackRate?: number; priceMatch?: string | number; selfTradePreventionMode?: string | number; goodTillDate?: number }): Promise<portfolioWave6Types.newUmConditionalOrderResponse> {
     return this.http.post("/papi/v1/um/conditional/order", params, 'signed').then(d => portfolioWave6Types.newUmConditionalOrderResponseSchema.parse(d));
   }

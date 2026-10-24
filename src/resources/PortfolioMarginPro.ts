@@ -37,12 +37,18 @@ export class PortfolioMarginPro {
     return PmProBalanceResponseSchema.parse(await this.http.get('/sapi/v1/portfolio/balance', undefined, 'signed'));
   }
 
-  /** PM Pro balance (v2). `GET /sapi/v2/portfolio/balance` (SIGNED). */
+  /**
+   * PM Pro balance (v2). `GET /sapi/v2/portfolio/balance` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/balance`. Removal planned for the next major version.
+   */
   async balanceV2(): Promise<PmProBalance[]> {
     return PmProBalanceResponseSchema.parse(await this.http.get('/sapi/v2/portfolio/balance', undefined, 'signed'));
   }
 
-  /** PM Pro asset-collection status. `GET /sapi/v1/portfolio/asset-collection` (SIGNED). */
+  /**
+   * PM Pro asset-collection status. `GET /sapi/v1/portfolio/asset-collection` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); the endpoint is `POST /sapi/v1/portfolio/asset-collection`. Removal planned for the next major version.
+   */
   async assetCollection(): Promise<unknown[]> {
     return this.http.get('/sapi/v1/portfolio/asset-collection', undefined, 'signed');
   }
@@ -83,7 +89,10 @@ export class PortfolioMarginPro {
     return this.http.get('/sapi/v1/portfolio/margin-call-level', undefined, 'signed');
   }
 
-  /** Apply for a PM Pro loan. `POST /sapi/v1/portfolio/pmLoan` (SIGNED). */
+  /**
+   * Apply for a PM Pro loan. `POST /sapi/v1/portfolio/pmLoan` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); query with `GET /sapi/v1/portfolio/pmLoan`, repay with `POST /sapi/v1/portfolio/repay`. Removal planned for the next major version.
+   */
   async pmLoan(params: { asset: string; amount: string }): Promise<Record<string, unknown>> {
     return this.http.post('/sapi/v1/portfolio/pmLoan', params, 'signed');
   }
@@ -114,7 +123,10 @@ export class PortfolioMarginPro {
     return PmProAssetIndexPriceResponseSchema.parse(await this.http.get('/sapi/v1/portfolio/asset-index-price', params, 'signed'));
   }
 
-  /** Asset index price (PM Pro v2). `GET /sapi/v2/portfolio/asset-index-price` (SIGNED). */
+  /**
+   * Asset index price (PM Pro v2). `GET /sapi/v2/portfolio/asset-index-price` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/asset-index-price`. Removal planned for the next major version.
+   */
   async assetIndexPriceV2(asset?: string): Promise<PmProAssetIndexPrice[]> {
     const params = asset ? { asset } : undefined;
     return PmProAssetIndexPriceResponseSchema.parse(await this.http.get('/sapi/v2/portfolio/asset-index-price', params, 'signed'));
@@ -130,7 +142,10 @@ export class PortfolioMarginPro {
     return PmProCollateralRateResponseSchema.parse(await this.http.get('/sapi/v2/portfolio/collateralRate', undefined, 'signed'));
   }
 
-  /** Collateral rate (v3). `GET /sapi/v3/portfolio/collateralRate` (SIGNED). */
+  /**
+   * Collateral rate (v3). `GET /sapi/v3/portfolio/collateralRate` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v2/portfolio/collateralRate`. Removal planned for the next major version.
+   */
   async collateralRateV3(): Promise<PmProCollateralRate[]> {
     return PmProCollateralRateResponseSchema.parse(await this.http.get('/sapi/v3/portfolio/collateralRate', undefined, 'signed'));
   }
@@ -140,7 +155,10 @@ export class PortfolioMarginPro {
     return PmProMarginAssetLeverageResponseSchema.parse(await this.http.get('/sapi/v1/portfolio/margin-asset-leverage', undefined, 'signed'));
   }
 
-  /** Margin asset leverage (v2). `GET /sapi/v2/portfolio/margin-asset-leverage` (SIGNED). */
+  /**
+   * Margin asset leverage (v2). `GET /sapi/v2/portfolio/margin-asset-leverage` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v1/portfolio/margin-asset-leverage`. Removal planned for the next major version.
+   */
   async marginAssetLeverageV2(): Promise<PmProMarginAssetLeverage[]> {
     return PmProMarginAssetLeverageResponseSchema.parse(await this.http.get('/sapi/v2/portfolio/margin-asset-leverage', undefined, 'signed'));
   }

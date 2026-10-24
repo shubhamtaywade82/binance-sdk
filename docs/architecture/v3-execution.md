@@ -125,8 +125,9 @@ usdm.executionPlatform.classify(err).safety;      // 'reconciliation-required'
 
 - USDⓈ-M routes listen-key REST through `core.http('fapiRoot')`
   (`/fapi/v1/listenKey`) and the session to `core.endpoints.wsUser`;
-- Spot routes through `core.http('spot')` (`/api/v3/userDataStream`) and
-  `wsSpotUser`;
+- Spot has no listen key (Binance retired `/api/v3/userDataStream` on
+  2026-02-20): the session connects to `wsSpotApi` and sends a signed
+  `userDataStream.subscribe.signature` on every open and rotation;
 - `usdm.executionPlatform` is lazy (a REST-only caller never pays for it) and
   closed by `USDMClient.close()`;
 - standalone construction (`new ExecutionPlatform({ product, core })`) accepts

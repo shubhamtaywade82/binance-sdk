@@ -10,6 +10,7 @@ import { OrderTracker } from './OrderTracker.js';
 import { PositionTracker } from './PositionTracker.js';
 import { UserStreamSession, type UserStreamSessionOptions } from './UserStreamSession.js';
 import { PaperSession } from './PaperSession.js';
+import { createSpotUserDataSigner } from '../../ws/SpotUserWS.js';
 import type { ListenKeyApi, ReconciliationSummary, RetryClassification } from './types.js';
 
 /** Session tuning accepted by {@link ExecutionPlatform.startUserSession}. */
@@ -42,7 +43,7 @@ export interface ExecutionPlatformOptions {
    * WS URL) and the observability bus. Same context every product client
    * holds — one weight budget, one event stream.
    */
-  core: Pick<CoreContext, 'endpoints' | 'events' | 'http'>;
+  core: Pick<CoreContext, 'endpoints' | 'events' | 'http' | 'credentials'>;
   /**
    * Execution manager to auto-attach when a session starts: its intent ledger
    * then tracks live fills from the stream (`setUserStream`), and detaches
@@ -165,9 +166,15 @@ export class ExecutionPlatform {
     }
     const session = new UserStreamSession({
       product: this.product,
-      listenKeyApi: createListenKeyApi(this.product, this.core),
-      userStreamUrl:
-        this.product === 'spot' ? this.core.endpoints.wsSpotUser : this.core.endpoints.wsUser,
+      ...(this.product === 'spot'
+        ? {
+            wsApiSubscription: createSpotUserDataSigner(this.core.credentials),
+            userStreamUrl: this.core.endpoints.wsSpotApi,
+          }
+        : {
+            listenKeyApi: createListenKeyApi(this.core),
+            userStreamUrl: this.core.endpoints.wsUser,
+          }),
       events: this.core.events,
       parseEvent: createUserEventParser(this.product),
       keepAliveIntervalMs: tuning?.keepAliveIntervalMs,
@@ -245,36 +252,19 @@ export class ExecutionPlatform {
 }
 
 /**
- * Build the product's listen-key REST API over a shared `HttpClient` — the
- * same hosts and security modes the v2 resources use (USDⓈ-M `/fapi/v1/listenKey`
- * on the fapi root, Spot `/api/v3/userDataStream`), so weight accounting and
- * observability stay unified.
+ * Build the USDⓈ-M listen-key REST API over the shared fapi `HttpClient`, so
+ * weight accounting and observability stay unified. Spot has no listen key
+ * since 2026-02-20; it subscribes over the WebSocket API instead.
  */
-function createListenKeyApi(
-  product: 'usdm' | 'spot',
-  core: ExecutionPlatformOptions['core'],
-): ListenKeyApi {
-  const http: HttpClient = product === 'spot' ? core.http('spot') : core.http('fapiRoot');
-
+function createListenKeyApi(core: ExecutionPlatformOptions['core']): ListenKeyApi {
+  const http: HttpClient = core.http('fapiRoot');
   const requireKey = (raw: unknown): string => {
     const key = (raw as { listenKey?: unknown })?.listenKey;
     if (typeof key !== 'string' || key === '') {
-      throw new Error(`listen-key response missing listenKey for ${product}`);
+      throw new Error('listen-key response missing listenKey for usdm');
     }
     return key;
   };
-
-  if (product === 'spot') {
-    return {
-      create: async () => requireKey(await http.post('/userDataStream', undefined, 'apiKey')),
-      keepAlive: async (listenKey) => {
-        await http.put('/userDataStream', { listenKey }, 'apiKey');
-      },
-      close: async (listenKey) => {
-        await http.delete('/userDataStream', { listenKey }, 'apiKey');
-      },
-    };
-  }
   return {
     create: async () => requireKey(await http.post('/fapi/v1/listenKey', undefined, 'apiKey')),
     keepAlive: async () => {

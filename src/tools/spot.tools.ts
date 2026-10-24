@@ -288,13 +288,13 @@ export function spotTools(client: BinanceClient): ToolDefinition[] {
     // ---- User data stream (signed) ----
     {
       name: 'spot_ws_start_user_stream',
-      description: 'Start the Spot user data stream: creates a listenKey, connects the private WebSocket, and begins keep-alive. Emits executionReport, outboundAccountPosition, balanceUpdate, listStatus.',
+      description: 'Start the Spot user data stream: connects the WebSocket API and sends a signed userDataStream.subscribe.signature. Emits executionReport, outboundAccountPosition, balanceUpdate, listStatus.',
       inputSchema: z.object({}),
-      handler: async () => textResult({ listenKey: await client.startSpotUserStream() }),
+      handler: async () => textResult({ subscriptionId: await client.startSpotUserStream() }),
     },
     {
       name: 'spot_ws_stop_user_stream',
-      description: 'Stop the Spot user data stream: closes the private WebSocket and invalidates the listenKey.',
+      description: 'Stop the Spot user data stream: closes the WebSocket API connection, which ends the subscription.',
       inputSchema: z.object({}),
       handler: async () => {
         client.closeSpotUserStream();

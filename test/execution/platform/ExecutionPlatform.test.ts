@@ -240,32 +240,28 @@ describe('ExecutionPlatform (v3 milestone 3)', () => {
     expect(platform.classify(new BinanceApiError('filter', -1013, 400)).safety).toBe('never-retry');
   });
 
-  it('supports a spot product: REST routes and wsSpotUser endpoint', async () => {
-    let seenCreateUrl = '';
-    server.use(
-      http.post('https://api.binance.com/api/v3/userDataStream', ({ request }) => {
-        seenCreateUrl = request.url;
-        return HttpResponse.json({ listenKey: 'spot-key-1' });
-      }),
-      http.put('https://api.binance.com/api/v3/userDataStream', () => HttpResponse.json({})),
-      http.delete('https://api.binance.com/api/v3/userDataStream', () => HttpResponse.json({})),
-    );
+  it('supports a spot product: WS API subscription, no listen key', async () => {
     const core = new CoreContext({
       apiKey: 'k',
       apiSecret: 's',
-      wsUserBase: ws.baseUrl,
+      wsSpotApiBase: ws.baseUrl,
       maxRetries: 0,
     });
     const platform = new ExecutionPlatform({ product: 'spot', core });
 
     const session = await platform.startUserSession();
     await session.waitForOpen(2000);
-    expect(session.listenKey).toBe('spot-key-1');
-    expect(seenCreateUrl).toBe('https://api.binance.com/api/v3/userDataStream');
-    expect(ws.connectionPaths.at(-1)).toBe('/spot-key-1');
+    expect(session.listenKey).toBeNull();
+    const subscribe = ws.wsApiRequests.at(-1)!;
+    expect(subscribe.method).toBe('userDataStream.subscribe.signature');
+    expect(subscribe.params).toMatchObject({ apiKey: 'k' });
+    expect(subscribe.params.signature).toMatch(/^[0-9a-f]{64}$/);
 
-    // Spot execution reports fold into the order tracker.
-    ws.send({ e: 'executionReport', s: 'ETHBTC', c: 'spot-1', X: 'NEW', z: '0', Z: '0', i: 1, T: 1 });
+    // Spot execution reports arrive wrapped in the WS API event envelope.
+    ws.send({
+      subscriptionId: 0,
+      event: { e: 'executionReport', s: 'ETHBTC', c: 'spot-1', X: 'NEW', z: '0', Z: '0', i: 1, T: 1 },
+    });
     await deliveryDelay();
     expect(platform.orders.get('spot-1')!.status).toBe('NEW');
 

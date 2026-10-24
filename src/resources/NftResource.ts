@@ -15,22 +15,34 @@ import * as nftTypes from '../types/nft.wave7.types.js';
 export class NftResource {
   constructor(private readonly http: HttpClient) {}
 
-  /** Binance NFT REST API → NFT > Get NFT Deposit History(USER_DATA). `GET /sapi/v1/nft/history/deposit` (SIGNED). */
+  /**
+   * Binance NFT REST API → NFT > Get NFT Deposit History(USER_DATA). `GET /sapi/v1/nft/history/deposit` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Binance no longer documents the NFT API. Removal planned for the next major version.
+   */
   async getNftDepositHistoryUserData(params: { startTime?: number; endTime?: number; limit?: number; page?: number }): Promise<nftTypes.getNftDepositHistoryUserDataResponse> {
     return this.http.get("/sapi/v1/nft/history/deposit", params, 'signed').then(d => nftTypes.getNftDepositHistoryUserDataResponseSchema.parse(d));
   }
 
-  /** Binance NFT REST API → NFT > Get NFT Transaction History(USER_DATA). `GET /sapi/v1/nft/history/transactions` (SIGNED). */
+  /**
+   * Binance NFT REST API → NFT > Get NFT Transaction History(USER_DATA). `GET /sapi/v1/nft/history/transactions` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Binance no longer documents the NFT API. Removal planned for the next major version.
+   */
   async getNftTransactionHistoryUserData(params: { orderType: number; startTime?: number; endTime?: number; limit?: number; page?: number }): Promise<nftTypes.getNftTransactionHistoryUserDataResponse> {
     return this.http.get("/sapi/v1/nft/history/transactions", params, 'signed').then(d => nftTypes.getNftTransactionHistoryUserDataResponseSchema.parse(d));
   }
 
-  /** Binance NFT REST API → NFT > Get NFT Withdraw History(USER_DATA). `GET /sapi/v1/nft/history/withdraw` (SIGNED). */
+  /**
+   * Binance NFT REST API → NFT > Get NFT Withdraw History(USER_DATA). `GET /sapi/v1/nft/history/withdraw` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Binance no longer documents the NFT API. Removal planned for the next major version.
+   */
   async getNftWithdrawHistoryUserData(params: { startTime?: number; endTime?: number; limit?: number; page?: number }): Promise<nftTypes.getNftWithdrawHistoryUserDataResponse> {
     return this.http.get("/sapi/v1/nft/history/withdraw", params, 'signed').then(d => nftTypes.getNftWithdrawHistoryUserDataResponseSchema.parse(d));
   }
 
-  /** Binance NFT REST API → NFT > Get NFT Asset(USER_DATA). `GET /sapi/v1/nft/user/getAsset` (SIGNED). */
+  /**
+   * Binance NFT REST API → NFT > Get NFT Asset(USER_DATA). `GET /sapi/v1/nft/user/getAsset` (SIGNED).
+   * @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Binance no longer documents the NFT API. Removal planned for the next major version.
+   */
   async getNftAssetUserData(params: { limit?: number; page?: number }): Promise<nftTypes.getNftAssetUserDataResponse> {
     return this.http.get("/sapi/v1/nft/user/getAsset", params, 'signed').then(d => nftTypes.getNftAssetUserDataResponseSchema.parse(d));
   }

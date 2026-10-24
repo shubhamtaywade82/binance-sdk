@@ -31,6 +31,7 @@ export class CoinMTrading {
     return CoinMOrderResponseSchema.parse(await this.http.post('/dapi/v1/order', params, 'signed'));
   }
 
+  /** @deprecated Not in Binance's API reference (developers.binance.com, checked 2026-10-24); COIN-M has no test-order endpoint. Removal planned for the next major version. */
   async createTestOrder(params: CoinMCreateOrderParams): Promise<Record<string, unknown>> {
     return this.http.post('/dapi/v1/order/test', params, 'signed');
   }
