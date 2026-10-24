@@ -83,6 +83,7 @@ export interface BinanceClientOptions {
   wsSpotApiBase?: string;
   wsDapiBase?: string;
   wsDapiMarketPublicBase?: string;
+  wsDapiApiBase?: string;
   timeoutMs?: number;
   maxRetries?: number;
   /** @deprecated unused; superseded by header-based tracking (rateLimitWeightPerMinute/rateLimitSafetyMargin). */

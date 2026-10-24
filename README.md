@@ -162,6 +162,8 @@ as `client.futures`, against `dapi.binance.com`.
 - `userStream` — listenKey lifecycle (create / keep-alive / close)
 - `ws` — market WebSocket streams, same naming scheme as `client.futures.ws`
 - `wsUser` — user data stream (ACCOUNT_UPDATE, ORDER_TRADE_UPDATE, MARGIN_CALL)
+- `wsApi` — WebSocket API on `ws-dapi.binance.com`: order.place/cancel/modify/status,
+  account.status/balance/position, userDataStream.start/ping/stop
 
 ### Margin (`client.margin`)
 

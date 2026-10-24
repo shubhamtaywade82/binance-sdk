@@ -36,6 +36,8 @@ export interface Endpoints {
    */
   wsDapiMarketPublic: string;
   wsDapiUser: string;
+  /** COIN-M WebSocket API (`ws-dapi`). */
+  wsDapiApi: string;
   /** Options market-stream socket (combined stream URL). */
   wsOptionsMarket: string;
   /** Options user-data stream socket (single listenKey socket). */
@@ -57,6 +59,7 @@ export function resolveEnvironment(options?: {
   wsSpotApiBase?: string;
   wsDapiBase?: string;
   wsDapiMarketPublicBase?: string;
+  wsDapiApiBase?: string;
 }): { env: Environment; endpoints: Endpoints } {
   const env: Environment = options?.demo ? 'demo' : options?.testnet ? 'testnet' : 'live';
 
@@ -93,7 +96,9 @@ export function resolveEnvironment(options?: {
     options?.wsApiBase ??
     (env === 'demo'
       ? 'wss://demo-fapi.binance.com/ws-fapi/v1'
-      : 'wss://ws-fapi.binance.com/ws-fapi/v1');
+      : env === 'testnet'
+        ? 'wss://testnet.binancefuture.com/ws-fapi/v1'
+        : 'wss://ws-fapi.binance.com/ws-fapi/v1');
 
   const restSpotHost =
     options?.apiBase ??
@@ -129,6 +134,12 @@ export function resolveEnvironment(options?: {
       ? 'wss://dstream.binancefuture.com/public/stream'
       : 'wss://dstream.binance.com/public/stream');
 
+  const wsDapiApiHost =
+    options?.wsDapiApiBase ??
+    (env === 'testnet' || env === 'demo'
+      ? 'wss://testnet.binancefuture.com/ws-dapi/v1'
+      : 'wss://ws-dapi.binance.com/ws-dapi/v1');
+
   return {
     env,
     endpoints: {
@@ -158,6 +169,7 @@ export function resolveEnvironment(options?: {
       wsDapiMarket: `${wsDapiHost}/market/stream`,
       wsDapiMarketPublic: wsDapiMarketPublicHost,
       wsDapiUser: `${wsDapiHost}/public/ws`,
+      wsDapiApi: wsDapiApiHost,
       // Wave 8 — Options + Portfolio Margin WebSocket hosts.
       wsOptionsMarket: 'wss://nbstream.binance.com/eoptions/stream',
       wsOptionsUser: 'wss://nbstream.binance.com/eoptions/ws',

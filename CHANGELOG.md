@@ -5,6 +5,16 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+**COIN-M WebSocket API.** `client.coinm.wsApi` and `CoinMClient.wsApi` connect
+to `wss://ws-dapi.binance.com/ws-dapi/v1` (testnet and demo:
+`wss://testnet.binancefuture.com/ws-dapi/v1`; override with `wsDapiApiBase`).
+They serve `order.place/cancel/modify/status`, `account.status/balance/position`
+and `userDataStream.start/ping/stop`.
+
+- **Fixed:** with `testnet: true`, the USDⓈ-M `wsApi` now connects to
+  `wss://testnet.binancefuture.com/ws-fapi/v1`. It used to point at the live
+  host.
+
 **USDⓈ-M WebSocket API method list matches Binance's.** Checked against
 developers.binance.com and the official connector on 2026-10-24.
 
