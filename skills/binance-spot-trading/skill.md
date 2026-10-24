@@ -72,8 +72,8 @@ A Spot OCO is one stop-loss limit + one limit-maker take-profit that cancel each
 
 | Tool | Purpose |
 |------|---------|
-| `spot_ws_start_user_stream` | Create listenKey, connect private WS, start keep-alive. |
-| `spot_ws_stop_user_stream` | Stop & invalidate the listenKey. |
+| `spot_ws_start_user_stream` | Connect the WebSocket API and subscribe to the user data stream. |
+| `spot_ws_stop_user_stream` | Close the connection, ending the subscription. |
 
 Events (via `client.spot.wsUser`): `executionReport`, `outboundAccountPosition`, `balanceUpdate`, `listStatus`.
 

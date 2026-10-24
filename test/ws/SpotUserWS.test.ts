@@ -1,6 +1,7 @@
 import { WebSocketServer } from 'ws';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { SpotUserWS } from '../../src/ws/SpotUserWS.js';
+import { SpotUserWS, createSpotUserDataSigner } from '../../src/ws/SpotUserWS.js';
+import { Credentials } from '../../src/core/credentials.js';
 import { parseSpotUserDataEvent } from '../../src/types/spot.types.js';
 
 describe('parseSpotUserDataEvent', () => {
@@ -16,8 +17,10 @@ describe('parseSpotUserDataEvent', () => {
 describe('SpotUserWS', () => {
   let server: WebSocketServer;
   let port: number;
+  const requests: Array<{ id: number; method: string; params: Record<string, unknown> }> = [];
 
   beforeEach(async () => {
+    requests.length = 0;
     server = new WebSocketServer({ port: 0 });
     await new Promise<void>((resolve) => server.once('listening', resolve));
     port = (server.address() as { port: number }).port;
@@ -25,29 +28,60 @@ describe('SpotUserWS', () => {
 
   afterEach(() => server.close());
 
-  it('emits executionReport events', async () => {
-    server.on('connection', (socket) => {
-      socket.send(JSON.stringify({ e: 'executionReport', s: 'BTCUSDT', E: 1, c: 'c1', S: 'BUY' }));
-    });
+  function credentials(apiKey?: string): Credentials {
+    return new Credentials({ apiKey, apiSecret: apiKey ? 's' : undefined });
+  }
 
-    const client = new SpotUserWS({ baseUserUrl: `ws://localhost:${port}`, getListenKey: () => 'lk' });
+  function acceptSubscriptions(reply: (id: number) => unknown): void {
+    server.on('connection', (socket) => {
+      socket.on('message', (raw) => {
+        const req = JSON.parse(raw.toString());
+        requests.push(req);
+        socket.send(JSON.stringify(reply(req.id)));
+      });
+    });
+  }
+
+  it('subscribes with a signed request and emits unwrapped executionReport events', async () => {
+    acceptSubscriptions((id) => ({ id, status: 200, result: { subscriptionId: 7 } }));
+    const client = new SpotUserWS({
+      wsApiUrl: `ws://localhost:${port}`,
+      signSubscription: createSpotUserDataSigner(credentials('k')),
+    });
     const received = new Promise<{ s: string }>((resolve) => {
       client.once('executionReport', (event: { s: string }) => resolve(event));
     });
-    client.connect();
 
-    const event = await received;
-    expect(event.s).toBe('BTCUSDT');
+    expect(await client.start()).toBe(7);
+    expect(requests[0].method).toBe('userDataStream.subscribe.signature');
+    expect(Object.keys(requests[0].params).sort()).toEqual(['apiKey', 'signature', 'timestamp']);
+
+    for (const socket of server.clients) {
+      socket.send(JSON.stringify({ subscriptionId: 7, event: { e: 'executionReport', s: 'BTCUSDT', E: 1, c: 'c1', S: 'BUY' } }));
+    }
+    expect((await received).s).toBe('BTCUSDT');
     client.close();
   });
 
-  it('emits error when no listenKey is available', async () => {
-    const client = new SpotUserWS({ baseUserUrl: `ws://localhost:${port}`, getListenKey: () => null });
-    const received = new Promise<Error>((resolve) => client.once('error', (err: Error) => resolve(err)));
-    client.connect();
+  it('rejects start when Binance refuses the subscription', async () => {
+    acceptSubscriptions((id) => ({ id, status: 400, error: { code: -1022, msg: 'Signature for this request is not valid.' } }));
+    const client = new SpotUserWS({
+      wsApiUrl: `ws://localhost:${port}`,
+      signSubscription: createSpotUserDataSigner(credentials('k')),
+    });
+    client.on('error', () => {
+      /* also emitted; asserted via start() */
+    });
 
-    const err = await received;
-    expect(err.message).toContain('listenKey');
+    await expect(client.start()).rejects.toThrow('-1022');
     client.close();
+  });
+
+  it('rejects start without signing credentials', async () => {
+    const client = new SpotUserWS({
+      wsApiUrl: `ws://localhost:${port}`,
+      signSubscription: createSpotUserDataSigner(credentials()),
+    });
+    await expect(client.start()).rejects.toThrow('API key');
   });
 });

@@ -32,15 +32,13 @@ export class SpotClient implements ProductClient {
   readonly core: CoreContext;
 
   private readonly surface: SpotSurface;
-  private listenKeyValue: string | null = null;
-  private keepAliveInterval: ReturnType<typeof setInterval> | null = null;
   private executionPlatformValue: ExecutionPlatform | undefined;
   private bookEngineValue: BookEngine | undefined;
   private closed = false;
 
   constructor(core: CoreContext) {
     this.core = core;
-    this.surface = buildSpotSurface(core, () => this.listenKeyValue);
+    this.surface = buildSpotSurface(core);
   }
 
   get market(): SpotSurface['market'] {
@@ -117,31 +115,18 @@ export class SpotClient implements ProductClient {
   }
 
   /**
-   * Start the listen-key user-data stream: creates the key, schedules the
-   * 30-minute keep-alive, and opens the user WS. Scoped to this product —
-   * unlike the multi-product facade, no other product's sockets are touched.
+   * Start the user-data stream over the WebSocket API subscription. Resolves
+   * with the subscription id (as a string) once Binance accepts it. Scoped to
+   * this product — unlike the multi-product facade, no other product's
+   * sockets are touched.
    */
   async startUserStream(): Promise<string> {
-    const { listenKey } = await this.surface.userStream.createListenKey();
-    this.listenKeyValue = listenKey;
-    this.keepAliveInterval = setInterval(() => {
-      this.surface.userStream.keepAliveListenKey().catch(() => {
-        /* retried on the next tick */
-      });
-    }, 30 * 60 * 1000);
-    this.surface.wsUser.connect();
-    return listenKey;
+    return String(await this.surface.wsUser.start());
   }
 
-  /** Close the user stream (timer, socket, and listen-key deletion). */
+  /** Close the user stream socket (the subscription ends with it). */
   closeUserStream(): void {
-    if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
-    this.keepAliveInterval = null;
     this.surface.wsUser.close();
-    this.surface.userStream.closeListenKey().catch(() => {
-      /* best-effort cleanup */
-    });
-    this.listenKeyValue = null;
   }
 
   /** Close this product's resources. Safe to call more than once. */

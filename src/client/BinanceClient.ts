@@ -140,7 +140,7 @@ export class BinanceClient {
   readonly core: CoreContext;
 
   get spot(): SpotSurface {
-    return this.cached('spot', () => buildSpotSurface(this.core, () => this.spotListenKeyValue));
+    return this.cached('spot', () => buildSpotSurface(this.core));
   }
 
   get futures(): FuturesNamespace {
@@ -399,8 +399,6 @@ export class BinanceClient {
   private readonly namespaces = new Map<string, unknown>();
   private listenKeyValue: string | null = null;
   private keepAliveInterval: NodeJS.Timeout | null = null;
-  private spotListenKeyValue: string | null = null;
-  private spotKeepAliveInterval: NodeJS.Timeout | null = null;
   private coinmListenKeyValue: string | null = null;
   private coinmKeepAliveInterval: NodeJS.Timeout | null = null;
   private optionsListenKeyValue: string | null = null;
@@ -507,26 +505,13 @@ export class BinanceClient {
     this.listenKeyValue = null;
   }
 
+  /** Start the Spot user stream (WebSocket API subscription); resolves with the subscription id. */
   async startSpotUserStream(): Promise<string> {
-    const { listenKey } = await this.spot.userStream.createListenKey();
-    this.spotListenKeyValue = listenKey;
-    this.spotKeepAliveInterval = setInterval(() => {
-      this.spot.userStream.keepAliveListenKey().catch(() => {
-        /* spot listenKey keep-alive failures are retried on the next tick */
-      });
-    }, 30 * 60 * 1000);
-    this.spot.wsUser.connect();
-    return listenKey;
+    return String(await this.spot.wsUser.start());
   }
 
   closeSpotUserStream(): void {
-    if (this.spotKeepAliveInterval) clearInterval(this.spotKeepAliveInterval);
-    this.spotKeepAliveInterval = null;
     this.spot.wsUser.close();
-    this.spot.userStream.closeListenKey().catch(() => {
-      /* best-effort cleanup */
-    });
-    this.spotListenKeyValue = null;
   }
 
   async startCoinMUserStream(): Promise<string> {
