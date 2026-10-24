@@ -3,14 +3,11 @@ import type { BinanceClient } from '../client/BinanceClient.js';
 import type { ToolDefinition } from './types.js';
 import { textResult } from './types.js';
 
-const symbol = z.string().min(1).describe('Trading pair, e.g. BTCUSDT');
-const asset = z.string().min(1).describe('Asset symbol, e.g. BTC');
 const optionalAsset = z.string().min(1).optional().describe('Asset symbol, e.g. BTC');
 const optionalSymbol = z.string().min(1).optional();
 const limit = z.number().int().positive().max(1000).default(100);
 const startTime = z.number().int().positive().optional();
 const endTime = z.number().int().positive().optional();
-const optionalParams = z.record(z.string(), z.unknown()).optional().describe('Additional Binance API parameters');
 
 /**
  * Wave 9 — MCP tool wrappers for the new Binance product surfaces.
@@ -216,7 +213,7 @@ export function newProductsTools(client: BinanceClient): ToolDefinition[] {
       name: 'fiat_orders_history',
       description: 'Get Binance Fiat deposit/withdraw order history.',
       inputSchema: z.object({ transactionType: z.number().describe('0=deposit, 1=withdraw'), beginTime: z.number().optional(), endTime: z.number().optional(), page: z.number().optional(), rows: z.number().optional() }),
-      handler: async (p) => textResult(await client.walletWave6.systemStatusSystem()),
+      handler: async (p) => textResult(await client.fiat.fiat.getFiatDepositWithdrawHistoryUserData(p)),
     },
   );
 

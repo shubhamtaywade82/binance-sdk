@@ -300,7 +300,11 @@ export const getOrderDetailUserDataResponseSchema = z.object({
 }).loose();
 export type getOrderDetailUserDataResponse = z.infer<typeof getOrderDetailUserDataResponseSchema>;
 
-export const getFiatDepositWithdrawHistoryUserDataResponseSchema = z.array(z.object({
+// Binance wraps fiat history in an envelope: { code, message, data[], total, success }.
+export const getFiatDepositWithdrawHistoryUserDataResponseSchema = z.object({
+  code: z.string().optional(),
+  message: z.string().optional(),
+  data: z.array(z.object({
   asset: z.string().optional(),
   symbol: z.string().optional(),
   pair: z.string().optional(),
@@ -440,10 +444,17 @@ export const getFiatDepositWithdrawHistoryUserDataResponseSchema = z.array(z.obj
   records: z.array(z.record(z.string(), z.unknown())).optional(),
   orders: z.array(z.record(z.string(), z.unknown())).optional(),
   items: z.array(z.record(z.string(), z.unknown())).optional(),
-}).loose());
+}).loose()),
+  total: z.number().optional(),
+  success: z.boolean().optional(),
+}).loose();
 export type getFiatDepositWithdrawHistoryUserDataResponse = z.infer<typeof getFiatDepositWithdrawHistoryUserDataResponseSchema>;
 
-export const getFiatPaymentsHistoryUserDataResponseSchema = z.array(z.object({
+// Binance wraps fiat history in an envelope: { code, message, data[], total, success }.
+export const getFiatPaymentsHistoryUserDataResponseSchema = z.object({
+  code: z.string().optional(),
+  message: z.string().optional(),
+  data: z.array(z.object({
   asset: z.string().optional(),
   symbol: z.string().optional(),
   pair: z.string().optional(),
@@ -583,7 +594,10 @@ export const getFiatPaymentsHistoryUserDataResponseSchema = z.array(z.object({
   records: z.array(z.record(z.string(), z.unknown())).optional(),
   orders: z.array(z.record(z.string(), z.unknown())).optional(),
   items: z.array(z.record(z.string(), z.unknown())).optional(),
-}).loose());
+}).loose()),
+  total: z.number().optional(),
+  success: z.boolean().optional(),
+}).loose();
 export type getFiatPaymentsHistoryUserDataResponse = z.infer<typeof getFiatPaymentsHistoryUserDataResponseSchema>;
 
 export const fiatWithdrawWithdrawResponseSchema = z.object({

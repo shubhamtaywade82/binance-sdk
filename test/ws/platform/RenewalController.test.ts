@@ -4,7 +4,6 @@ import {
   RenewalController,
   type RenewableConnection,
 } from '../../../src/ws/platform/RenewalController.js';
-import { EventBus } from '../../../src/core/events.js';
 
 /** Test double satisfying the renewal-facing connection surface. */
 class StubRenewable extends EventEmitter implements RenewableConnection {

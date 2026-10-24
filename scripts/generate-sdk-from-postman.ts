@@ -116,7 +116,6 @@ function emitRegistryFile(product: string, contracts: EndpointContract[]): strin
     const operationId = `${product}.${tsMethodName(c)}`;
     return `  [${JSON.stringify(operationId)}, ${JSON.stringify(c.method)}, ${JSON.stringify(c.path)}, ${JSON.stringify(c.auth)}, ${JSON.stringify(`${product}.${tsMethodName(c)}`)}]`;
   });
-  const pascal = toPascal(product);
   const upper = product.replace(/([A-Z])/g, '_$1').toUpperCase();
   return `import type { EndpointEntry, EndpointAuth, EndpointMethod } from './endpoints.js';
 
@@ -185,7 +184,7 @@ ${methods.join('\n\n')}
 }
 
 function emitSurfaceFile(product: string): string {
-  const { productDir, resourceClass, surfaceField } = metaFor(product);
+  const { resourceClass, surfaceField } = metaFor(product);
   const pascal = toPascal(product);
   return `import type { CoreContext } from '../../core/context.js';
 import { ${resourceClass} } from '../../resources/${pascal}Resource.js';
@@ -203,7 +202,7 @@ export function build${pascal}Surface(core: CoreContext): ${pascal}Surface {
 }
 
 function emitClientFile(product: string): string {
-  const { productDir, resourceClass, surfaceField, clientClass } = metaFor(product);
+  const { resourceClass, surfaceField, clientClass } = metaFor(product);
   const pascal = toPascal(product);
   return `import type { CoreContext } from '../../core/context.js';
 import { ${resourceClass} } from '../../resources/${pascal}Resource.js';
@@ -286,7 +285,6 @@ async function main(): Promise<void> {
 
   for (const product of newProducts) {
     const items = byProduct.get(product)!;
-    const { productDir, resourceClass, surfaceField, clientClass } = metaFor(product);
     const pascal = toPascal(product);
 
     // 1. Registry file
