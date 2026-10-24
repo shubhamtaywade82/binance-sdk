@@ -1,0 +1,15 @@
+{
+  "$comment": "Every upstream Postman endpoint the SDK does not implement, and every upstream collection the importer does not map, with the reason. test/contracts/known-gaps.test.ts fails on an unrecorded gap and on a stale entry (implemented, or gone upstream). Entries recorded at the 2026-10-24 baseline carry that reason; every later gap needs a real one.",
+  "schemaVersion": 1,
+  "endpoints": [],
+  "collections": [
+    {
+      "file": "Binance Stocks API.json",
+      "reason": "pre-existing (baseline 2026-10-24): collection has no COLLECTION_TO_PRODUCT mapping yet"
+    },
+    {
+      "file": "Binance W3W Prediction API.json",
+      "reason": "pre-existing (baseline 2026-10-24): collection has no COLLECTION_TO_PRODUCT mapping yet"
+    }
+  ]
+}

@@ -16,16 +16,24 @@
  * The output is consumed by `scripts/generate-sdk-from-contracts.ts` to
  * drive a contract-first implementation across all Binance products.
  *
- * Run via: `npm run contracts:import-postman`
+ * Collections are fetched from GitHub at a pinned commit, recorded as
+ * `pinnedSha`/`pinnedAt` so the catalog's provenance is reproducible:
+ *
+ *   npm run contracts:import-postman                    # latest commit touching collections/
+ *   npm run contracts:import-postman -- --ref <sha>     # a specific upstream commit
+ *
+ * Offline: set POSTMAN_COLLECTIONS_DIR to a local `collections/` directory
+ * (pass --ref to record which commit it is).
  */
-import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
-import { join, dirname, basename } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const COLLECTIONS_DIR = process.env.POSTMAN_COLLECTIONS_DIR
-  ?? join(ROOT, '..', 'postman-extract', 'binance-api-postman-master', 'collections');
 const CONTRACTS_DIR = join(ROOT, 'contracts');
+const POSTMAN_REPO = 'binance/binance-api-postman';
+const COLLECTIONS_PATH = 'collections';
+const FETCH_TIMEOUT_MS = 30_000;
 
 /**
  * Canonical product family. Derived from the Postman collection filename
@@ -209,108 +217,202 @@ function deriveOperationId(product: string, path: string, method: string, name: 
   return `${product}.${cleanName || `${method.toLowerCase()}${tail}`}`;
 }
 
-function loadCollection(filePath: string): { collection: PostmanCollection; file: string } {
-  const raw = readFileSync(filePath, 'utf8');
-  return { collection: JSON.parse(raw), file: basename(filePath) };
+export interface CollectionFile {
+  file: string;
+  collection: PostmanCollection;
 }
 
-function main(): void {
-  if (!statSync(COLLECTIONS_DIR).isDirectory()) {
-    console.error(`[contracts:import-postman] COLLECTIONS_DIR not found: ${COLLECTIONS_DIR}`);
-    process.exit(1);
+export interface ImportResult {
+  contracts: EndpointContract[];
+  sourceIndex: SourceIndexEntry[];
+  /** Upstream collections with no COLLECTION_TO_PRODUCT mapping (not imported). */
+  unmappedCollections: string[];
+}
+
+export interface UpstreamCommit {
+  sha: string;
+  date: string;
+  subject: string;
+  url: string;
+}
+
+interface GitHubCommit {
+  sha: string;
+  html_url: string;
+  commit: { message: string; committer: { date: string } };
+}
+
+/** GET a GitHub REST endpoint for `repo` (authenticated via GITHUB_TOKEN when set). */
+export async function githubJson<T>(repo: string, endpoint: string): Promise<T> {
+  const headers: Record<string, string> = { Accept: 'application/vnd.github+json' };
+  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  const url = `https://api.github.com/repos/${repo}${endpoint}`;
+  const response = await fetch(url, { headers, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+  if (!response.ok) {
+    throw new Error(`GitHub API ${url} failed: HTTP ${response.status} ${await response.text()}`);
   }
-  const files = readdirSync(COLLECTIONS_DIR).filter((f) => f.endsWith('.json')).sort();
-  console.log(`[contracts:import-postman] Scanning ${files.length} collections in ${COLLECTIONS_DIR}`);
+  return (await response.json()) as T;
+}
 
-  const contracts: EndpointContract[] = [];
-  const sourceIndex: SourceIndexEntry[] = [];
+/** Commits on `repo` touching `path`, newest first. */
+export async function commitsTouching(repo: string, path: string, since?: string): Promise<UpstreamCommit[]> {
+  const query = new URLSearchParams({ path, per_page: '50' });
+  if (since) query.set('since', since);
+  const commits = await githubJson<GitHubCommit[]>(repo, `/commits?${query.toString()}`);
+  return commits.map(toUpstreamCommit);
+}
 
-  for (const file of files) {
+function toUpstreamCommit(c: GitHubCommit): UpstreamCommit {
+  return { sha: c.sha, date: c.commit.committer.date, subject: c.commit.message.split('\n')[0] ?? '', url: c.html_url };
+}
+
+/** A binance-api-postman commit by SHA. */
+export async function collectionsCommit(sha: string): Promise<UpstreamCommit> {
+  return toUpstreamCommit(await githubJson<GitHubCommit>(POSTMAN_REPO, `/commits/${sha}`));
+}
+
+/** Latest binance-api-postman commit touching collections/. */
+export async function latestCollectionsCommit(): Promise<UpstreamCommit> {
+  const [latest] = await commitsTouching(POSTMAN_REPO, COLLECTIONS_PATH);
+  if (!latest) throw new Error(`No commits found touching ${POSTMAN_REPO}/${COLLECTIONS_PATH}`);
+  return latest;
+}
+
+async function fetchText(url: string): Promise<string> {
+  const response = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+  if (!response.ok) throw new Error(`Failed to fetch ${url}: HTTP ${response.status}`);
+  return response.text();
+}
+
+/** Every collection JSON in binance-api-postman at commit `sha`. */
+export async function fetchCollectionsAt(sha: string): Promise<CollectionFile[]> {
+  const tree = await githubJson<{ tree: Array<{ path: string; type: string }> }>(
+    POSTMAN_REPO,
+    `/git/trees/${sha}?recursive=1`,
+  );
+  const paths = tree.tree
+    .filter((node) => node.type === 'blob' && node.path.startsWith(`${COLLECTIONS_PATH}/`) && node.path.endsWith('.json'))
+    .map((node) => node.path)
+    .sort();
+  const files: CollectionFile[] = [];
+  for (const path of paths) {
+    const file = path.slice(COLLECTIONS_PATH.length + 1);
+    const raw = await fetchText(`https://raw.githubusercontent.com/${POSTMAN_REPO}/${sha}/${COLLECTIONS_PATH}/${encodeURIComponent(file)}`);
+    files.push({ file, collection: JSON.parse(raw) as PostmanCollection });
+  }
+  return files;
+}
+
+function readCollectionsDir(dir: string): CollectionFile[] {
+  return readdirSync(dir)
+    .filter((file) => file.endsWith('.json'))
+    .sort()
+    .map((file) => ({ file, collection: JSON.parse(readFileSync(join(dir, file), 'utf8')) as PostmanCollection }));
+}
+
+function toContract(file: string, collName: string, mapping: { product: string; hostKey: string }, leaf: { item: PostmanItem; folder: string[] }): EndpointContract {
+  const req = leaf.item.request as PostmanRequest;
+  const path = normalizePath(req.url);
+  const url = typeof req.url === 'object' ? req.url : undefined;
+  return {
+    sourceCollection: file,
+    sourceFolder: leaf.folder,
+    name: leaf.item.name ?? path,
+    product: mapping.product,
+    hostKey: mapping.hostKey,
+    method: (req.method ?? 'GET').toUpperCase() as EndpointContract['method'],
+    path,
+    auth: deriveAuth(req),
+    queryParams: (url?.query ?? []).map(toParamContract),
+    bodyParams: (req.body?.urlencoded ?? []).map(toParamContract),
+    docRef: `${collName} → ${[...leaf.folder, leaf.item.name].filter(Boolean).join(' > ')}`,
+  };
+}
+
+function collectionDescription(collection: PostmanCollection): string | undefined {
+  const description = collection.info?.description;
+  return typeof description === 'string' ? description : description?.content;
+}
+
+/** Normalize collections into endpoint contracts plus per-collection source metadata. */
+export function extractContracts(files: CollectionFile[]): ImportResult {
+  const result: ImportResult = { contracts: [], sourceIndex: [], unmappedCollections: [] };
+  for (const { file, collection } of files) {
     const mapping = COLLECTION_TO_PRODUCT[file];
     if (!mapping) {
-      console.warn(`  ⚠ no product mapping for ${file} — skipping`);
+      result.unmappedCollections.push(file);
       continue;
     }
-    const { collection } = loadCollection(join(COLLECTIONS_DIR, file));
     const leaves: { item: PostmanItem; folder: string[] }[] = [];
     walkItems(collection.item, [], leaves);
-
     const collName = collection.info?.name ?? file.replace(/\.json$/, '');
-    const collDesc = typeof collection.info?.description === 'string'
-      ? collection.info.description
-      : collection.info?.description?.content;
-
-    for (const { item, folder } of leaves) {
-      const req = item.request;
-      if (!req) continue;
-      const method = (req.method ?? 'GET').toUpperCase() as 'GET' | 'POST' | 'PUT' | 'DELETE';
-      const path = normalizePath(req.url);
-      const auth = deriveAuth(req);
-      const url = typeof req.url === 'object' ? req.url : undefined;
-      const queryParams = (url?.query ?? []).map(toParamContract);
-      const bodyParams = (req.body?.urlencoded ?? []).map(toParamContract);
-
-      contracts.push({
-        sourceCollection: file,
-        sourceFolder: folder,
-        name: item.name ?? path,
-        product: mapping.product,
-        hostKey: mapping.hostKey,
-        method,
-        path,
-        auth,
-        queryParams,
-        bodyParams,
-        docRef: `${collName} → ${[...folder, item.name].filter(Boolean).join(' > ')}`,
-      });
-    }
-
-    sourceIndex.push({
+    result.contracts.push(...leaves.map((leaf) => toContract(file, collName, mapping, leaf)));
+    result.sourceIndex.push({
       collectionFile: file,
       collectionName: collName,
       postmanId: collection.info?._postman_id,
-      description: collDesc,
+      description: collectionDescription(collection),
       endpointCount: leaves.length,
       sourceUrl: `${SOURCE_URL}/blob/master/collections/${encodeURIComponent(file)}`,
     });
-    console.log(`  ✓ ${file.padEnd(60)} ${leaves.length} endpoints → ${mapping.product}`);
   }
-
-  // Write the contract catalog.
-  const catalogPath = join(CONTRACTS_DIR, 'postman-catalog.json');
-  const catalog = {
-    schemaVersion: 1,
-    sourceUrl: SOURCE_URL,
-    officialDocsUrl: OFFICIAL_DOCS_URL,
-    generatedAt: new Date().toISOString(),
-    totalEndpoints: contracts.length,
-    totalCollections: sourceIndex.length,
-    endpoints: contracts,
-  };
-  writeFileSync(catalogPath, JSON.stringify(catalog, null, 2));
-  console.log(`\n[contracts:import-postman] wrote ${catalogPath} (${contracts.length} endpoints, ${sourceIndex.length} collections)`);
-
-  // Write the source index (per-collection metadata).
-  const indexPath = join(CONTRACTS_DIR, 'postman-source-index.json');
-  writeFileSync(indexPath, JSON.stringify({
-    schemaVersion: 1,
-    sourceUrl: SOURCE_URL,
-    officialDocsUrl: OFFICIAL_DOCS_URL,
-    collections: sourceIndex,
-  }, null, 2));
-  console.log(`[contracts:import-postman] wrote ${indexPath}`);
-
-  // Print coverage summary.
-  const byProduct = new Map<string, number>();
-  for (const c of contracts) {
-    byProduct.set(c.product, (byProduct.get(c.product) ?? 0) + 1);
-  }
-  console.log('\n[contracts:import-postman] Coverage by product:');
-  const sortedProducts = [...byProduct.entries()].sort((a, b) => b[1] - a[1]);
-  for (const [product, count] of sortedProducts) {
-    console.log(`  ${product.padEnd(20)} ${count} endpoints`);
-  }
-  console.log(`  ${'TOTAL'.padEnd(20)} ${contracts.length} endpoints`);
+  return result;
 }
 
-main();
+/** Write postman-catalog.json and postman-source-index.json for a pinned import. */
+export function writeContracts(result: ImportResult, pinnedSha: string, pinnedAt: string): void {
+  const pin = { schemaVersion: 1, sourceUrl: SOURCE_URL, officialDocsUrl: OFFICIAL_DOCS_URL, pinnedSha, pinnedAt };
+  const catalog = {
+    ...pin,
+    totalEndpoints: result.contracts.length,
+    totalCollections: result.sourceIndex.length,
+    endpoints: result.contracts,
+  };
+  writeFileSync(join(CONTRACTS_DIR, 'postman-catalog.json'), `${JSON.stringify(catalog, null, 2)}\n`);
+  const index = { ...pin, unmappedCollections: result.unmappedCollections, collections: result.sourceIndex };
+  writeFileSync(join(CONTRACTS_DIR, 'postman-source-index.json'), `${JSON.stringify(index, null, 2)}\n`);
+}
+
+function parseRef(argv: string[]): string | undefined {
+  const index = argv.indexOf('--ref');
+  if (index === -1) return undefined;
+  const value = argv[index + 1];
+  if (!value || !/^[0-9a-f]{40}$/.test(value)) throw new Error('--ref requires a 40-hex commit SHA');
+  return value;
+}
+
+function printSummary(result: ImportResult): void {
+  for (const entry of result.sourceIndex) {
+    console.log(`  ✓ ${entry.collectionFile.padEnd(60)} ${entry.endpointCount} endpoints`);
+  }
+  for (const file of result.unmappedCollections) {
+    console.log(`  ⚠ ${file.padEnd(60)} no product mapping — recorded in unmappedCollections`);
+  }
+  console.log(`  TOTAL ${result.contracts.length} endpoints from ${result.sourceIndex.length} collections`);
+}
+
+async function main(): Promise<void> {
+  const ref = parseRef(process.argv.slice(2));
+  const offlineDir = process.env.POSTMAN_COLLECTIONS_DIR;
+  if (offlineDir) {
+    console.log(`[contracts:import-postman] reading ${offlineDir}`);
+    const result = extractContracts(readCollectionsDir(offlineDir));
+    writeContracts(result, ref ?? 'unknown', new Date().toISOString().slice(0, 10));
+    printSummary(result);
+    return;
+  }
+  // pinnedAt is the upstream commit date, not the import date, so the
+  // drift report's "since" window starts where the pinned content does.
+  const commit = ref ? await collectionsCommit(ref) : await latestCollectionsCommit();
+  console.log(`[contracts:import-postman] fetching ${POSTMAN_REPO}@${commit.sha}`);
+  const result = extractContracts(await fetchCollectionsAt(commit.sha));
+  writeContracts(result, commit.sha, commit.date.slice(0, 10));
+  printSummary(result);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error: unknown) => {
+    console.error('[contracts:import-postman] FAILED:', error);
+    process.exitCode = 1;
+  });
+}

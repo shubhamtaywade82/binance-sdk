@@ -94,6 +94,7 @@
     "contracts:check": "tsx scripts/check-contracts-drift.ts",
     "contracts:import-postman": "tsx scripts/import-postman-collections.ts",
     "contracts:generate-from-postman": "tsx scripts/generate-sdk-from-postman.ts",
+    "contracts:upstream-drift": "tsx scripts/upstream-drift.ts",
     "contracts:wave6-close-gaps": "tsx scripts/wave6-close-gaps.ts",
     "contracts:wave7-add-schemas": "tsx scripts/wave7-add-schemas.ts",
     "smoke": "tsx scripts/smoke-test.ts",
