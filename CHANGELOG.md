@@ -5,6 +5,23 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+**Automated versioning with release-please.**
+
+- `.github/workflows/release-please.yml` keeps one release PR open with the
+  next version in `package.json`, `package-lock.json` and `src/version.ts`,
+  computed from Conventional Commit subjects: `fix:` → patch, `feat:` →
+  minor, `feat!:` → major. Merging that PR tags the version, creates the
+  GitHub release, and calls `release.yml` (which now accepts
+  `workflow_call`) to publish to npm.
+- This changelog stays hand-written. Before merging a release PR, rename
+  `## [Unreleased]` to the new version on its branch.
+- `.github/workflows/pr-title.yml` rejects PR titles that aren't
+  Conventional Commits.
+- Upstream-watch PRs title themselves `feat(contracts):` when endpoints were
+  added or removed, and `fix(contracts):` for parameter-only drift.
+- `contracts/catalog.json`'s `sdkVersion` now comes from `src/version.ts`
+  instead of a hard-coded string.
+
 **Postman re-pin to `a6dbbbb` (2026-10-22).** This is the first automated
 upstream-watch PR.
 

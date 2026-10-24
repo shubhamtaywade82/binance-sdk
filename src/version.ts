@@ -7,7 +7,8 @@
  *    value when negotiating with hosts (was previously hard-coded as
  *    `'2.0.0'`, which drifted from `package.json`).
  *
- * Update in lockstep with the `version` field in `package.json` and the
- * `[Unreleased]` / latest release section in `CHANGELOG.md`.
+ * Bumped together with `package.json` by release-please (the trailing
+ * marker below); rename the `[Unreleased]` section of `CHANGELOG.md` on the
+ * release PR branch before merging it.
  */
-export const VERSION = '3.0.1';
+export const VERSION = '3.0.1'; // x-release-please-version

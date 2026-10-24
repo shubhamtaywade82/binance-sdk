@@ -110,9 +110,19 @@ function parseOutPath(argv: string[]): string | undefined {
   return value;
 }
 
-function writeGithubOutput(drifted: boolean, sha: string): void {
+/**
+ * Conventional Commit type for the re-import PR, which release-please turns
+ * into the version bump: endpoint additions/removals change the public
+ * surface (minor: removals are deprecated, not deleted); parameter-only
+ * drift is a fix (patch).
+ */
+export function releaseType(drift: ContractDrift): 'feat' | 'fix' {
+  return drift.added.length + drift.removed.length > 0 ? 'feat' : 'fix';
+}
+
+function writeGithubOutput(drift: ContractDrift, sha: string): void {
   if (!process.env.GITHUB_OUTPUT) return;
-  appendFileSync(process.env.GITHUB_OUTPUT, `drifted=${drifted}\nsha=${sha}\n`);
+  appendFileSync(process.env.GITHUB_OUTPUT, `drifted=${hasDrift(drift)}\nsha=${sha}\ntype=${releaseType(drift)}\n`);
 }
 
 async function main(): Promise<void> {
@@ -129,7 +139,7 @@ async function main(): Promise<void> {
   console.log(report);
   const outPath = parseOutPath(process.argv.slice(2));
   if (outPath) writeFileSync(outPath, report);
-  writeGithubOutput(hasDrift(drift), latest.sha);
+  writeGithubOutput(drift, latest.sha);
   if (hasDrift(drift)) process.exitCode = 1;
 }
 

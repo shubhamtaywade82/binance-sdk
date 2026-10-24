@@ -3,6 +3,8 @@ name: Release
 on:
   release:
     types: [published]
+  # Called by release-please.yml after it creates a release.
+  workflow_call:
 
 jobs:
   publish:

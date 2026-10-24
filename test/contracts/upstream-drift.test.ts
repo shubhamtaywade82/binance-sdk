@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { diffContracts, hasDrift } from '../../scripts/upstream-drift.js';
+import { diffContracts, hasDrift, releaseType } from '../../scripts/upstream-drift.js';
 import type { EndpointContract } from '../../scripts/import-postman-collections.js';
 
 function contract(method: EndpointContract['method'], path: string, params: Array<[string, boolean]> = []): EndpointContract {
@@ -40,5 +40,16 @@ describe('diffContracts', () => {
     const pinned = [contract('GET', '/a', [['x', false], ['y', true]])];
     const latest = [contract('GET', '/a', [['y', true], ['x', false]])];
     expect(hasDrift(diffContracts(pinned, latest))).toBe(false);
+  });
+});
+
+describe('releaseType', () => {
+  it('should be feat when endpoints are added or removed', () => {
+    expect(releaseType(diffContracts([contract('GET', '/a')], [contract('GET', '/b')]))).toBe('feat');
+  });
+
+  it('should be fix when only parameters changed', () => {
+    const pinned = [contract('GET', '/a', [['page', false]])];
+    expect(releaseType(diffContracts(pinned, [contract('GET', '/a')]))).toBe('fix');
   });
 });
