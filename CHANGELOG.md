@@ -5,6 +5,32 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+**Upstream drift watch for the Postman contract layer.** See
+`docs/superpowers/plans/2026-10-24-upstream-drift-watch.md`.
+
+- **Pinned, reproducible imports.** `contracts:import-postman` now fetches
+  `binance/binance-api-postman` from GitHub at a commit (`--ref <sha>`,
+  default: the latest commit touching `collections/`) instead of a local
+  extract. The catalog and source index record `pinnedSha`/`pinnedAt`
+  instead of `generatedAt`. The catalog is pinned to `3d1b723`
+  (2026-10-20); re-importing there reproduces the committed 713 endpoints
+  exactly. Collections with no product mapping are recorded in
+  `unmappedCollections` instead of only a console warning.
+- **`npm run contracts:upstream-drift`** diffs the contracts at the latest
+  upstream commit against the catalog: endpoints added or removed, and
+  parameter changes. It exits 1 on drift. The report also lists
+  `binance-spot-api-docs` CHANGELOG commits and links the
+  developers.binance.com changelogs, which block scripted fetches.
+- **Weekly `.github/workflows/upstream-watch.yml`** (Mondays 09:00 IST):
+  on drift it re-imports, runs the gates, and opens or updates a PR on
+  `upstream-sync/auto` and an `upstream-drift` issue. It never
+  auto-merges and never runs the code generator.
+- **Known-gaps gate.** `contracts/postman-known-gaps.json` plus
+  `test/contracts/known-gaps.test.ts`: every upstream endpoint must be
+  implemented or recorded with a reason, and stale entries fail. The
+  baseline has no endpoint gaps; two collections are unmapped (Stocks,
+  W3W Prediction).
+
 **Architecture audit remediation — Ed25519 session, atomic cancel-replace,
 5XX UNKNOWN trap, pluggable transport.** Closes the architectural gaps
 surfaced by the recurring audit digest against the Binance Developer
