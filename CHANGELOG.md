@@ -5,6 +5,19 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+**USDⓈ-M WebSocket API method list matches Binance's.** Checked against
+developers.binance.com and the official connector on 2026-10-24.
+
+- **Fixed:** `futures.wsApi.tickerBookTicker()` now sends `ticker.book`.
+  `ticker.bookTicker` is a Spot method name and the futures API rejects it.
+- **Added:** `accountBalance()` (`account.balance`), plus `accountStatusV2()`,
+  `accountBalanceV2()` and `accountPositionV2()` (`v2/account.*`).
+- **Deprecated:** `placeOrderList`, `cancelOrderList`, `orderListStatus`,
+  `time`, `exchangeInfo`, `klines`, `aggTrades`, `trades`, `avgPrice` and
+  `ticker24hr`. These are Spot WebSocket API methods that the USDⓈ-M API does
+  not serve; use the REST client instead. Removal is planned for the next
+  major version.
+
 ## [3.1.0] - 2026-10-24
 
 **Automated versioning with release-please.**

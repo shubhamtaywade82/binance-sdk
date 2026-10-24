@@ -113,14 +113,17 @@ export class WsApi {
     return this.request('order.status', params);
   }
 
+  /** @deprecated Not a USDⓈ-M WebSocket API method (developers.binance.com, checked 2026-10-24), so Binance rejects it; use the REST client. Removal planned for the next major version. */
   placeOrderList(params: Record<string, unknown>): Promise<WsApiResponse> {
     return this.request('orderList.place', params);
   }
 
+  /** @deprecated Not a USDⓈ-M WebSocket API method (developers.binance.com, checked 2026-10-24), so Binance rejects it; use the REST client. Removal planned for the next major version. */
   cancelOrderList(params: Record<string, unknown>): Promise<WsApiResponse> {
     return this.request('orderList.cancel', params);
   }
 
+  /** @deprecated Not a USDⓈ-M WebSocket API method (developers.binance.com, checked 2026-10-24), so Binance rejects it; use the REST client. Removal planned for the next major version. */
   orderListStatus(params: Record<string, unknown>): Promise<WsApiResponse> {
     return this.request('orderList.status', params);
   }
@@ -131,6 +134,22 @@ export class WsApi {
 
   accountPosition(params: Record<string, unknown> = {}): Promise<WsApiResponse> {
     return this.request('account.position', params);
+  }
+
+  accountBalance(): Promise<WsApiResponse> {
+    return this.request('account.balance', {});
+  }
+
+  accountStatusV2(): Promise<WsApiResponse> {
+    return this.request('v2/account.status', {});
+  }
+
+  accountBalanceV2(): Promise<WsApiResponse> {
+    return this.request('v2/account.balance', {});
+  }
+
+  accountPositionV2(params: Record<string, unknown> = {}): Promise<WsApiResponse> {
+    return this.request('v2/account.position', params);
   }
 
   userDataStreamStart(): Promise<WsApiResponse> {
@@ -147,22 +166,27 @@ export class WsApi {
 
   // ---- Public market data (no signature required) ----
 
+  /** @deprecated Not a USDⓈ-M WebSocket API method (developers.binance.com, checked 2026-10-24), so Binance rejects it; use the REST client (`futures.market`). Removal planned for the next major version. */
   time(): Promise<WsApiResponse> {
     return this.request('time', {}, { signed: false });
   }
 
+  /** @deprecated Not a USDⓈ-M WebSocket API method (developers.binance.com, checked 2026-10-24), so Binance rejects it; use the REST client (`futures.market`). Removal planned for the next major version. */
   exchangeInfo(params: Record<string, unknown> = {}): Promise<WsApiResponse> {
     return this.request('exchangeInfo', params, { signed: false });
   }
 
+  /** @deprecated Not a USDⓈ-M WebSocket API method (developers.binance.com, checked 2026-10-24), so Binance rejects it; use the REST client (`futures.market`). Removal planned for the next major version. */
   klines(params: Record<string, unknown>): Promise<WsApiResponse> {
     return this.request('klines', params, { signed: false });
   }
 
+  /** @deprecated Not a USDⓈ-M WebSocket API method (developers.binance.com, checked 2026-10-24), so Binance rejects it; use the REST client (`futures.market`). Removal planned for the next major version. */
   aggTrades(params: Record<string, unknown>): Promise<WsApiResponse> {
     return this.request('aggTrades', params, { signed: false });
   }
 
+  /** @deprecated Not a USDⓈ-M WebSocket API method (developers.binance.com, checked 2026-10-24), so Binance rejects it; use the REST client (`futures.market`). Removal planned for the next major version. */
   trades(params: Record<string, unknown>): Promise<WsApiResponse> {
     return this.request('trades', params, { signed: false });
   }
@@ -171,6 +195,7 @@ export class WsApi {
     return this.request('depth', params, { signed: false });
   }
 
+  /** @deprecated Not a USDⓈ-M WebSocket API method (developers.binance.com, checked 2026-10-24), so Binance rejects it; use the REST client (`futures.market`). Removal planned for the next major version. */
   avgPrice(params: Record<string, unknown>): Promise<WsApiResponse> {
     return this.request('avgPrice', params, { signed: false });
   }
@@ -180,9 +205,10 @@ export class WsApi {
   }
 
   tickerBookTicker(params: Record<string, unknown> = {}): Promise<WsApiResponse> {
-    return this.request('ticker.bookTicker', params, { signed: false });
+    return this.request('ticker.book', params, { signed: false });
   }
 
+  /** @deprecated Not a USDⓈ-M WebSocket API method (developers.binance.com, checked 2026-10-24), so Binance rejects it; use the REST client (`futures.market`). Removal planned for the next major version. */
   ticker24hr(params: Record<string, unknown> = {}): Promise<WsApiResponse> {
     return this.request('ticker.24hr', params, { signed: false });
   }

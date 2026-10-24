@@ -92,6 +92,32 @@ describe('WsApi', () => {
     expect(res.result).toEqual({ symbol: 'BTCUSDT', price: '60000' });
   });
 
+  it('sends the documented USDⓈ-M method names', async () => {
+    const methods: string[] = [];
+    server.on('connection', (socket) => {
+      socket.on('message', (raw) => {
+        const req = JSON.parse(raw.toString()) as { id: string; method: string };
+        methods.push(req.method);
+        socket.send(JSON.stringify({ id: req.id, status: 200, result: {} }));
+      });
+    });
+
+    const api = new WsApi({ baseUrl: `ws://localhost:${port}`, apiKey: 'k', apiSecret: 's' });
+    await api.tickerBookTicker({ symbol: 'BTCUSDT' });
+    await api.accountBalance();
+    await api.accountStatusV2();
+    await api.accountBalanceV2();
+    await api.accountPositionV2();
+
+    expect(methods).toEqual([
+      'ticker.book',
+      'account.balance',
+      'v2/account.status',
+      'v2/account.balance',
+      'v2/account.position',
+    ]);
+  });
+
   it('wraps userDataStream.start for WS-managed listen keys', async () => {
     let received: { method: string } | undefined;
     server.on('connection', (socket) => {

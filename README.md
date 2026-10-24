@@ -206,9 +206,8 @@ creation, futures/margin enablement, deposit address/history.
   book ticker, mini ticker, liquidations, composite index, asset index + all-market/arr variants)
 - `wsUser` — user data stream (ACCOUNT_UPDATE, ORDER_TRADE_UPDATE, MARGIN_CALL; auto-reconnect)
 - `wsApi` — WebSocket API: signed trading (order.place/cancel/modify/status, algoOrder.place/cancel,
-  orderList.place/cancel/status, account.status/position, userDataStream.start/ping/stop) and public
-  market data (time, exchangeInfo, klines, aggTrades, trades, depth, avgPrice,
-  ticker.price/bookTicker/24hr)
+  account.status/balance/position and their v2 variants, userDataStream.start/ping/stop) and public
+  market data (depth, ticker.price, ticker.book)
 
 ### Client options
 
