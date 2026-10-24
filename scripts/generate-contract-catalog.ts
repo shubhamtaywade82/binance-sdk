@@ -29,6 +29,7 @@ import {
   type WsFamily,
 } from '../src/ws/platform/types.js';
 import { resolveEnvironment } from '../src/client/endpoints.js';
+import { VERSION } from '../src/version.js';
 
 const ROOT = join(import.meta.dirname, '..');
 const CONTRACTS_DIR = join(ROOT, 'contracts');
@@ -86,7 +87,7 @@ for (const entry of entries) {
 const index = {
   $schema: './catalog.schema.json',
   catalogVersion: 1,
-  sdkVersion: '3.0.1',
+  sdkVersion: VERSION,
   generatedAt: new Date().toISOString(),
   description:
     'Machine-readable inventory of the SDK REST + WebSocket surface, derived from src/registry and the v3 WS platform. Schema catalogs land with the coverage compiler milestone.',

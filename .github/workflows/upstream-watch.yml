@@ -106,8 +106,10 @@ jobs:
         with:
           token: ${{ secrets.UPSTREAM_SYNC_TOKEN || github.token }}
           branch: upstream-sync/auto
-          title: 'chore(contracts): re-import drifted Binance Postman collections (automated)'
-          commit-message: 'chore(contracts): re-import drifted Binance Postman collections (automated)'
+          # The squash-merged title drives release-please: feat (endpoints
+          # added/removed) → minor, fix (parameters only) → patch.
+          title: '${{ steps.drift.outputs.type }}(contracts): re-import drifted Binance Postman collections (automated)'
+          commit-message: '${{ steps.drift.outputs.type }}(contracts): re-import drifted Binance Postman collections (automated)'
           body-path: ${{ runner.temp }}/pr-body.md
           labels: upstream-drift
 
