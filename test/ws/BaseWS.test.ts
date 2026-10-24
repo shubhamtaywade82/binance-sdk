@@ -155,12 +155,14 @@ describe('BaseWS', () => {
 
     const client = new BaseWS({
       baseStreamUrl: `ws://localhost:${port}/stream`,
-      requestTimeoutMs: 40,
+      // Long enough for SUBSCRIBE to be acked under a loaded parallel run;
+      // UNSUBSCRIBE is never answered, so it still times out.
+      requestTimeoutMs: 300,
     });
     await client.subscribe(['btcusdt@kline_1m']);
     void client.unsubscribe(['btcusdt@kline_1m']); // ignored, will time out
 
-    await new Promise((resolve) => setTimeout(resolve, 120));
+    await new Promise((resolve) => setTimeout(resolve, 600));
     process.off('unhandledRejection', onUnhandled);
 
     expect(unhandled).toEqual([]);
