@@ -1,0 +1,6 @@
+#!/bin/sh
+# Full test run before code leaves the machine. Skip with
+# `git push --no-verify`; CI still runs everything.
+set -e
+npm test
+npm run --silent contracts:check
