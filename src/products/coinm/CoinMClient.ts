@@ -73,6 +73,10 @@ export class CoinMClient implements ProductClient {
     return this.surface.wsUser;
   }
 
+  get wsApi(): CoinMSurface['wsApi'] {
+    return this.surface.wsApi;
+  }
+
   /**
    * Start the listen-key user-data stream: creates the key, schedules the
    * 30-minute keep-alive, and opens the user WS. Scoped to this product —

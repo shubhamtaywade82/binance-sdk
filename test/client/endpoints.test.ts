@@ -25,6 +25,8 @@ describe('resolveEnvironment', () => {
     expect(endpoints.wsDapiMarket).toBe('wss://dstream.binance.com/market/stream');
     expect(endpoints.wsDapiMarketPublic).toBe('wss://dstream.binance.com/public/stream');
     expect(endpoints.wsDapiUser).toBe('wss://dstream.binance.com/public/ws');
+    expect(endpoints.wsDapiApi).toBe('wss://ws-dapi.binance.com/ws-dapi/v1');
+    expect(endpoints.wsApi).toBe('wss://ws-fapi.binance.com/ws-fapi/v1');
     expect(endpoints.restDapiRoot).toBe('https://dapi.binance.com');
     expect(endpoints.restDapi).toBe('https://dapi.binance.com/dapi/v1');
   });
@@ -60,6 +62,8 @@ describe('resolveEnvironment', () => {
     expect(endpoints.wsDapiMarket).toBe('wss://dstream.binancefuture.com/market/stream');
     expect(endpoints.wsDapiMarketPublic).toBe('wss://dstream.binancefuture.com/public/stream');
     expect(endpoints.wsDapiUser).toBe('wss://dstream.binancefuture.com/public/ws');
+    expect(endpoints.wsDapiApi).toBe('wss://testnet.binancefuture.com/ws-dapi/v1');
+    expect(endpoints.wsApi).toBe('wss://testnet.binancefuture.com/ws-fapi/v1');
     expect(endpoints.restDapiRoot).toBe('https://testnet.binancefuture.com');
   });
 
@@ -77,7 +81,9 @@ describe('resolveEnvironment', () => {
     const { endpoints } = resolveEnvironment({
       wsSpotApiBase: 'ws://localhost:1234',
       wsDapiBase: 'ws://localhost:5678',
+      wsDapiApiBase: 'ws://localhost:9012',
     });
+    expect(endpoints.wsDapiApi).toBe('ws://localhost:9012');
     expect(endpoints.wsSpotApi).toBe('ws://localhost:1234');
     expect(endpoints.wsDapiMarket).toBe('ws://localhost:5678/market/stream');
     expect(endpoints.wsDapiUser).toBe('ws://localhost:5678/public/ws');

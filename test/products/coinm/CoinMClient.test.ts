@@ -1,3 +1,4 @@
+import { WebSocketServer } from 'ws';
 import { describe, expect, it } from 'vitest';
 import { BinanceClient } from '../../../src/client/BinanceClient.js';
 import { CoreContext } from '../../../src/core/context.js';
@@ -15,10 +16,33 @@ describe('v3 CoinMClient (standalone product client)', () => {
 
   it('exposes the full COIN-M surface with stable identity', () => {
     const coinm = new CoinMClient(new CoreContext({ apiKey: 'k', apiSecret: 's' }));
-    for (const key of ['market', 'account', 'trading', 'userStream', 'ws', 'wsUser'] as const) {
+    for (const key of ['market', 'account', 'trading', 'userStream', 'ws', 'wsUser', 'wsApi'] as const) {
       expect(coinm[key]).toBeDefined();
       expect(coinm[key]).toBe(coinm[key]);
     }
+  });
+
+  it('sends signed WebSocket API requests to the COIN-M ws-dapi host', async () => {
+    const server = new WebSocketServer({ port: 0 });
+    await new Promise<void>((resolve) => server.once('listening', resolve));
+    const port = (server.address() as { port: number }).port;
+    let received: { method: string; params: Record<string, unknown> } | undefined;
+    server.on('connection', (socket) => {
+      socket.on('message', (raw) => {
+        received = JSON.parse(raw.toString());
+        socket.send(JSON.stringify({ id: 'x', status: 200, result: [] }));
+      });
+    });
+
+    const coinm = new CoinMClient(
+      new CoreContext({ apiKey: 'k', apiSecret: 's', wsDapiApiBase: `ws://localhost:${port}` }),
+    );
+    await coinm.wsApi.accountBalance();
+    server.close();
+
+    expect(received?.method).toBe('account.balance');
+    expect(received?.params.apiKey).toBe('k');
+    expect(typeof received?.params.signature).toBe('string');
   });
 
   it('shares a caller-owned CoreContext (one bus, one transport pool)', () => {
