@@ -9,6 +9,18 @@ import type { EndpointEntry, EndpointAuth, EndpointMethod } from './endpoints.js
 type Row = [operation: string, method: EndpointMethod, path: string, auth: EndpointAuth, implementedBy: string];
 
 const rows: Row[] = [
+  // ---- Wave 6: contract-first gap closure (Postman-driven) ----
+  ["options.tradfiOptionsContractUserData", "POST", "/eapi/v1/stock/contract", "signed", "options.tradfiOptionsContractUserData"],
+
+  // ---- Wave 6: contract-first gap closure (Postman-driven) ----
+  ["options.cancelAllOptionOrdersByUnderlyingTrade", "DELETE", "/eapi/v1/allOpenOrdersByUnderlying", "signed", "options.cancelAllOptionOrdersByUnderlyingTrade"],
+  ["options.cancelBlockTradeOrderTrade", "DELETE", "/eapi/v1/block/order/create", "signed", "options.cancelBlockTradeOrderTrade"],
+  ["options.queryBlockTradeDetailsUserData", "GET", "/eapi/v1/block/order/execute", "signed", "options.queryBlockTradeDetailsUserData"],
+  ["options.getAutoCancelAllOpenOrdersKillSwitchConfigTrade", "GET", "/eapi/v1/countdownCancelAll", "signed", "options.getAutoCancelAllOpenOrdersKillSwitchConfigTrade"],
+  ["options.querySingleOrderTrade", "GET", "/eapi/v1/order", "signed", "options.querySingleOrderTrade"],
+  ["options.autoCancelAllOpenOrdersKillSwitchHeartbeatTrade", "POST", "/eapi/v1/countdownCancelAllHeartBeat", "signed", "options.autoCancelAllOpenOrdersKillSwitchHeartbeatTrade"],
+  ["options.extendBlockTradeOrderTrade", "PUT", "/eapi/v1/block/order/create", "signed", "options.extendBlockTradeOrderTrade"],
+
   // ---- Connectivity / market data (OptionsMarket) ----
   ['market.ping', 'GET', '/eapi/v1/ping', 'public', 'options.market.ping'],
   ['market.time', 'GET', '/eapi/v1/time', 'public', 'options.market.time'],

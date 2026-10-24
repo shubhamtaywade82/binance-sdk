@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "sourceUrl": "https://github.com/binance/binance-api-postman",
+  "officialDocsUrl": "https://developers.binance.com/en/docs/sdks-tools/postman/collections",
+  "collections": [
+    {
+      "collectionFile": "Binance Algo API.json",
+      "collectionName": "Algo Trading REST API",
+      "description": "Programmatic access to Binance’s execution algorithms for creating and managing Spot and Futures algo orders.",
+      "endpointCount": 12,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Algo%20API.json"
+    },
+    {
+      "collectionFile": "Binance Alpha API.json",
+      "collectionName": "Alpha Trading REST API",
+      "description": "APIs for Binance Alpha Trading.",
+      "endpointCount": 6,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Alpha%20API.json"
+    },
+    {
+      "collectionFile": "Binance C2C API.json",
+      "collectionName": "C2C REST API",
+      "description": "Query fiat transaction history via the C2C REST API.",
+      "endpointCount": 1,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20C2C%20API.json"
+    },
+    {
+      "collectionFile": "Binance Convert API.json",
+      "collectionName": "Convert REST API",
+      "description": "Request quotes and execute cryptocurrency conversions via the Convert REST API.",
+      "endpointCount": 9,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Convert%20API.json"
+    },
+    {
+      "collectionFile": "Binance Copy Trading API.json",
+      "collectionName": "Copy Trading REST API",
+      "description": "Automate lead trading via the Copy Trading API.",
+      "endpointCount": 2,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Copy%20Trading%20API.json"
+    },
+    {
+      "collectionFile": "Binance Crypto Loan API.json",
+      "collectionName": "Crypto Loan REST API",
+      "description": "Access Binance Crypto Loans to query assets, subscribe to loans, and manage loan positions.",
+      "endpointCount": 16,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Crypto%20Loan%20API.json"
+    },
+    {
+      "collectionFile": "Binance Derivatives Trading COIN Futures API.json",
+      "collectionName": "Futures (COIN-M) REST API",
+      "description": "Access market data, manage accounts, and trade COIN-M perpetual and delivery futures.",
+      "endpointCount": 64,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Derivatives%20Trading%20COIN%20Futures%20API.json"
+    },
+    {
+      "collectionFile": "Binance Derivatives Trading Options API.json",
+      "collectionName": "Options REST API",
+      "description": "Access market data, manage accounts, and trade Binance Options.",
+      "endpointCount": 44,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Derivatives%20Trading%20Options%20API.json"
+    },
+    {
+      "collectionFile": "Binance Derivatives Trading Portfolio Margin API.json",
+      "collectionName": "Portfolio Margin REST API",
+      "description": "Access account information, manage margin positions, and trade with Binance Portfolio Margin.",
+      "endpointCount": 102,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Derivatives%20Trading%20Portfolio%20Margin%20API.json"
+    },
+    {
+      "collectionFile": "Binance Derivatives Trading Portfolio Margin Pro API.json",
+      "collectionName": "Portfolio Margin Pro REST API",
+      "description": "Access advanced account management and high-frequency trading with Binance Portfolio Margin Pro.",
+      "endpointCount": 24,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Derivatives%20Trading%20Portfolio%20Margin%20Pro%20API.json"
+    },
+    {
+      "collectionFile": "Binance Derivatives Trading USDS Futures API.json",
+      "collectionName": "Futures (USDⓈ-M) REST API",
+      "description": "Access market data, manage accounts, and trade USDⓈ-M perpetual futures.",
+      "endpointCount": 95,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Derivatives%20Trading%20USDS%20Futures%20API.json"
+    },
+    {
+      "collectionFile": "Binance Dual Investment API.json",
+      "collectionName": "Dual Investment REST API",
+      "description": "Query products, request quotes, and subscribe to Advanced Earn Dual Investment strategies. The auto-compound setting is no longer managed via API — it must be toggled by the user in the Binance Web UI.",
+      "endpointCount": 4,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Dual%20Investment%20API.json"
+    },
+    {
+      "collectionFile": "Binance Fiat API.json",
+      "collectionName": "Fiat REST API",
+      "description": "Query Binance fiat deposit and withdrawal history.",
+      "endpointCount": 5,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Fiat%20API.json"
+    },
+    {
+      "collectionFile": "Binance Gift Card API.json",
+      "collectionName": "Gift Card REST API",
+      "description": "Create, redeem, and check the value of Binance crypto gift cards.",
+      "endpointCount": 6,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Gift%20Card%20API.json"
+    },
+    {
+      "collectionFile": "Binance Margin Trading API.json",
+      "collectionName": "Margin REST API",
+      "description": "Access account information, borrow and repay assets, and trade with Binance Margin.",
+      "endpointCount": 69,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Margin%20Trading%20API.json"
+    },
+    {
+      "collectionFile": "Binance Mining API.json",
+      "collectionName": "Mining REST API",
+      "description": "Query mining status, earnings, and account data via the Binance Pool API.",
+      "endpointCount": 13,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Mining%20API.json"
+    },
+    {
+      "collectionFile": "Binance Pay API.json",
+      "collectionName": "Binance Pay REST API",
+      "description": "Query Binance Pay transaction history.",
+      "endpointCount": 1,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Pay%20API.json"
+    },
+    {
+      "collectionFile": "Binance Rebate API.json",
+      "collectionName": "Rebate REST API",
+      "description": "Query spot trading rebate history records.",
+      "endpointCount": 1,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Rebate%20API.json"
+    },
+    {
+      "collectionFile": "Binance Simple Earn API.json",
+      "collectionName": "Simple Earn REST API",
+      "description": "Earn rewards by subscribing to flexible or locked Simple Earn products.",
+      "endpointCount": 41,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Simple%20Earn%20API.json"
+    },
+    {
+      "collectionFile": "Binance Spot API.json",
+      "collectionName": "Spot REST API",
+      "description": "Access market data, manage accounts, and trade on Binance Spot.",
+      "endpointCount": 48,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Spot%20API.json"
+    },
+    {
+      "collectionFile": "Binance Staking API.json",
+      "collectionName": "Staking REST API",
+      "description": "Subscribe to staking products, track positions, and query rewards via the Binance Staking API.",
+      "endpointCount": 37,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Staking%20API.json"
+    },
+    {
+      "collectionFile": "Binance Sub Account API.json",
+      "collectionName": "Sub Account REST API",
+      "description": "Create and manage sub-accounts, control permissions, and transfer assets via the Sub Account API.",
+      "endpointCount": 49,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Sub%20Account%20API.json"
+    },
+    {
+      "collectionFile": "Binance VIP Loan API.json",
+      "collectionName": "VIP Loan REST API",
+      "description": "Access over-collateralized loan services, manage positions, and monitor collateral via the VIP Loan API.",
+      "endpointCount": 14,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20VIP%20Loan%20API.json"
+    },
+    {
+      "collectionFile": "Binance Wallet API.json",
+      "collectionName": "Wallet REST API",
+      "description": "Query balances, manage assets, and perform wallet operations via the Binance Wallet API.",
+      "endpointCount": 50,
+      "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Wallet%20API.json"
+    }
+  ]
+}

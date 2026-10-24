@@ -5,19 +5,9 @@ import { PortfolioMarginMargin } from '../../resources/PortfolioMarginMargin.js'
 import { PortfolioMarginPortfolio } from '../../resources/PortfolioMarginPortfolio.js';
 import { PortfolioMarginUm } from '../../resources/PortfolioMarginUm.js';
 import { PortfolioMarginUserDataStream } from '../../resources/PortfolioMarginUserDataStream.js';
+import { PortfolioMarginWave6 } from '../../resources/PortfolioMarginWave6.js';
+import { PortfolioMarginUserWS } from '../../ws/PortfolioMarginUserWS.js';
 
-/**
- * Full Binance Portfolio Margin product surface. Exposed via
- * `client.portfolioMargin` on the multi-product facade and as a standalone
- * `PortfolioMarginClient`. Sub-namespaces mirror Binance's URL layout:
- *
- *  - `account`    — top-level PM account/balance/transfer endpoints
- *  - `um`         — USDⓈ-M Futures scoped under PM (`/papi/v1/um/*`)
- *  - `cm`         — COIN-M Futures scoped under PM (`/papi/v1/cm/*`)
- *  - `margin`     — classic margin scoped under PM (`/papi/v1/margin/*`)
- *  - `portfolio`  — PM loan, repay, interest, collateral config (`/papi/v1/portfolio/*`)
- *  - `userStream` — PM listen-key lifecycle
- */
 export interface PortfolioMarginSurface {
   account: PortfolioMarginAccount;
   um: PortfolioMarginUm;
@@ -25,10 +15,12 @@ export interface PortfolioMarginSurface {
   margin: PortfolioMarginMargin;
   portfolio: PortfolioMarginPortfolio;
   userStream: PortfolioMarginUserDataStream;
+  wave6: PortfolioMarginWave6;
+  /** Wave 8 — Portfolio Margin user-data WebSocket stream. */
+  wsUser: PortfolioMarginUserWS;
 }
 
-/** Build the PM surface over a shared {@link CoreContext}. */
-export function buildPortfolioMarginSurface(core: CoreContext): PortfolioMarginSurface {
+export function buildPortfolioMarginSurface(core: CoreContext, getListenKey?: () => string | null): PortfolioMarginSurface {
   return {
     account: new PortfolioMarginAccount(core.http('papi')),
     um: new PortfolioMarginUm(core.http('papi')),
@@ -36,5 +28,11 @@ export function buildPortfolioMarginSurface(core: CoreContext): PortfolioMarginS
     margin: new PortfolioMarginMargin(core.http('papi')),
     portfolio: new PortfolioMarginPortfolio(core.http('papi')),
     userStream: new PortfolioMarginUserDataStream(core.http('papi')),
+    wave6: new PortfolioMarginWave6(core.http('papiRoot')),
+    wsUser: new PortfolioMarginUserWS({
+      baseUserUrl: core.endpoints.wsPortfolioMarginUser,
+      getListenKey: getListenKey ?? (() => null),
+      events: core.events,
+    }),
   };
 }

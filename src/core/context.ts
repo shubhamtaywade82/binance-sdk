@@ -21,7 +21,9 @@ export type RestHost =
   | 'dapiRoot'
   | 'dapi'
   | 'eapi'
+  | 'eapiRoot'
   | 'papi'
+  | 'papiRoot'
   | 'bapi';
 
 /** Transport tuning shared by every host client. */
@@ -47,7 +49,9 @@ const HOST_URL: Record<RestHost, (e: Endpoints) => string> = {
   dapiRoot: (e) => e.restDapiRoot,
   dapi: (e) => e.restDapi,
   eapi: (e) => e.restEapi,
+  eapiRoot: () => 'https://eapi.binance.com',
   papi: (e) => e.restPapi,
+  papiRoot: () => 'https://papi.binance.com',
   bapi: (e) => e.restBapi,
 };
 

@@ -8,6 +8,7 @@ const rows: Row[] = [
   ['alpha.exchangeInfo', 'GET', '/bapi/defi/v1/public/alpha-trade/get-exchange-info', 'public', 'alpha.exchangeInfo'],
   ['alpha.klines', 'GET', '/bapi/defi/v1/public/alpha-trade/klines', 'public', 'alpha.klines'],
   ['alpha.ticker', 'GET', '/bapi/defi/v1/public/alpha-trade/ticker', 'public', 'alpha.ticker'],
+  ['alpha.fullDepth', 'GET', '/bapi/defi/v1/public/alpha-trade/fullDepth', 'public', 'alpha.fullDepth'],
   ['alpha.tokenList', 'GET', '/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list', 'public', 'alpha.tokenList'],
 ];
 

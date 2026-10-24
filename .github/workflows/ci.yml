@@ -5,6 +5,12 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to run CI on'
+        required: false
+        default: 'main'
 
 jobs:
   build-test:
@@ -25,4 +31,36 @@ jobs:
       # docs / llms.txt are stale relative to ENDPOINT_REGISTRY. Regenerate
       # with `npm run contracts:generate && npm run docs:generate`.
       - run: npm run contracts:check
+      # Wave 11 — Postman contract coverage regression gate.
+      # Downloads the official Binance Postman collection, regenerates the
+      # contract catalog, and fails if the SDK is missing any endpoint that
+      # exists in the official collection. The coverage report is written
+      # to contracts/postman-coverage.json for inspection.
+      - name: Postman contract coverage gate
+        run: |
+          # Download the official Binance Postman collections (if not cached).
+          if [ ! -d ../postman-extract/binance-api-postman-master/collections ]; then
+            curl -sSL https://github.com/binance/binance-api-postman/archive/refs/heads/master.tar.gz \
+              | tar xz -C ..
+            mkdir -p ../postman-extract
+            mv ../binance-api-postman-master ../postman-extract/ 2>/dev/null || true
+          fi
+          POSTMAN_COLLECTIONS_DIR=../postman-extract/binance-api-postman-master/collections \
+            npm run contracts:import-postman
+          npm run contracts:generate-from-postman
+          # Fail if any endpoints are missing from the SDK relative to the contract.
+          node -e "
+            const cov = require('./contracts/postman-coverage.json');
+            const totalMissing = cov.products.reduce((a, p) => a + p.missing.length, 0);
+            if (totalMissing > 0) {
+              console.error('Postman contract coverage regression:', totalMissing, 'endpoints missing.');
+              for (const p of cov.products) {
+                if (p.missing.length > 0) {
+                  console.error('  ' + p.product + ': ' + p.missing.length + ' missing');
+                }
+              }
+              process.exit(1);
+            }
+            console.log('Postman contract coverage: 100% match (' + cov.products.reduce((a, p) => a + p.existingCount, 0) + ' endpoints).');
+          "
       - run: npm run build

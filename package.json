@@ -92,13 +92,18 @@
     "docs:generate": "tsx scripts/generate-endpoint-map.ts",
     "contracts:generate": "tsx scripts/generate-contract-catalog.ts",
     "contracts:check": "tsx scripts/check-contracts-drift.ts",
+    "contracts:import-postman": "tsx scripts/import-postman-collections.ts",
+    "contracts:generate-from-postman": "tsx scripts/generate-sdk-from-postman.ts",
+    "contracts:wave6-close-gaps": "tsx scripts/wave6-close-gaps.ts",
+    "contracts:wave7-add-schemas": "tsx scripts/wave7-add-schemas.ts",
     "smoke": "tsx scripts/smoke-test.ts",
     "smoke:testnet": "tsx scripts/testnet-smoke.ts",
     "mcp": "tsx src/mcp/index.ts",
     "mcp:http": "tsx src/mcp/index.ts --http",
     "example:quickstart": "tsx examples/quickstart.ts",
     "example:ws": "tsx examples/ws-streams.ts",
-    "example:paper": "tsx examples/paper-trading.ts"
+    "example:paper": "tsx examples/paper-trading.ts",
+    "example:new-products": "tsx examples/new-products.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

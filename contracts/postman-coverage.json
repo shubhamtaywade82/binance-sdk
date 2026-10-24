@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "sourceUrl": "https://github.com/binance/binance-api-postman",
+  "generatedAt": "2026-10-22T05:27:25.347Z",
+  "products": [
+    {
+      "product": "algo",
+      "contractCount": 12,
+      "existingCount": 12,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "alpha",
+      "contractCount": 6,
+      "existingCount": 6,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "c2c",
+      "contractCount": 1,
+      "existingCount": 1,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "convert",
+      "contractCount": 9,
+      "existingCount": 9,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "copyTrading",
+      "contractCount": 2,
+      "existingCount": 2,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "cryptoLoan",
+      "contractCount": 16,
+      "existingCount": 17,
+      "missing": [],
+      "extra": [
+        "GET /sapi/v1/loan/repay/collateral/rate"
+      ]
+    },
+    {
+      "product": "coinm",
+      "contractCount": 64,
+      "existingCount": 66,
+      "missing": [],
+      "extra": [
+        "GET /dapi/v1/pmAccountInfo",
+        "POST /dapi/v1/order/test"
+      ]
+    },
+    {
+      "product": "options",
+      "contractCount": 44,
+      "existingCount": 44,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "portfolio",
+      "contractCount": 102,
+      "existingCount": 158,
+      "missing": [],
+      "extra": [
+        "DELETE /papi/v1/cm/batchOrders",
+        "DELETE /papi/v1/um/batchOrders",
+        "DELETE /papi/v1/um/conditional/allOpenOrders",
+        "DELETE /papi/v1/um/conditional/order",
+        "GET /papi/v1/asset-collection",
+        "GET /papi/v1/cm/balance",
+        "GET /papi/v1/cm/fundingRate",
+        "GET /papi/v1/cm/openInterest",
+        "GET /papi/v1/cm/openInterestHist",
+        "GET /papi/v1/cm/positionMargin/history",
+        "GET /papi/v1/margin/account",
+        "GET /papi/v1/margin/allAssets",
+        "GET /papi/v1/margin/allPairs",
+        "GET /papi/v1/margin/balance",
+        "GET /papi/v1/margin/loan",
+        "GET /papi/v1/margin/openOrder",
+        "GET /papi/v1/margin/priceIndex",
+        "GET /papi/v1/margin/repay",
+        "GET /papi/v1/portfolio/account",
+        "GET /papi/v1/portfolio/asset-index-price",
+        "GET /papi/v1/portfolio/balance",
+        "GET /papi/v1/portfolio/collateralRate",
+        "GET /papi/v1/portfolio/delta-mode",
+        "GET /papi/v1/portfolio/earn-asset-balance",
+        "GET /papi/v1/portfolio/margin-asset-leverage",
+        "GET /papi/v1/portfolio/margin-call-level",
+        "GET /papi/v1/portfolio/pmLoan-history",
+        "GET /papi/v1/um/accountV2",
+        "GET /papi/v1/um/accountV3",
+        "GET /papi/v1/um/balance",
+        "GET /papi/v1/um/balanceV3",
+        "GET /papi/v1/um/conditional/allOrders",
+        "GET /papi/v1/um/conditional/openOrder",
+        "GET /papi/v1/um/conditional/openOrders",
+        "GET /papi/v1/um/conditional/orderHistory",
+        "GET /papi/v1/um/fundingRate",
+        "GET /papi/v1/um/multiAssetsMargin",
+        "GET /papi/v1/um/openInterest",
+        "GET /papi/v1/um/positionMargin/history",
+        "GET /papi/v1/um/positionRiskV3",
+        "POST /papi/v1/cm/batchOrders",
+        "POST /papi/v1/cm/countdownCancelAll",
+        "POST /papi/v1/cm/marginType",
+        "POST /papi/v1/cm/positionMargin",
+        "POST /papi/v1/margin/loan",
+        "POST /papi/v1/margin/repay",
+        "POST /papi/v1/margin/transfer",
+        "POST /papi/v1/portfolio/earn-asset-transfer",
+        "POST /papi/v1/portfolio/pmLoan",
+        "POST /papi/v1/portfolio/repay",
+        "POST /papi/v1/um/batchOrders",
+        "POST /papi/v1/um/conditional/order",
+        "POST /papi/v1/um/countdownCancelAll",
+        "POST /papi/v1/um/marginType",
+        "POST /papi/v1/um/multiAssetsMargin",
+        "POST /papi/v1/um/positionMargin"
+      ]
+    },
+    {
+      "product": "portfolioPro",
+      "contractCount": 24,
+      "existingCount": 30,
+      "missing": [],
+      "extra": [
+        "GET /sapi/v1/portfolio/asset-collection",
+        "GET /sapi/v2/portfolio/asset-index-price",
+        "GET /sapi/v2/portfolio/balance",
+        "GET /sapi/v2/portfolio/margin-asset-leverage",
+        "GET /sapi/v3/portfolio/collateralRate",
+        "POST /sapi/v1/portfolio/pmLoan"
+      ]
+    },
+    {
+      "product": "usdm",
+      "contractCount": 95,
+      "existingCount": 100,
+      "missing": [],
+      "extra": [
+        "GET /fapi/v1/delistSchedule",
+        "GET /fapi/v1/lvtKlines",
+        "GET /fapi/v1/pmExchangeInfo",
+        "GET /fapi/v1/tradingDayTicker",
+        "GET /fapi/v2/ticker/bookTicker"
+      ]
+    },
+    {
+      "product": "dualInvestment",
+      "contractCount": 4,
+      "existingCount": 5,
+      "missing": [],
+      "extra": [
+        "POST /sapi/v1/dci/product/auto_compound/edit-status"
+      ]
+    },
+    {
+      "product": "fiat",
+      "contractCount": 5,
+      "existingCount": 5,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "giftCard",
+      "contractCount": 6,
+      "existingCount": 6,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "margin",
+      "contractCount": 69,
+      "existingCount": 71,
+      "missing": [],
+      "extra": [
+        "POST /sapi/v1/margin/isolated/transfer",
+        "POST /sapi/v1/margin/transfer"
+      ]
+    },
+    {
+      "product": "mining",
+      "contractCount": 13,
+      "existingCount": 13,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "pay",
+      "contractCount": 1,
+      "existingCount": 1,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "rebate",
+      "contractCount": 1,
+      "existingCount": 1,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "simpleEarn",
+      "contractCount": 41,
+      "existingCount": 41,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "spot",
+      "contractCount": 48,
+      "existingCount": 54,
+      "missing": [],
+      "extra": [
+        "DELETE /api/v3/openOrderLists",
+        "DELETE /api/v3/userDataStream",
+        "GET /api/v3/allOrderLists",
+        "GET /api/v3/openOrderLists",
+        "POST /api/v3/userDataStream",
+        "PUT /api/v3/userDataStream"
+      ]
+    },
+    {
+      "product": "staking",
+      "contractCount": 37,
+      "existingCount": 37,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "subaccount",
+      "contractCount": 49,
+      "existingCount": 50,
+      "missing": [],
+      "extra": [
+        "POST /sapi/v1/sub-account/margin/enable"
+      ]
+    },
+    {
+      "product": "vipLoan",
+      "contractCount": 14,
+      "existingCount": 14,
+      "missing": [],
+      "extra": []
+    },
+    {
+      "product": "wallet",
+      "contractCount": 50,
+      "existingCount": 50,
+      "missing": [],
+      "extra": []
+    }
+  ]
+}

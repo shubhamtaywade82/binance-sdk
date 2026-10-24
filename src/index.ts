@@ -63,6 +63,49 @@ export type { CopyTradingSurface } from './products/copyTrading/surface.js';
 export { C2CClient } from './products/c2c/C2CClient.js';
 export type { C2CSurface } from './products/c2c/surface.js';
 
+// ---- Contract-first generated product surfaces (Wave 5: 9 new products
+// derived from the official Binance Postman collections at
+// https://github.com/binance/binance-api-postman). ----
+export { FiatClient } from './products/fiat/FiatClient.js';
+export type { FiatSurface } from './products/fiat/surface.js';
+export { FiatResource } from './resources/FiatResource.js';
+export { GiftCardClient } from './products/giftCard/GiftCardClient.js';
+export type { GiftCardSurface } from './products/giftCard/surface.js';
+export { GiftCardResource } from './resources/GiftCardResource.js';
+export { MiningClient } from './products/mining/MiningClient.js';
+export type { MiningSurface } from './products/mining/surface.js';
+export { MiningResource } from './resources/MiningResource.js';
+export { NftClient } from './products/nft/NftClient.js';
+export type { NftSurface } from './products/nft/surface.js';
+export { NftResource } from './resources/NftResource.js';
+export { PayClient } from './products/pay/PayClient.js';
+export type { PaySurface } from './products/pay/surface.js';
+export { PayResource } from './resources/PayResource.js';
+export { RebateClient } from './products/rebate/RebateClient.js';
+export type { RebateSurface } from './products/rebate/surface.js';
+export { RebateResource } from './resources/RebateResource.js';
+export { SimpleEarnClient } from './products/simpleEarn/SimpleEarnClient.js';
+export type { SimpleEarnSurface } from './products/simpleEarn/surface.js';
+export { SimpleEarnResource } from './resources/SimpleEarnResource.js';
+export { StakingClient } from './products/staking/StakingClient.js';
+export type { StakingSurface } from './products/staking/surface.js';
+export { StakingResource } from './resources/StakingResource.js';
+export { VipLoanClient } from './products/vipLoan/VipLoanClient.js';
+export type { VipLoanSurface } from './products/vipLoan/surface.js';
+export { VipLoanResource } from './resources/VipLoanResource.js';
+
+// ---- Wave 6 contract-first gap closure: 188 endpoints across 7 laggard
+// products (spot, options, portfolioPro, portfolio, margin, wallet,
+// subaccount). Each Wave-6 resource class lives alongside its
+// hand-curated sibling so the hand-written Zod schemas stay intact. ----
+export { SpotWave6 } from './resources/SpotWave6.js';
+export { OptionsWave6 } from './resources/OptionsWave6.js';
+export { PortfolioMarginProWave6 } from './resources/PortfolioMarginProWave6.js';
+export { PortfolioMarginWave6 } from './resources/PortfolioMarginWave6.js';
+export { MarginWave6 } from './resources/MarginWave6.js';
+export { WalletWave6 } from './resources/WalletWave6.js';
+export { SubAccountWave6 } from './resources/SubAccountWave6.js';
+
 // ---- Execution: idempotent placement + reconciliation ----
 export { ExecutionManager } from './execution/ExecutionManager.js';
 export type { ExecutionManagerOptions } from './execution/types.js';
@@ -229,6 +272,12 @@ export { CoinMMarketWS } from './ws/CoinMMarketWS.js';
 export type { CoinMContractType, CoinMMarkPriceSpeed } from './ws/CoinMMarketWS.js';
 export { CoinMUserWS } from './ws/CoinMUserWS.js';
 export type { CoinMUserWSOptions } from './ws/CoinMUserWS.js';
+// Wave 8 — Options + Portfolio Margin WebSocket streams.
+export { OptionsMarketWS } from './ws/OptionsMarketWS.js';
+export { OptionsUserWS } from './ws/OptionsUserWS.js';
+export type { OptionsUserWSOptions } from './ws/OptionsUserWS.js';
+export { PortfolioMarginUserWS } from './ws/PortfolioMarginUserWS.js';
+export type { PortfolioMarginUserWSOptions } from './ws/PortfolioMarginUserWS.js';
 export { WsApi } from './ws/WsApi.js';
 export type { WsApiOptions } from './ws/WsApi.js';
 export { SpotWsApi } from './ws/SpotWsApi.js';
@@ -346,6 +395,7 @@ export {
   tradingTools,
   executionTools,
   spotTools,
+  newProductsTools,
   derivedTools,
   wsTools,
   getBufferedWsEvents,

@@ -7,6 +7,25 @@ import type { EndpointEntry, EndpointAuth, EndpointMethod } from './endpoints.js
 type Row = [operation: string, method: EndpointMethod, path: string, auth: EndpointAuth, implementedBy: string];
 
 const rows: Row[] = [
+  // ---- Wave 6: contract-first gap closure (Postman-driven) ----
+  ["spot.queryAllOrderLists", "GET", "/api/v3/allOrderList", "signed", "spot.queryAllOrderLists"],
+  ["spot.queryExecutionRules", "GET", "/api/v3/executionRules", "apiKey", "spot.queryExecutionRules"],
+  ["spot.historicalBlockTrades", "GET", "/api/v3/historicalBlockTrades", "apiKey", "spot.historicalBlockTrades"],
+  ["spot.queryAllocations", "GET", "/api/v3/myAllocations", "signed", "spot.queryAllocations"],
+  ["spot.queryRelevantFilters", "GET", "/api/v3/myFilters", "signed", "spot.queryRelevantFilters"],
+  ["spot.queryOpenOrderLists", "GET", "/api/v3/openOrderList", "signed", "spot.queryOpenOrderLists"],
+  ["spot.queryOrderAmendments", "GET", "/api/v3/order/amendments", "signed", "spot.queryOrderAmendments"],
+  ["spot.queryReferencePrice", "GET", "/api/v3/referencePrice", "apiKey", "spot.queryReferencePrice"],
+  ["spot.queryReferencePriceCalculation", "GET", "/api/v3/referencePrice/calculation", "apiKey", "spot.queryReferencePriceCalculation"],
+  ["spot.newOcoDeprecated", "POST", "/api/v3/order/oco", "signed", "spot.newOcoDeprecated"],
+  ["spot.newOrderListOpo", "POST", "/api/v3/orderList/opo", "signed", "spot.newOrderListOpo"],
+  ["spot.newOrderListOpoco", "POST", "/api/v3/orderList/opoco", "signed", "spot.newOrderListOpoco"],
+  ["spot.newOrderListOto", "POST", "/api/v3/orderList/oto", "signed", "spot.newOrderListOto"],
+  ["spot.newOrderListOtoco", "POST", "/api/v3/orderList/otoco", "signed", "spot.newOrderListOtoco"],
+  ["spot.newOrderUsingSor", "POST", "/api/v3/sor/order", "signed", "spot.newOrderUsingSor"],
+  ["spot.testNewOrderUsingSor", "POST", "/api/v3/sor/order/test", "signed", "spot.testNewOrderUsingSor"],
+  ["spot.orderAmendKeepPriority", "PUT", "/api/v3/order/amend/keepPriority", "signed", "spot.orderAmendKeepPriority"],
+
   // ---- Market data (MarketDataBase / SpotMarket, base https://api.binance.com/api/v3) ----
   ['market.ping', 'GET', '/api/v3/ping', 'public', 'spot.market.ping'],
   ['market.serverTime', 'GET', '/api/v3/time', 'public', 'spot.market.serverTime'],

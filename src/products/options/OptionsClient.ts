@@ -55,6 +55,16 @@ export class OptionsClient implements ProductClient {
     return this.surface.userStream;
   }
 
+  /** Wave 8 — Options market WebSocket streams. */
+  get ws(): OptionsSurface['ws'] {
+    return this.surface.ws;
+  }
+
+  /** Wave 8 — Options user-data WebSocket stream. */
+  get wsUser(): OptionsSurface['wsUser'] {
+    return this.surface.wsUser;
+  }
+
   /**
    * Start the listen-key user-data stream: creates the key, schedules the
    * 30-minute keep-alive. Returns the listenKey for opening the WS connection.
@@ -67,6 +77,7 @@ export class OptionsClient implements ProductClient {
         /* retried on the next tick */
       });
     }, 30 * 60 * 1000);
+    this.surface.wsUser.connect();
     return listenKey;
   }
 
@@ -74,6 +85,7 @@ export class OptionsClient implements ProductClient {
   closeUserStream(): void {
     if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
     this.keepAliveInterval = null;
+    this.surface.wsUser.close();
     this.surface.userStream.closeListenKey().catch(() => {
       /* best-effort cleanup */
     });
@@ -85,5 +97,6 @@ export class OptionsClient implements ProductClient {
     if (this.closed) return;
     this.closed = true;
     this.closeUserStream();
+    this.surface.ws.close();
   }
 }

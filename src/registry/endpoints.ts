@@ -33,7 +33,16 @@ export interface EndpointEntry {
     | 'dualInvestment'
     | 'alpha'
     | 'copyTrading'
-    | 'c2c';
+    | 'c2c'
+    | 'fiat'
+    | 'giftCard'
+    | 'mining'
+    | 'nft'
+    | 'pay'
+    | 'rebate'
+    | 'simpleEarn'
+    | 'staking'
+    | 'vipLoan';
   /** SDK surface implementing it, e.g. `futures.trading.createOrder`. */
   operation: string;
   method: EndpointMethod;
@@ -61,6 +70,15 @@ import { DUAL_INVESTMENT_ENDPOINTS } from './dualInvestment.endpoints.js';
 import { ALPHA_ENDPOINTS } from './alpha.endpoints.js';
 import { COPY_TRADING_ENDPOINTS } from './copyTrading.endpoints.js';
 import { C2C_ENDPOINTS } from './c2c.endpoints.js';
+import { FIAT_ENDPOINTS } from './fiat.endpoints.js';
+import { GIFT_CARD_ENDPOINTS } from './giftCard.endpoints.js';
+import { MINING_ENDPOINTS } from './mining.endpoints.js';
+import { NFT_ENDPOINTS } from './nft.endpoints.js';
+import { PAY_ENDPOINTS } from './pay.endpoints.js';
+import { REBATE_ENDPOINTS } from './rebate.endpoints.js';
+import { SIMPLE_EARN_ENDPOINTS } from './simpleEarn.endpoints.js';
+import { STAKING_ENDPOINTS } from './staking.endpoints.js';
+import { VIP_LOAN_ENDPOINTS } from './vipLoan.endpoints.js';
 
 /** Every implemented endpoint, across all products. */
 export const ENDPOINT_REGISTRY: readonly EndpointEntry[] = [
@@ -80,6 +98,15 @@ export const ENDPOINT_REGISTRY: readonly EndpointEntry[] = [
   ...ALPHA_ENDPOINTS,
   ...COPY_TRADING_ENDPOINTS,
   ...C2C_ENDPOINTS,
+  ...FIAT_ENDPOINTS,
+  ...GIFT_CARD_ENDPOINTS,
+  ...MINING_ENDPOINTS,
+  ...NFT_ENDPOINTS,
+  ...PAY_ENDPOINTS,
+  ...REBATE_ENDPOINTS,
+  ...SIMPLE_EARN_ENDPOINTS,
+  ...STAKING_ENDPOINTS,
+  ...VIP_LOAN_ENDPOINTS,
 ];
 
 export interface EndpointQuery {

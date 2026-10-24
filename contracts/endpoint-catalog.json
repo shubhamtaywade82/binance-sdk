@@ -1,7 +1,177 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-10-20T19:27:40.266Z",
+  "generatedAt": "2026-10-22T05:22:12.711Z",
   "endpoints": [
+    {
+      "product": "spot",
+      "operation": "spot.queryAllOrderLists",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/allOrderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.queryAllOrderLists"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.queryExecutionRules",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/executionRules",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "spot.queryExecutionRules"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.historicalBlockTrades",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/historicalBlockTrades",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "spot.historicalBlockTrades"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.queryAllocations",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/myAllocations",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.queryAllocations"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.queryRelevantFilters",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/myFilters",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.queryRelevantFilters"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.queryOpenOrderLists",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/openOrderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.queryOpenOrderLists"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.queryOrderAmendments",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/order/amendments",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.queryOrderAmendments"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.queryReferencePrice",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/referencePrice",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "spot.queryReferencePrice"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.queryReferencePriceCalculation",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/api/v3/referencePrice/calculation",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "spot.queryReferencePriceCalculation"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.newOcoDeprecated",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/api/v3/order/oco",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.newOcoDeprecated"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.newOrderListOpo",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/api/v3/orderList/opo",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.newOrderListOpo"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.newOrderListOpoco",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/api/v3/orderList/opoco",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.newOrderListOpoco"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.newOrderListOto",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/api/v3/orderList/oto",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.newOrderListOto"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.newOrderListOtoco",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/api/v3/orderList/otoco",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.newOrderListOtoco"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.newOrderUsingSor",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/api/v3/sor/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.newOrderUsingSor"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.testNewOrderUsingSor",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/api/v3/sor/order/test",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.testNewOrderUsingSor"
+    },
+    {
+      "product": "spot",
+      "operation": "spot.orderAmendKeepPriority",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/api/v3/order/amend/keepPriority",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "spot.orderAmendKeepPriority"
+    },
     {
       "product": "spot",
       "operation": "market.ping",
@@ -2034,6 +2204,536 @@
     },
     {
       "product": "margin",
+      "operation": "margin.closeUserDataStreamV2UserStream",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/sapi/v2/margin/listen-key",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.closeUserDataStreamV2UserStream"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryLiquidationLoanUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/liquidation-loan",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryLiquidationLoanUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryLiquidationLoanRepayHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/liquidation-loan/repay-history",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryLiquidationLoanRepayHistoryUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryMarginAccountSOpenOtoOtocoOrderListsUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/oto/openOrderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryMarginAccountSOpenOtoOtocoOrderListsUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.exitSpecialKeyModeTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/exit-special-key-mode",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.exitSpecialKeyModeTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.liquidationLoanRepayMargin",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/liquidation-loan/repay",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.liquidationLoanRepayMargin"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.startUserDataStreamV2UserStream",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v2/margin/listen-key",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.startUserDataStreamV2UserStream"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.keepaliveUserDataStreamV2UserStream",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/sapi/v2/margin/listen-key",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.keepaliveUserDataStreamV2UserStream"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.deleteSpecialKeyLowLatencyTradingTrade",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/sapi/v1/margin/apiKey",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.deleteSpecialKeyLowLatencyTradingTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.disableIsolatedMarginAccountTrade",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/sapi/v1/margin/isolated/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.disableIsolatedMarginAccountTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.closeUserDataStreamUserStream",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/sapi/v1/margin/listen-key",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.closeUserDataStreamUserStream"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.marginAccountCancelOcoTrade",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/sapi/v1/margin/orderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.marginAccountCancelOcoTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getBnbBurnStatusUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/bnbBurn",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.getBnbBurnStatusUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getAllMarginAssetsMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/allAssets",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.getAllMarginAssetsMarketData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryMarginAccountSAllOcoUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/allOrderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryMarginAccountSAllOcoUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getAllCrossMarginPairsMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/allPairs",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.getAllCrossMarginPairsMarketData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.querySpecialKeyListLowLatencyTradingTrade",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/api-key-list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.querySpecialKeyListLowLatencyTradingTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.querySpecialKeyLowLatencyTradingTrade",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/apiKey",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.querySpecialKeyLowLatencyTradingTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryMarginAvailableInventoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/available-inventory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryMarginAvailableInventoryUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryCrossIsolatedMarginCapitalFlowUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/capital-flow",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryCrossIsolatedMarginCapitalFlowUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.crossMarginCollateralRatioMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/crossMarginCollateralRatio",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.crossMarginCollateralRatioMarketData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryCrossMarginFeeDataUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/crossMarginData",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryCrossMarginFeeDataUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getDelistScheduleMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/delist-schedule",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.getDelistScheduleMarketData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getSmallLiabilityExchangeCoinListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/exchange-small-liability",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.getSmallLiabilityExchangeCoinListUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getSmallLiabilityExchangeHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/exchange-small-liability-history",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.getSmallLiabilityExchangeHistoryUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryMarginInterestRateHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/interestRateHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryMarginInterestRateHistoryUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryEnabledIsolatedMarginAccountLimitUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/isolated/accountLimit",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryEnabledIsolatedMarginAccountLimitUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getAllIsolatedMarginSymbolMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/isolated/allPairs",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.getAllIsolatedMarginSymbolMarketData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryIsolatedMarginFeeDataUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/isolatedMarginData",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryIsolatedMarginFeeDataUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryIsolatedMarginTierDataUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/isolatedMarginTier",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryIsolatedMarginTierDataUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryLiabilityCoinLeverageBracketInCrossMarginProModeMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/leverageBracket",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.queryLiabilityCoinLeverageBracketInCrossMarginProModeMarketData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getLimitPricePairsMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/limit-price-pairs",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.getLimitPricePairsMarketData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getListScheduleMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/list-schedule",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.getListScheduleMarketData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryPreventedMatchesUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/myPreventedMatches",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryPreventedMatchesUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getFutureHourlyInterestRateUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/next-hourly-interest-rate",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.getFutureHourlyInterestRateUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryMarginAccountSOpenOcoUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/openOrderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryMarginAccountSOpenOcoUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryMarginAccountSOcoUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/orderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryMarginAccountSOcoUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.queryCurrentMarginOrderCountUsageTrade",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/rateLimit/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.queryCurrentMarginOrderCountUsageTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getMarginRestrictedAssetsMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/restricted-asset",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.getMarginRestrictedAssetsMarketData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getMarginAssetRiskBasedLiquidationRatioMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/risk-based-liquidation-ratio",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.getMarginAssetRiskBasedLiquidationRatioMarketData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getSummaryOfMarginAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/tradeCoeff",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.getSummaryOfMarginAccountUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.getCrossMarginTransferHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/margin/transfer",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.getCrossMarginTransferHistoryUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.createSpecialKeyLowLatencyTradingTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/apiKey",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.createSpecialKeyLowLatencyTradingTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.smallLiabilityExchangeMargin",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/exchange-small-liability",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.smallLiabilityExchangeMargin"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.enableIsolatedMarginAccountTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/isolated/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.enableIsolatedMarginAccountTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.startUserDataStreamUserStream",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/listen-key",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.startUserDataStreamUserStream"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.marginManualLiquidationMargin",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/manual-liquidation",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.marginManualLiquidationMargin"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.adjustCrossMarginMaxLeverageUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/max-leverage",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.adjustCrossMarginMaxLeverageUserData"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.marginAccountNewOcoTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/order/oco",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.marginAccountNewOcoTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.marginAccountNewOtoTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/order/oto",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.marginAccountNewOtoTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.marginAccountNewOtocoTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/margin/order/otoco",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.marginAccountNewOtocoTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.editIpForSpecialKeyLowLatencyTradingTrade",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/sapi/v1/margin/apiKey/ip",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.editIpForSpecialKeyLowLatencyTradingTrade"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.keepaliveUserDataStreamUserStream",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/sapi/v1/margin/listen-key",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "margin.keepaliveUserDataStreamUserStream"
+    },
+    {
+      "product": "margin",
       "operation": "account.crossMarginAccount",
       "transport": "rest",
       "method": "GET",
@@ -2214,6 +2914,366 @@
     },
     {
       "product": "wallet",
+      "operation": "wallet.getCountryListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/localentity/country/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.getCountryListUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.getRegionListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/localentity/region/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.getRegionListUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.getSpotAssetTagsMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/spot/asset/tags",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "wallet.getSpotAssetTagsMarketData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.accountApiTradingStatusUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/account/apiTradingStatus",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.accountApiTradingStatusUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.accountInfoUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/account/info",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.accountInfoUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.accountStatusUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/account/status",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.accountStatusUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.fetchAddressVerificationListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/addressVerify/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.fetchAddressVerificationListUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.assetDividendRecordUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/asset/assetDividend",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.assetDividendRecordUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.queryUserDelegationHistoryForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/asset/custody/transfer-history",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.queryUserDelegationHistoryForMasterAccountUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.getCloudMiningPaymentAndRefundHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/asset/ledger-transfer/cloud-mining/queryByPage",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.getCloudMiningPaymentAndRefundHistoryUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.queryUserWalletBalanceUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/asset/wallet/balance",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.queryUserWalletBalanceUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.allCoinsInformationUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/capital/config/getall",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.allCoinsInformationUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.fetchDepositAddressListWithNetworkUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/capital/deposit/address/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.fetchDepositAddressListWithNetworkUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.fetchWithdrawAddressListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/capital/withdraw/address/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.fetchWithdrawAddressListUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.fetchWithdrawQuotaUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/capital/withdraw/quota",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.fetchWithdrawQuotaUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.depositHistoryForLocalEntitiesThatRequiredTravelRuleSupportingNetworkUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/localentity/deposit/history",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.depositHistoryForLocalEntitiesThatRequiredTravelRuleSupportingNetworkUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.checkQuestionnaireRequirementsForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/localentity/questionnaire-requirements",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.checkQuestionnaireRequirementsForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.vaspListForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/localentity/vasp",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.vaspListForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.withdrawHistoryForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/localentity/withdraw/history",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.withdrawHistoryForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.getSymbolsDelistScheduleForSpotMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/spot/delist-schedule",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "wallet.getSymbolsDelistScheduleForSpotMarketData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.getOpenSymbolListMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/spot/open-symbol-list",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "wallet.getOpenSymbolListMarketData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.systemStatusSystem",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/system/status",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "wallet.systemStatusSystem"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.depositHistoryV2ForLocalEntitiesThatRequiredTravelRuleSupportingNetworkUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v2/localentity/deposit/history",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.depositHistoryV2ForLocalEntitiesThatRequiredTravelRuleSupportingNetworkUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.withdrawHistoryV2ForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v2/localentity/withdraw/history",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.withdrawHistoryV2ForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.disableFastWithdrawSwitchUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/account/disableFastWithdrawSwitch",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.disableFastWithdrawSwitchUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.enableFastWithdrawSwitchUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/account/enableFastWithdrawSwitch",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.enableFastWithdrawSwitchUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.getAssetsThatCanBeConvertedIntoBnbUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/asset/dust-btc",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.getAssetsThatCanBeConvertedIntoBnbUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.dustConvertUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/asset/dust-convert/convert",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.dustConvertUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.dustConvertibleAssetsUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/asset/dust-convert/query-convertible-assets",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.dustConvertibleAssetsUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.toggleBnbBurnOnSpotTradeAndMarginInterestUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/bnbBurn",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.toggleBnbBurnOnSpotTradeAndMarginInterestUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.oneClickArrivalDepositApplyForExpiredAddressDepositUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/capital/deposit/credit-apply",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.oneClickArrivalDepositApplyForExpiredAddressDepositUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.brokerWithdrawForBrokersOfLocalEntitiesThatRequireTravelRuleUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/localentity/broker/withdraw/apply",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.brokerWithdrawForBrokersOfLocalEntitiesThatRequireTravelRuleUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.withdrawForLocalEntitiesThatRequireTravelRuleUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/localentity/withdraw/apply",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.withdrawForLocalEntitiesThatRequireTravelRuleUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.submitDepositQuestionnaireForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserDataBroker",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/sapi/v1/localentity/broker/deposit/provide-info",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.submitDepositQuestionnaireForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserDataBroker"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.submitDepositQuestionnaireForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/sapi/v1/localentity/deposit/provide-info",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.submitDepositQuestionnaireForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData"
+    },
+    {
+      "product": "wallet",
+      "operation": "wallet.submitDepositQuestionnaireV2ForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/sapi/v2/localentity/deposit/provide-info",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "wallet.submitDepositQuestionnaireV2ForLocalEntitiesThatRequireTravelRuleSupportingNetworkUserData"
+    },
+    {
+      "product": "wallet",
       "operation": "transfer.universalTransfer",
       "transport": "rest",
       "method": "POST",
@@ -2354,6 +3414,376 @@
     },
     {
       "product": "subaccount",
+      "operation": "subaccount.deleteSubAccountApiKeyForMasterAccountUserData",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/sapi/v1/sub-account/subAccountApi",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.deleteSubAccountApiKeyForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.querySubAccountApiKeyForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/subAccountApi",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.querySubAccountApiKeyForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.createSubAccountApiKeyForMasterAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/subAccountApi",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.createSubAccountApiKeyForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.modifySubAccountApiKeyPermissionForMasterAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/subAccountApiPermission",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.modifySubAccountApiKeyPermissionForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.deleteIpListForASubAccountApiKeyForMasterAccountUserData",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/sapi/v1/sub-account/subAccountApi/ipRestriction/ipList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.deleteIpListForASubAccountApiKeyForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.queryManagedSubAccountSnapshotForInvestorMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/managed-subaccount/accountSnapshot",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.queryManagedSubAccountSnapshotForInvestorMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.queryManagedSubAccountAssetDetailsForInvestorMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/managed-subaccount/asset",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.queryManagedSubAccountAssetDetailsForInvestorMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.getManagedSubAccountDepositAddressForInvestorMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/managed-subaccount/deposit/address",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.getManagedSubAccountDepositAddressForInvestorMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.queryManagedSubAccountFuturesAssetDetailsForInvestorMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/managed-subaccount/fetch-future-asset",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.queryManagedSubAccountFuturesAssetDetailsForInvestorMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.queryManagedSubAccountListForInvestorUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/managed-subaccount/info",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.queryManagedSubAccountListForInvestorUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.queryManagedSubAccountMarginAssetDetailsForInvestorMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/managed-subaccount/marginAsset",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.queryManagedSubAccountMarginAssetDetailsForInvestorMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.queryManagedSubAccountTransferLogForTradingTeamSubAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/managed-subaccount/query-trans-log",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.queryManagedSubAccountTransferLogForTradingTeamSubAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.queryManagedSubAccountTransferLogForInvestorMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/managed-subaccount/queryTransLogForInvestor",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.queryManagedSubAccountTransferLogForInvestorMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.queryManagedSubAccountTransferLogForTradingTeamMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/managed-subaccount/queryTransLogForTradeParent",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.queryManagedSubAccountTransferLogForTradingTeamMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.getDetailOnSubAccountSFuturesAccountForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/futures/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.getDetailOnSubAccountSFuturesAccountForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.getSummaryOfSubAccountSFuturesAccountForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/futures/accountSummary",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.getSummaryOfSubAccountSFuturesAccountForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.querySubAccountFuturesAssetTransferHistoryForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/futures/internalTransfer",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.querySubAccountFuturesAssetTransferHistoryForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.getMovePositionHistoryForSubAccountForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/futures/move-position",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.getMovePositionHistoryForSubAccountForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.getFuturesPositionRiskOfSubAccountForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/futures/positionRisk",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.getFuturesPositionRiskOfSubAccountForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.getSummaryOfSubAccountSMarginAccountForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/margin/accountSummary",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.getSummaryOfSubAccountSMarginAccountForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.querySubAccountSpotAssetTransferHistoryForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/sub/transfer/history",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.querySubAccountSpotAssetTransferHistoryForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.getIpRestrictionForASubAccountApiKeyForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/subAccountApi/ipRestriction",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.getIpRestrictionForASubAccountApiKeyForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.querySubAccountTransactionStatisticsForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/transaction-statistics",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.querySubAccountTransactionStatisticsForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.subAccountTransferHistoryForSubAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sub-account/transfer/subUserHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.subAccountTransferHistoryForSubAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.getDetailOnSubAccountSFuturesAccountV2ForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v2/sub-account/futures/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.getDetailOnSubAccountSFuturesAccountV2ForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.getFuturesPositionRiskOfSubAccountV2ForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v2/sub-account/futures/positionRisk",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.getFuturesPositionRiskOfSubAccountV2ForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.querySubAccountAssetsForMasterAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v4/sub-account/assets",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.querySubAccountAssetsForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.depositAssetsIntoTheManagedSubAccountForInvestorMasterAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/managed-subaccount/deposit",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.depositAssetsIntoTheManagedSubAccountForInvestorMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.withdrawlAssetsFromTheManagedSubAccountForInvestorMasterAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/managed-subaccount/withdraw",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.withdrawlAssetsFromTheManagedSubAccountForInvestorMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.enableOptionsForSubAccountForMasterAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/eoptions/enable",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.enableOptionsForSubAccountForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.subAccountFuturesAssetTransferForMasterAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/futures/internalTransfer",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.subAccountFuturesAssetTransferForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.movePositionForSubAccountForMasterAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/futures/move-position",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.movePositionForSubAccountForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.futuresTransferForSubAccountForMasterAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/futures/transfer",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.futuresTransferForSubAccountForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.marginTransferForSubAccountForMasterAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/margin/transfer",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.marginTransferForSubAccountForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.transferToMasterForSubAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/transfer/subToMaster",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.transferToMasterForSubAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.transferToSubAccountOfSameMasterForSubAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sub-account/transfer/subToSub",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.transferToSubAccountOfSameMasterForSubAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.addIpRestrictionForSubAccountApiKeyForMasterAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v2/sub-account/subAccountApi/ipRestriction",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.addIpRestrictionForSubAccountApiKeyForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
       "operation": "subaccount.list",
       "transport": "rest",
       "method": "GET",
@@ -2481,6 +3911,86 @@
       "security": "SIGNED",
       "weight": null,
       "implementedBy": "subaccount.depositHistory"
+    },
+    {
+      "product": "options",
+      "operation": "options.tradfiOptionsContractUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/eapi/v1/stock/contract",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "options.tradfiOptionsContractUserData"
+    },
+    {
+      "product": "options",
+      "operation": "options.cancelAllOptionOrdersByUnderlyingTrade",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/eapi/v1/allOpenOrdersByUnderlying",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "options.cancelAllOptionOrdersByUnderlyingTrade"
+    },
+    {
+      "product": "options",
+      "operation": "options.cancelBlockTradeOrderTrade",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/eapi/v1/block/order/create",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "options.cancelBlockTradeOrderTrade"
+    },
+    {
+      "product": "options",
+      "operation": "options.queryBlockTradeDetailsUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/eapi/v1/block/order/execute",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "options.queryBlockTradeDetailsUserData"
+    },
+    {
+      "product": "options",
+      "operation": "options.getAutoCancelAllOpenOrdersKillSwitchConfigTrade",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/eapi/v1/countdownCancelAll",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "options.getAutoCancelAllOpenOrdersKillSwitchConfigTrade"
+    },
+    {
+      "product": "options",
+      "operation": "options.querySingleOrderTrade",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/eapi/v1/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "options.querySingleOrderTrade"
+    },
+    {
+      "product": "options",
+      "operation": "options.autoCancelAllOpenOrdersKillSwitchHeartbeatTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/eapi/v1/countdownCancelAllHeartBeat",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "options.autoCancelAllOpenOrdersKillSwitchHeartbeatTrade"
+    },
+    {
+      "product": "options",
+      "operation": "options.extendBlockTradeOrderTrade",
+      "transport": "rest",
+      "method": "PUT",
+      "path": "/eapi/v1/block/order/create",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "options.extendBlockTradeOrderTrade"
     },
     {
       "product": "options",
@@ -2841,6 +4351,476 @@
       "security": "API_KEY",
       "weight": null,
       "implementedBy": "options.userStream.closeListenKey"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.cancelAllCmOpenConditionalOrdersTrade",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/papi/v1/cm/conditional/allOpenOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.cancelAllCmOpenConditionalOrdersTrade"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.cancelCmConditionalOrderTrade",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/papi/v1/cm/conditional/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.cancelCmConditionalOrderTrade"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.cancelMarginAccountAllOpenOrdersOnASymbolTrade",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/papi/v1/margin/allOpenOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.cancelMarginAccountAllOpenOrdersOnASymbolTrade"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.cancelMarginAccountOcoOrdersTrade",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/papi/v1/margin/orderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.cancelMarginAccountOcoOrdersTrade"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.cancelAllUmAlgoOpenOrdersTrade",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/papi/v1/um/algo/allOpenOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.cancelAllUmAlgoOpenOrdersTrade"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.cancelUmAlgoOrderTrade",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/papi/v1/um/algo/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.cancelUmAlgoOrderTrade"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.cancelAllUmOpenConditionalOrders",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/papi/v1/um/conditional/allOpenOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.cancelAllUmOpenConditionalOrders"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.cancelUmConditionalOrder",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/papi/v1/um/conditional/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.cancelUmConditionalOrder"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryAllCmConditionalOrdersUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/cm/conditional/allOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryAllCmConditionalOrdersUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryCurrentCmOpenConditionalOrderUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/cm/conditional/openOrder",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryCurrentCmOpenConditionalOrderUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryAllCurrentCmOpenConditionalOrdersUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/cm/conditional/openOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryAllCurrentCmOpenConditionalOrdersUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryCmConditionalOrderHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/cm/conditional/orderHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryCmConditionalOrderHistoryUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryCmOrderUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/cm/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryCmOrderUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryCmModifyOrderHistoryTrade",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/cm/orderAmendment",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryCmModifyOrderHistoryTrade"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryMarginAccountSAllOcoUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/margin/allOrderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryMarginAccountSAllOcoUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryUserSMarginForceOrdersUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/margin/forceOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryUserSMarginForceOrdersUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.getMarginBorrowLoanInterestHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/margin/marginInterestHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.getMarginBorrowLoanInterestHistoryUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryMarginLoanRecordUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/margin/marginLoan",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryMarginLoanRecordUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.marginMaxBorrowUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/margin/maxBorrowable",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.marginMaxBorrowUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryMarginMaxWithdrawUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/margin/maxWithdraw",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryMarginMaxWithdrawUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryMarginAccountSOpenOcoUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/margin/openOrderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryMarginAccountSOpenOcoUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryMarginAccountOrderUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/margin/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryMarginAccountOrderUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryMarginAccountSOcoUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/margin/orderList",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryMarginAccountSOcoUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryMarginRepayRecordUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/margin/repayLoan",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryMarginRepayRecordUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.testConnectivity",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/ping",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "portfolio.testConnectivity"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryUserNegativeBalanceAutoExchangeRecordUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/portfolio/negative-balance-exchange-record",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryUserNegativeBalanceAutoExchangeRecordUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.getAutoRepayFuturesStatusUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/repay-futures-switch",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.getAutoRepayFuturesStatusUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryCurrentUmOpenAlgoOrderUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/um/algo/algoOrder",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryCurrentUmOpenAlgoOrderUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryUmAlgoOrderHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/um/algo/allAlgoOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryUmAlgoOrderHistoryUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryAllCurrentUmOpenAlgoOrdersUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/um/algo/openAlgoOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryAllCurrentUmOpenAlgoOrdersUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryAllUmConditionalOrders",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/um/conditional/allOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryAllUmConditionalOrders"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryCurrentUmOpenConditionalOrder",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/um/conditional/openOrder",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryCurrentUmOpenConditionalOrder"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryAllCurrentUmOpenConditionalOrders",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/um/conditional/openOrders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryAllCurrentUmOpenConditionalOrders"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryUmConditionalOrderHistory",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/um/conditional/orderHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryUmConditionalOrderHistory"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryUmOrderUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/um/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryUmOrderUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.queryUmModifyOrderHistoryTrade",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/um/orderAmendment",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.queryUmModifyOrderHistoryTrade"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.umFuturesSymbolConfigurationUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v1/um/symbolConfig",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.umFuturesSymbolConfigurationUserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.getUmAccountDetailV2UserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/papi/v2/um/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.getUmAccountDetailV2UserData"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.fundCollectionByAssetTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/papi/v1/asset-collection",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.fundCollectionByAssetTrade"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.newCmConditionalOrderTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/papi/v1/cm/conditional/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.newCmConditionalOrderTrade"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.marginAccountNewOcoTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/papi/v1/margin/order/oco",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.marginAccountNewOcoTrade"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.marginAccountRepayDebtTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/papi/v1/margin/repay-debt",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.marginAccountRepayDebtTrade"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.marginAccountBorrowMargin",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/papi/v1/marginLoan",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.marginAccountBorrowMargin"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.marginAccountRepayMargin",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/papi/v1/repayLoan",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.marginAccountRepayMargin"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.newUmAlgoOrderTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/papi/v1/um/algo/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.newUmAlgoOrderTrade"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.newUmConditionalOrder",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/papi/v1/um/conditional/order",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.newUmConditionalOrder"
+    },
+    {
+      "product": "portfolio",
+      "operation": "portfolio.futuresTradfiPerpsContractUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/papi/v1/um/stock/contract",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolio.futuresTradfiPerpsContractUserData"
     },
     {
       "product": "portfolio",
@@ -3954,6 +5934,66 @@
     },
     {
       "product": "portfolioPro",
+      "operation": "portfolioPro.deleteMarginCallLevelUserData",
+      "transport": "rest",
+      "method": "DELETE",
+      "path": "/sapi/v1/portfolio/margin-call-level",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolioPro.deleteMarginCallLevelUserData"
+    },
+    {
+      "product": "portfolioPro",
+      "operation": "portfolioPro.queryPortfolioMarginProBankruptcyLoanAmountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/portfolio/pmLoan",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolioPro.queryPortfolioMarginProBankruptcyLoanAmountUserData"
+    },
+    {
+      "product": "portfolioPro",
+      "operation": "portfolioPro.getAutoRepayFuturesStatusUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/portfolio/repay-futures-switch",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolioPro.getAutoRepayFuturesStatusUserData"
+    },
+    {
+      "product": "portfolioPro",
+      "operation": "portfolioPro.fundCollectionByAssetUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/portfolio/asset-collection",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolioPro.fundCollectionByAssetUserData"
+    },
+    {
+      "product": "portfolioPro",
+      "operation": "portfolioPro.switchDeltaModeTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/portfolio/delta-mode",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolioPro.switchDeltaModeTrade"
+    },
+    {
+      "product": "portfolioPro",
+      "operation": "portfolioPro.setMarginCallLevelUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/portfolio/margin-call-level",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "portfolioPro.setMarginCallLevelUserData"
+    },
+    {
+      "product": "portfolioPro",
       "operation": "account.account",
       "transport": "rest",
       "method": "GET",
@@ -4534,6 +6574,16 @@
     },
     {
       "product": "algo",
+      "operation": "spot.newOrderVp",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/algo/spot/newOrderVp",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "algo.spot.newOrderVp"
+    },
+    {
+      "product": "algo",
       "operation": "spot.openOrders",
       "transport": "rest",
       "method": "GET",
@@ -4654,6 +6704,16 @@
     },
     {
       "product": "alpha",
+      "operation": "alpha.fullDepth",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/bapi/defi/v1/public/alpha-trade/fullDepth",
+      "security": "PUBLIC",
+      "weight": null,
+      "implementedBy": "alpha.fullDepth"
+    },
+    {
+      "product": "alpha",
       "operation": "alpha.tokenList",
       "transport": "rest",
       "method": "GET",
@@ -4691,6 +6751,1226 @@
       "security": "SIGNED",
       "weight": null,
       "implementedBy": "c2c.orderMatchListUserOrderHistory"
+    },
+    {
+      "product": "fiat",
+      "operation": "fiat.depositTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/fiat/deposit",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "fiat.depositTrade"
+    },
+    {
+      "product": "fiat",
+      "operation": "fiat.getOrderDetailUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/fiat/get-order-detail",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "fiat.getOrderDetailUserData"
+    },
+    {
+      "product": "fiat",
+      "operation": "fiat.getFiatDepositWithdrawHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/fiat/orders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "fiat.getFiatDepositWithdrawHistoryUserData"
+    },
+    {
+      "product": "fiat",
+      "operation": "fiat.getFiatPaymentsHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/fiat/payments",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "fiat.getFiatPaymentsHistoryUserData"
+    },
+    {
+      "product": "fiat",
+      "operation": "fiat.fiatWithdrawWithdraw",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v2/fiat/withdraw",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "fiat.fiatWithdrawWithdraw"
+    },
+    {
+      "product": "giftCard",
+      "operation": "giftCard.createADualTokenGiftCardFixedValueDiscountFeatureTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/giftcard/buyCode",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "giftCard.createADualTokenGiftCardFixedValueDiscountFeatureTrade"
+    },
+    {
+      "product": "giftCard",
+      "operation": "giftCard.fetchTokenLimitUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/giftcard/buyCode/token-limit",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "giftCard.fetchTokenLimitUserData"
+    },
+    {
+      "product": "giftCard",
+      "operation": "giftCard.createASingleTokenGiftCardUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/giftcard/createCode",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "giftCard.createASingleTokenGiftCardUserData"
+    },
+    {
+      "product": "giftCard",
+      "operation": "giftCard.fetchRsaPublicKeyUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/giftcard/cryptography/rsa-public-key",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "giftCard.fetchRsaPublicKeyUserData"
+    },
+    {
+      "product": "giftCard",
+      "operation": "giftCard.redeemABinanceGiftCardUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/giftcard/redeemCode",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "giftCard.redeemABinanceGiftCardUserData"
+    },
+    {
+      "product": "giftCard",
+      "operation": "giftCard.verifyBinanceGiftCardByGiftCardNumberUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/giftcard/verify",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "giftCard.verifyBinanceGiftCardByGiftCardNumberUserData"
+    },
+    {
+      "product": "mining",
+      "operation": "mining.hashrateResaleRequestUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/mining/hash-transfer/config",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "mining.hashrateResaleRequestUserData"
+    },
+    {
+      "product": "mining",
+      "operation": "mining.cancelHashrateResaleConfigurationUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/mining/hash-transfer/config/cancel",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "mining.cancelHashrateResaleConfigurationUserData"
+    },
+    {
+      "product": "mining",
+      "operation": "mining.hashrateResaleList",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/mining/hash-transfer/config/details/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "mining.hashrateResaleList"
+    },
+    {
+      "product": "mining",
+      "operation": "mining.hashrateResaleDetailUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/mining/hash-transfer/profit/details",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "mining.hashrateResaleDetailUserData"
+    },
+    {
+      "product": "mining",
+      "operation": "mining.earningsListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/mining/payment/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "mining.earningsListUserData"
+    },
+    {
+      "product": "mining",
+      "operation": "mining.extraBonusListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/mining/payment/other",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "mining.extraBonusListUserData"
+    },
+    {
+      "product": "mining",
+      "operation": "mining.miningAccountEarningUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/mining/payment/uid",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "mining.miningAccountEarningUserData"
+    },
+    {
+      "product": "mining",
+      "operation": "mining.acquiringAlgorithmMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/mining/pub/algoList",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "mining.acquiringAlgorithmMarketData"
+    },
+    {
+      "product": "mining",
+      "operation": "mining.acquiringCoinnameMarketData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/mining/pub/coinList",
+      "security": "API_KEY",
+      "weight": null,
+      "implementedBy": "mining.acquiringCoinnameMarketData"
+    },
+    {
+      "product": "mining",
+      "operation": "mining.accountListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/mining/statistics/user/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "mining.accountListUserData"
+    },
+    {
+      "product": "mining",
+      "operation": "mining.statisticListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/mining/statistics/user/status",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "mining.statisticListUserData"
+    },
+    {
+      "product": "mining",
+      "operation": "mining.requestForDetailMinerListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/mining/worker/detail",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "mining.requestForDetailMinerListUserData"
+    },
+    {
+      "product": "mining",
+      "operation": "mining.requestForMinerListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/mining/worker/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "mining.requestForMinerListUserData"
+    },
+    {
+      "product": "nft",
+      "operation": "nft.getNftDepositHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/nft/history/deposit",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "nft.getNftDepositHistoryUserData"
+    },
+    {
+      "product": "nft",
+      "operation": "nft.getNftTransactionHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/nft/history/transactions",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "nft.getNftTransactionHistoryUserData"
+    },
+    {
+      "product": "nft",
+      "operation": "nft.getNftWithdrawHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/nft/history/withdraw",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "nft.getNftWithdrawHistoryUserData"
+    },
+    {
+      "product": "nft",
+      "operation": "nft.getNftAssetUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/nft/user/getAsset",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "nft.getNftAssetUserData"
+    },
+    {
+      "product": "pay",
+      "operation": "pay.getPayTradeHistory",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/pay/transactions",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "pay.getPayTradeHistory"
+    },
+    {
+      "product": "rebate",
+      "operation": "rebate.getSpotRebateHistoryRecordsUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/rebate/taxQuery",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "rebate.getSpotRebateHistoryRecordsUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getBfusdAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/bfusd/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getBfusdAccountUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getBfusdRateHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/bfusd/history/rateHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getBfusdRateHistoryUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getBfusdRedemptionHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/bfusd/history/redemptionHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getBfusdRedemptionHistoryUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getBfusdRewardsHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/bfusd/history/rewardsHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getBfusdRewardsHistoryUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getBfusdSubscriptionHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/bfusd/history/subscriptionHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getBfusdSubscriptionHistoryUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getBfusdQuotaDetailsUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/bfusd/quota",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getBfusdQuotaDetailsUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.redeemBfusdTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/bfusd/redeem",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.redeemBfusdTrade"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.subscribeBfusdTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/bfusd/subscribe",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.subscribeBfusdTrade"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.simpleAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.simpleAccountUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getCollateralRecordUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/flexible/history/collateralRecord",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getCollateralRecordUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getRateHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/flexible/history/rateHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getRateHistoryUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getFlexibleRedemptionRecordUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/flexible/history/redemptionRecord",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getFlexibleRedemptionRecordUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getFlexibleRewardsHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/flexible/history/rewardsRecord",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getFlexibleRewardsHistoryUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getFlexibleSubscriptionRecordUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/flexible/history/subscriptionRecord",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getFlexibleSubscriptionRecordUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getSimpleEarnFlexibleProductListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/flexible/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getSimpleEarnFlexibleProductListUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getFlexiblePersonalLeftQuotaUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/flexible/personalLeftQuota",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getFlexiblePersonalLeftQuotaUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getFlexibleProductPositionUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/flexible/position",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getFlexibleProductPositionUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.redeemFlexibleProductTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/simple-earn/flexible/redeem",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.redeemFlexibleProductTrade"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.setFlexibleAutoSubscribeUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/simple-earn/flexible/setAutoSubscribe",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.setFlexibleAutoSubscribeUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.subscribeFlexibleProductTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/simple-earn/flexible/subscribe",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.subscribeFlexibleProductTrade"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getFlexibleSubscriptionPreviewUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/flexible/subscriptionPreview",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getFlexibleSubscriptionPreviewUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getLockedRedemptionRecordUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/locked/history/redemptionRecord",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getLockedRedemptionRecordUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getLockedRewardsHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/locked/history/rewardsRecord",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getLockedRewardsHistoryUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getLockedSubscriptionRecordUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/locked/history/subscriptionRecord",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getLockedSubscriptionRecordUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getSimpleEarnLockedProductListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/locked/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getSimpleEarnLockedProductListUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getLockedPersonalLeftQuotaUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/locked/personalLeftQuota",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getLockedPersonalLeftQuotaUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getLockedProductPosition",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/locked/position",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getLockedProductPosition"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.redeemLockedProductTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/simple-earn/locked/redeem",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.redeemLockedProductTrade"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.setLockedAutoSubscribeUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/simple-earn/locked/setAutoSubscribe",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.setLockedAutoSubscribeUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.setLockedProductRedeemOptionUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/simple-earn/locked/setRedeemOption",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.setLockedProductRedeemOptionUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.subscribeLockedProductTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/simple-earn/locked/subscribe",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.subscribeLockedProductTrade"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getLockedSubscriptionPreviewUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/simple-earn/locked/subscriptionPreview",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getLockedSubscriptionPreviewUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getRwusdAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/rwusd/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getRwusdAccountUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getRwusdRateHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/rwusd/history/rateHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getRwusdRateHistoryUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getRwusdRedemptionHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/rwusd/history/redemptionHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getRwusdRedemptionHistoryUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getRwusdRewardsHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/rwusd/history/rewardsHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getRwusdRewardsHistoryUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getRwusdSubscriptionHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/rwusd/history/subscriptionHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getRwusdSubscriptionHistoryUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getRwusdQuotaDetailsUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/rwusd/quota",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getRwusdQuotaDetailsUserData"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.redeemRwusdTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/rwusd/redeem",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.redeemRwusdTrade"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.subscribeRwusdTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/rwusd/subscribe",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.subscribeRwusdTrade"
+    },
+    {
+      "product": "simpleEarn",
+      "operation": "simpleEarn.getArenaActivities",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/earn/arena/activities",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "simpleEarn.getArenaActivities"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.onChainYieldsAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/onchain-yields/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.onChainYieldsAccountUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getOnChainYieldsLockedRedemptionRecordUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/onchain-yields/locked/history/redemptionRecord",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getOnChainYieldsLockedRedemptionRecordUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getOnChainYieldsLockedRewardsHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/onchain-yields/locked/history/rewardsRecord",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getOnChainYieldsLockedRewardsHistoryUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getOnChainYieldsLockedSubscriptionRecordUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/onchain-yields/locked/history/subscriptionRecord",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getOnChainYieldsLockedSubscriptionRecordUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getOnChainYieldsLockedProductListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/onchain-yields/locked/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getOnChainYieldsLockedProductListUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getOnChainYieldsLockedPersonalLeftQuotaUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/onchain-yields/locked/personalLeftQuota",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getOnChainYieldsLockedPersonalLeftQuotaUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getOnChainYieldsLockedProductPositionUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/onchain-yields/locked/position",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getOnChainYieldsLockedProductPositionUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.redeemOnChainYieldsLockedProductTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/onchain-yields/locked/redeem",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.redeemOnChainYieldsLockedProductTrade"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.setOnChainYieldsLockedAutoSubscribeUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/onchain-yields/locked/setAutoSubscribe",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.setOnChainYieldsLockedAutoSubscribeUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.setOnChainYieldsLockedProductRedeemOptionUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/onchain-yields/locked/setRedeemOption",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.setOnChainYieldsLockedProductRedeemOptionUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.subscribeOnChainYieldsLockedProductTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/onchain-yields/locked/subscribe",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.subscribeOnChainYieldsLockedProductTrade"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getOnChainYieldsLockedSubscriptionPreviewUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/onchain-yields/locked/subscriptionPreview",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getOnChainYieldsLockedSubscriptionPreviewUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getSoftStakingRewardsHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/soft-staking/history/rewardsRecord",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getSoftStakingRewardsHistoryUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getSoftStakingProductListUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/soft-staking/list",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getSoftStakingProductListUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.setSoftStakingUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/soft-staking/set",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.setSoftStakingUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.solStakingAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sol-staking/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.solStakingAccountUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.claimBoostRewardsTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sol-staking/sol/claim",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.claimBoostRewardsTrade"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getBnsolRewardsHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sol-staking/sol/history/bnsolRewardsHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getBnsolRewardsHistoryUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getBoostRewardsHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sol-staking/sol/history/boostRewardsHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getBoostRewardsHistoryUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getBnsolRateHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sol-staking/sol/history/rateHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getBnsolRateHistoryUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getSolRedemptionHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sol-staking/sol/history/redemptionHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getSolRedemptionHistoryUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getSolStakingHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sol-staking/sol/history/stakingHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getSolStakingHistoryUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getUnclaimedRewardsUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sol-staking/sol/history/unclaimedRewards",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getUnclaimedRewardsUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getSolStakingQuotaDetailsUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/sol-staking/sol/quota",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getSolStakingQuotaDetailsUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.redeemSolTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sol-staking/sol/redeem",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.redeemSolTrade"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.subscribeSolStakingTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/sol-staking/sol/stake",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.subscribeSolStakingTrade"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getWbethRateHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/eth-staking/eth/history/rateHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getWbethRateHistoryUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getEthRedemptionHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/eth-staking/eth/history/redemptionHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getEthRedemptionHistoryUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getEthStakingHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/eth-staking/eth/history/stakingHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getEthStakingHistoryUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getWbethRewardsHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/eth-staking/eth/history/wbethRewardsHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getWbethRewardsHistoryUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getCurrentEthStakingQuotaUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/eth-staking/eth/quota",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getCurrentEthStakingQuotaUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.redeemEthTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/eth-staking/eth/redeem",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.redeemEthTrade"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getWbethUnwrapHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/eth-staking/wbeth/history/unwrapHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getWbethUnwrapHistoryUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.getWbethWrapHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/eth-staking/wbeth/history/wrapHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.getWbethWrapHistoryUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.wrapBethTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/eth-staking/wbeth/wrap",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.wrapBethTrade"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.ethStakingAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v2/eth-staking/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.ethStakingAccountUserData"
+    },
+    {
+      "product": "staking",
+      "operation": "staking.subscribeEthStakingTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v2/eth-staking/eth/stake",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "staking.subscribeEthStakingTrade"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.vipLoanBorrowTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/loan/vip/borrow",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.vipLoanBorrowTrade"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.vipLoanRenewTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/loan/vip/renew",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.vipLoanRenewTrade"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.vipLoanRepayTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/loan/vip/repay",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.vipLoanRepayTrade"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.getVipLoanAccruedInterestUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/loan/vip/accruedInterest",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.getVipLoanAccruedInterestUserData"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.checkVipLoanCollateralAccountUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/loan/vip/collateral/account",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.checkVipLoanCollateralAccountUserData"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.getVipLoanOngoingOrdersUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/loan/vip/ongoing/orders",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.getVipLoanOngoingOrdersUserData"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.queryApplicationStatusUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/loan/vip/request/data",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.queryApplicationStatusUserData"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.getCollateralAssetDataUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/loan/vip/collateral/data",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.getCollateralAssetDataUserData"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.getVipLoanInterestRateHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/loan/vip/interestRateHistory",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.getVipLoanInterestRateHistoryUserData"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.getLoanableAssetsDataUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/loan/vip/loanable/data",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.getLoanableAssetsDataUserData"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.getBorrowInterestRateUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/loan/vip/request/interestRate",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.getBorrowInterestRateUserData"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.getFixedMarketDataUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/loan/vip/fixed/market",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.getFixedMarketDataUserData"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.getRepayHistoryUserData",
+      "transport": "rest",
+      "method": "GET",
+      "path": "/sapi/v1/loan/vip/repay/history",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.getRepayHistoryUserData"
+    },
+    {
+      "product": "vipLoan",
+      "operation": "vipLoan.borrowFixedTrade",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/loan/vip/fixed/borrow",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "vipLoan.borrowFixedTrade"
     }
   ]
 }

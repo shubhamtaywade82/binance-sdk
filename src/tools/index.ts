@@ -7,6 +7,7 @@ import { executionTools } from './execution.tools.js';
 import { marketDataTools } from './market-data.tools.js';
 import { createPaperContext, type PaperContext, paperTools } from './paper.tools.js';
 import { spotTools } from './spot.tools.js';
+import { newProductsTools } from './newProducts.tools.js';
 import { tradingTools } from './trading.tools.js';
 import { wsTools } from './ws.tools.js';
 import type { ToolDefinition } from './types.js';
@@ -19,6 +20,7 @@ export { accountTools } from './account.tools.js';
 export { tradingTools } from './trading.tools.js';
 export { executionTools } from './execution.tools.js';
 export { spotTools } from './spot.tools.js';
+export { newProductsTools } from './newProducts.tools.js';
 export { derivedTools } from './derived.tools.js';
 export { wsTools, getBufferedWsEvents, clearBufferedWsEvents } from './ws.tools.js';
 export { createPaperContext, paperTools, type PaperState, type PaperPosition, type PaperEvent, type PaperContext } from './paper.tools.js';
@@ -41,6 +43,8 @@ export interface FuturesToolkit {
   account: ToolDefinition[];
   trading: ToolDefinition[];
   spot: ToolDefinition[];
+  /** Wave 9 — Options, Portfolio Margin, Simple Earn, Staking, VIP Loan, Fiat, Wallet. */
+  newProducts: ToolDefinition[];
   ws: ToolDefinition[];
   /** Composite tools that fan out over several endpoints. */
   derived: ToolDefinition[];
@@ -57,6 +61,7 @@ export function createFuturesToolkit(client: BinanceClient, options: FuturesTool
   const account = accountTools(client);
   const trading = tradingTools(client);
   const spot = spotTools(client);
+  const newProducts = newProductsTools(client);
   const ws = wsTools(client);
   const derived = derivedTools(client);
   const paperContext = createPaperContext(client);
@@ -68,11 +73,12 @@ export function createFuturesToolkit(client: BinanceClient, options: FuturesTool
   const execution = executionTools(gateway, client);
   return {
     client,
-    tools: [...market, ...account, ...trading, ...spot, ...ws, ...derived, ...paper, ...execution],
+    tools: [...market, ...account, ...trading, ...spot, ...newProducts, ...ws, ...derived, ...paper, ...execution],
     market,
     account,
     trading,
     spot,
+    newProducts,
     ws,
     derived,
     paper,

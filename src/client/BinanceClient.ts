@@ -8,8 +8,11 @@ import { CoreContext } from '../core/context.js';
 import type { WsPlatform, WsPlatformOptions } from '../ws/platform/WsPlatform.js';
 import { resolveEnvironment } from './endpoints.js';
 import { MarginAccount, MarginTrading } from '../resources/Margin.js';
+import { MarginWave6 } from '../resources/MarginWave6.js';
 import { Wallet } from '../resources/Wallet.js';
+import { WalletWave6 } from '../resources/WalletWave6.js';
 import { SubAccount } from '../resources/SubAccount.js';
+import { SubAccountWave6 } from '../resources/SubAccountWave6.js';
 import { buildSpotSurface, type SpotSurface } from '../products/spot/surface.js';
 import {
   buildUsdmSurface,
@@ -39,6 +42,18 @@ import {
   type CopyTradingSurface,
 } from '../products/copyTrading/surface.js';
 import { buildC2CSurface, type C2CSurface } from '../products/c2c/surface.js';
+// Contract-first generated product surfaces (Wave 5: 9 new products from
+// the official Binance Postman collections at
+// https://github.com/binance/binance-api-postman).
+import { buildFiatSurface, type FiatSurface } from '../products/fiat/surface.js';
+import { buildGiftCardSurface, type GiftCardSurface } from '../products/giftCard/surface.js';
+import { buildMiningSurface, type MiningSurface } from '../products/mining/surface.js';
+import { buildNftSurface, type NftSurface } from '../products/nft/surface.js';
+import { buildPaySurface, type PaySurface } from '../products/pay/surface.js';
+import { buildRebateSurface, type RebateSurface } from '../products/rebate/surface.js';
+import { buildSimpleEarnSurface, type SimpleEarnSurface } from '../products/simpleEarn/surface.js';
+import { buildStakingSurface, type StakingSurface } from '../products/staking/surface.js';
+import { buildVipLoanSurface, type VipLoanSurface } from '../products/vipLoan/surface.js';
 import { ExecutionManager } from '../execution/ExecutionManager.js';
 import { PaperExecutionAdapter } from '../execution/paper.js';
 import { ExecutionGateway, type ExecutionBackend } from '../execution/Gateway.js';
@@ -110,6 +125,8 @@ export interface BinanceClientOptions {
 export interface MarginNamespace {
   account: MarginAccount;
   trading: MarginTrading;
+  /** Wave-6 gap closure (45 endpoints). */
+  wave6: MarginWave6;
 }
 
 export class BinanceClient {
@@ -144,6 +161,7 @@ export class BinanceClient {
     return this.cached('margin', () => ({
       account: new MarginAccount(this.core.http('apiRoot')),
       trading: new MarginTrading(this.core.http('apiRoot')),
+      wave6: new MarginWave6(this.core.http('apiRoot')),
     }));
   }
 
@@ -151,8 +169,32 @@ export class BinanceClient {
     return this.cached('wallet', () => new Wallet(this.core.http('apiRoot')));
   }
 
+  /**
+   * Wave-6 contract-first gap closure for the Wallet product — 33 endpoints
+   * added from the official Binance Postman collection (account status/info,
+   * apiTradingStatus, assetDividend, custody transfers, capital config,
+   * address verification, local-entity deposit/withdraw, fast-withdraw
+   * switches, dust-btc, dust-convert, bnbBurn, system status, etc.).
+   */
+  get walletWave6(): WalletWave6 {
+    return this.cached('walletWave6', () => new WalletWave6(this.core.http('apiRoot')));
+  }
+
   get subaccount(): SubAccount {
     return this.cached('subaccount', () => new SubAccount(this.core.http('apiRoot')));
+  }
+
+  /**
+   * Wave-6 contract-first gap closure for the Sub-Account product — 33
+   * endpoints added from the official Binance Postman collection (managed
+   * sub-account deposit/withdraw/asset/snapshot/info, futures account +
+   * position risk + internal transfer + move-position, margin account
+   * summary, sub-account transfer histories, transaction statistics,
+   * eoptions enable, v2/v4 sub-account endpoints, IP restriction
+   * management).
+   */
+  get subaccountWave6(): SubAccountWave6 {
+    return this.cached('subaccountWave6', () => new SubAccountWave6(this.core.http('apiRoot')));
   }
 
   /**
@@ -161,7 +203,7 @@ export class BinanceClient {
    * trading. Lazy — never constructed until first access.
    */
   get options(): OptionsSurface {
-    return this.cached('options', () => buildOptionsSurface(this.core));
+    return this.cached('options', () => buildOptionsSurface(this.core, () => this.optionsListenKeyValue));
   }
 
   /**
@@ -170,7 +212,7 @@ export class BinanceClient {
    * Lazy — never constructed until first access.
    */
   get portfolioMargin(): PortfolioMarginSurface {
-    return this.cached('portfolioMargin', () => buildPortfolioMarginSurface(this.core));
+    return this.cached('portfolioMargin', () => buildPortfolioMarginSurface(this.core, () => this.pmListenKeyValue));
   }
 
   /**
@@ -220,6 +262,57 @@ export class BinanceClient {
     return this.cached('c2c', () => buildC2CSurface(this.core));
   }
 
+  // ----- Contract-first generated product surfaces (Wave 5: 9 new products
+  // derived from the official Binance Postman collections). Each surface is
+  // a thin resource wrapper around the same HttpClient pipeline; response
+  // payloads are `unknown` until a Zod schema is added (see existing
+  // src/types/*.types.ts pattern for upgrading to typed responses).
+
+  /** Fiat order history (SAPI). */
+  get fiat(): FiatSurface {
+    return this.cached('fiat', () => buildFiatSurface(this.core));
+  }
+
+  /** Gift Card creation / redemption (SAPI). */
+  get giftCard(): GiftCardSurface {
+    return this.cached('giftCard', () => buildGiftCardSurface(this.core));
+  }
+
+  /** Mining account / hash-rate resales (SAPI). */
+  get mining(): MiningSurface {
+    return this.cached('mining', () => buildMiningSurface(this.core));
+  }
+
+  /** NFT deposit / withdrawal / transaction history (SAPI). */
+  get nft(): NftSurface {
+    return this.cached('nft', () => buildNftSurface(this.core));
+  }
+
+  /** Binance Pay order / payout history (SAPI). */
+  get pay(): PaySurface {
+    return this.cached('pay', () => buildPaySurface(this.core));
+  }
+
+  /** Cashback / commission rebate history (SAPI). */
+  get rebate(): RebateSurface {
+    return this.cached('rebate', () => buildRebateSurface(this.core));
+  }
+
+  /** Simple Earn: flexible + locked products, redeem, subscribe (SAPI). */
+  get simpleEarn(): SimpleEarnSurface {
+    return this.cached('simpleEarn', () => buildSimpleEarnSurface(this.core));
+  }
+
+  /** Staking: ETH staking, redeem, rewards history (SAPI). */
+  get staking(): StakingSurface {
+    return this.cached('staking', () => buildStakingSurface(this.core));
+  }
+
+  /** VIP Loan: borrow / repay / collateral history (SAPI). */
+  get vipLoan(): VipLoanSurface {
+    return this.cached('vipLoan', () => buildVipLoanSurface(this.core));
+  }
+
   /**
    * The v3 WebSocket platform: pooled connections per product family with
    * refcounted `Subscription` objects, central liveness/renewal, and
@@ -264,6 +357,15 @@ export class BinanceClient {
     alpha: AlphaSurface;
     copyTrading: CopyTradingSurface;
     c2c: C2CSurface;
+    fiat: FiatSurface;
+    giftCard: GiftCardSurface;
+    mining: MiningSurface;
+    nft: NftSurface;
+    pay: PaySurface;
+    rebate: RebateSurface;
+    simpleEarn: SimpleEarnSurface;
+    staking: StakingSurface;
+    vipLoan: VipLoanSurface;
   } {
     return {
       spot: this.spot,
@@ -282,6 +384,15 @@ export class BinanceClient {
       alpha: this.alpha,
       copyTrading: this.copyTrading,
       c2c: this.c2c,
+      fiat: this.fiat,
+      giftCard: this.giftCard,
+      mining: this.mining,
+      nft: this.nft,
+      pay: this.pay,
+      rebate: this.rebate,
+      simpleEarn: this.simpleEarn,
+      staking: this.staking,
+      vipLoan: this.vipLoan,
     };
   }
 
@@ -292,6 +403,10 @@ export class BinanceClient {
   private spotKeepAliveInterval: NodeJS.Timeout | null = null;
   private coinmListenKeyValue: string | null = null;
   private coinmKeepAliveInterval: NodeJS.Timeout | null = null;
+  private optionsListenKeyValue: string | null = null;
+  private optionsKeepAliveInterval: NodeJS.Timeout | null = null;
+  private pmListenKeyValue: string | null = null;
+  private pmKeepAliveInterval: NodeJS.Timeout | null = null;
 
   static nowSeconds(): number {
     return Math.floor(Date.now() / 1000);
@@ -436,6 +551,52 @@ export class BinanceClient {
     this.coinmListenKeyValue = null;
   }
 
+  // ---- Wave 8: Options + Portfolio Margin user-data stream lifecycle ----
+
+  async startOptionsUserStream(): Promise<string> {
+    const { listenKey } = await this.options.userStream.createListenKey();
+    this.optionsListenKeyValue = listenKey;
+    this.optionsKeepAliveInterval = setInterval(() => {
+      this.options.userStream.keepAliveListenKey().catch(() => {
+        /* retried on next tick */
+      });
+    }, 30 * 60 * 1000);
+    this.options.wsUser.connect();
+    return listenKey;
+  }
+
+  closeOptionsUserStream(): void {
+    if (this.optionsKeepAliveInterval) clearInterval(this.optionsKeepAliveInterval);
+    this.optionsKeepAliveInterval = null;
+    this.options.wsUser.close();
+    this.options.userStream.closeListenKey().catch(() => {
+      /* best-effort cleanup */
+    });
+    this.optionsListenKeyValue = null;
+  }
+
+  async startPortfolioMarginUserStream(): Promise<string> {
+    const { listenKey } = await this.portfolioMargin.userStream.createListenKey();
+    this.pmListenKeyValue = listenKey;
+    this.pmKeepAliveInterval = setInterval(() => {
+      this.portfolioMargin.userStream.keepAliveListenKey().catch(() => {
+        /* retried on next tick */
+      });
+    }, 30 * 60 * 1000);
+    this.portfolioMargin.wsUser.connect();
+    return listenKey;
+  }
+
+  closePortfolioMarginUserStream(): void {
+    if (this.pmKeepAliveInterval) clearInterval(this.pmKeepAliveInterval);
+    this.pmKeepAliveInterval = null;
+    this.portfolioMargin.wsUser.close();
+    this.portfolioMargin.userStream.closeListenKey().catch(() => {
+      /* best-effort cleanup */
+    });
+    this.pmListenKeyValue = null;
+  }
+
   /**
    * Local L2 order-book engine on the futures market stream + REST snapshots:
    * best bid/ask, spread, microprice, imbalance, VWAP — all decimal-exact.
@@ -531,12 +692,18 @@ export class BinanceClient {
     this.spot.wsUser.close();
     this.coinm.ws.close();
     this.coinm.wsUser.close();
+    // Wave 8 — Options + Portfolio Margin WS cleanup.
+    this.options.ws.close();
+    this.options.wsUser.close();
+    this.portfolioMargin.wsUser.close();
     this.closeUserStream();
     this.closeSpotUserStream();
     this.closeCoinMUserStream();
+    this.closeOptionsUserStream();
+    this.closePortfolioMarginUserStream();
   }
 
-  reconnectWebSocket(target: 'ws' | 'wsUser' | 'spot' | 'spotUser' | 'coinm' | 'coinmUser'): void {
+  reconnectWebSocket(target: 'ws' | 'wsUser' | 'spot' | 'spotUser' | 'coinm' | 'coinmUser' | 'options' | 'optionsUser' | 'pmUser'): void {
     if (target === 'ws') {
       this.futures.ws.reconnect();
       this.futures.wsPublic.reconnect();
@@ -545,7 +712,10 @@ export class BinanceClient {
     else if (target === 'spot') this.spot.ws.reconnect();
     else if (target === 'spotUser') this.spot.wsUser.reconnect();
     else if (target === 'coinm') this.coinm.ws.reconnect();
-    else this.coinm.wsUser.reconnect();
+    else if (target === 'coinmUser') this.coinm.wsUser.reconnect();
+    else if (target === 'options') this.options.ws.reconnect();
+    else if (target === 'optionsUser') this.options.wsUser.reconnect();
+    else if (target === 'pmUser') this.portfolioMargin.wsUser.reconnect();
   }
 
   resetReconnectAttempts(): void {

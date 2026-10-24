@@ -36,6 +36,12 @@ export interface Endpoints {
    */
   wsDapiMarketPublic: string;
   wsDapiUser: string;
+  /** Options market-stream socket (combined stream URL). */
+  wsOptionsMarket: string;
+  /** Options user-data stream socket (single listenKey socket). */
+  wsOptionsUser: string;
+  /** Portfolio Margin user-data stream socket (single listenKey socket). */
+  wsPortfolioMarginUser: string;
 }
 
 export function resolveEnvironment(options?: {
@@ -152,6 +158,10 @@ export function resolveEnvironment(options?: {
       wsDapiMarket: `${wsDapiHost}/market/stream`,
       wsDapiMarketPublic: wsDapiMarketPublicHost,
       wsDapiUser: `${wsDapiHost}/public/ws`,
+      // Wave 8 — Options + Portfolio Margin WebSocket hosts.
+      wsOptionsMarket: 'wss://nbstream.binance.com/eoptions/stream',
+      wsOptionsUser: 'wss://nbstream.binance.com/eoptions/ws',
+      wsPortfolioMarginUser: 'wss://fstream.binance.com/pm/ws',
     },
   };
 }

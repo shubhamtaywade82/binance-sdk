@@ -20,7 +20,16 @@ export type ProductId =
   | 'dualInvestment'
   | 'alpha'
   | 'copyTrading'
-  | 'c2c';
+  | 'c2c'
+  | 'fiat'
+  | 'giftCard'
+  | 'mining'
+  | 'nft'
+  | 'pay'
+  | 'rebate'
+  | 'simpleEarn'
+  | 'staking'
+  | 'vipLoan';
 
 /**
  * v3 product boundary.

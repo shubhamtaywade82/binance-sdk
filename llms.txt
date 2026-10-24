@@ -21,12 +21,31 @@
 
 ## Endpoint maps
 
-- [Spot](docs/endpoint-map/spot.md): 37 endpoints
+- [Spot](docs/endpoint-map/spot.md): 54 endpoints
 - [USDⓈ-M Futures](docs/endpoint-map/usdm.md): 100 endpoints
 - [COIN-M Futures](docs/endpoint-map/coinm.md): 66 endpoints
-- [Margin](docs/endpoint-map/margin.md): 18 endpoints
-- [Wallet](docs/endpoint-map/wallet.md): 14 endpoints
-- [Sub-account](docs/endpoint-map/subaccount.md): 13 endpoints
+- [Margin](docs/endpoint-map/margin.md): 71 endpoints
+- [Wallet](docs/endpoint-map/wallet.md): 50 endpoints
+- [Sub-account](docs/endpoint-map/subaccount.md): 50 endpoints
+- [Options](docs/endpoint-map/options.md): 44 endpoints
+- [Portfolio Margin](docs/endpoint-map/portfolio.md): 158 endpoints
+- [Portfolio Margin Pro](docs/endpoint-map/portfolioPro.md): 30 endpoints
+- [Crypto Loan](docs/endpoint-map/cryptoLoan.md): 17 endpoints
+- [Convert SAPI](docs/endpoint-map/convert.md): 9 endpoints
+- [Algo SAPI](docs/endpoint-map/algo.md): 12 endpoints
+- [Dual Investment](docs/endpoint-map/dualInvestment.md): 5 endpoints
+- [Alpha](docs/endpoint-map/alpha.md): 6 endpoints
+- [Copy Trading](docs/endpoint-map/copyTrading.md): 2 endpoints
+- [C2C](docs/endpoint-map/c2c.md): 1 endpoints
+- [Fiat](docs/endpoint-map/fiat.md): 5 endpoints
+- [Gift Card](docs/endpoint-map/giftCard.md): 6 endpoints
+- [Mining](docs/endpoint-map/mining.md): 13 endpoints
+- [NFT](docs/endpoint-map/nft.md): 4 endpoints
+- [Pay](docs/endpoint-map/pay.md): 1 endpoints
+- [Rebate](docs/endpoint-map/rebate.md): 1 endpoints
+- [Simple Earn](docs/endpoint-map/simpleEarn.md): 41 endpoints
+- [Staking](docs/endpoint-map/staking.md): 37 endpoints
+- [VIP Loan](docs/endpoint-map/vipLoan.md): 14 endpoints
 
 ## WebSocket
 

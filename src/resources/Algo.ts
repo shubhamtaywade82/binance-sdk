@@ -32,6 +32,18 @@ export class AlgoSpot {
     return AlgoOrderResponseSchema.parse(await this.http.post('/sapi/v1/algo/spot/newOrderTwap', params, 'signed'));
   }
 
+  /** Place a new spot VP (Volume Participation) order. `POST /sapi/v1/algo/spot/newOrderVp` (SIGNED). */
+  async newOrderVp(params: {
+    symbol: string;
+    side: 'BUY' | 'SELL';
+    quantity: string;
+    participationRate: number;
+    clientOrderId?: string;
+    limitPrice?: string;
+  }): Promise<AlgoOrder> {
+    return AlgoOrderResponseSchema.parse(await this.http.post('/sapi/v1/algo/spot/newOrderVp', params, 'signed'));
+  }
+
   /** Currently open spot algo orders. `GET /sapi/v1/algo/spot/openOrders` (SIGNED). */
   async openOrders(options?: { symbol?: string; page?: number; pageSize?: number }): Promise<AlgoOrder[]> {
     return AlgoOrdersResponseSchema.parse(await this.http.get('/sapi/v1/algo/spot/openOrders', options ?? {}, 'signed'));
