@@ -27,7 +27,10 @@ export class CryptoLoan {
 
   // ---- v1 fixed-term ----
 
-  /** Fixed-term borrow history. `GET /sapi/v1/loan/borrow/history` (SIGNED). */
+  /**
+   * Fixed-term borrow history. `GET /sapi/v1/loan/borrow/history` (SIGNED).
+   * @deprecated Removed from the official Binance Postman collections in binance-api-postman a6dbbbb (2026-10-22); use {@link CryptoLoan.flexibleBorrowHistory}.
+   */
   async borrowHistory(options?: {
     orderId?: number;
     loanCoin?: string;
@@ -40,7 +43,10 @@ export class CryptoLoan {
     return CryptoLoanBorrowHistoryResponseSchema.parse(await this.http.get('/sapi/v1/loan/borrow/history', options ?? {}, 'signed'));
   }
 
-  /** Income (interest) records. `GET /sapi/v1/loan/income` (SIGNED). */
+  /**
+   * Income (interest) records. `GET /sapi/v1/loan/income` (SIGNED).
+   * @deprecated Removed from the official Binance Postman collections in binance-api-postman a6dbbbb (2026-10-22); no flexible-loan equivalent is documented.
+   */
   async income(options?: {
     asset?: string;
     type?: 'borrowIn' | 'collateralSpent' | 'repayAmount' | 'collateralReturn' | 'addCollateral' | 'reduceCollateral';
@@ -51,7 +57,10 @@ export class CryptoLoan {
     return CryptoLoanIncomeResponseSchema.parse(await this.http.get('/sapi/v1/loan/income', options ?? {}, 'signed'));
   }
 
-  /** LTV adjustment history. `GET /sapi/v1/loan/ltv/adjustment/history` (SIGNED). */
+  /**
+   * LTV adjustment history. `GET /sapi/v1/loan/ltv/adjustment/history` (SIGNED).
+   * @deprecated Removed from the official Binance Postman collections in binance-api-postman a6dbbbb (2026-10-22); use {@link CryptoLoan.flexibleLtvAdjustmentHistory}.
+   */
   async ltvAdjustmentHistory(options?: {
     loanCoin?: string;
     collateralCoin?: string;
@@ -68,7 +77,10 @@ export class CryptoLoan {
     return CryptoLoanRepayCollateralRateSchema.parse(await this.http.get('/sapi/v1/loan/repay/collateral/rate', params, 'signed'));
   }
 
-  /** Repay history. `GET /sapi/v1/loan/repay/history` (SIGNED). */
+  /**
+   * Repay history. `GET /sapi/v1/loan/repay/history` (SIGNED).
+   * @deprecated Removed from the official Binance Postman collections in binance-api-postman a6dbbbb (2026-10-22); use {@link CryptoLoan.flexibleRepayHistory}.
+   */
   async repayHistory(options?: {
     orderId?: number;
     loanCoin?: string;

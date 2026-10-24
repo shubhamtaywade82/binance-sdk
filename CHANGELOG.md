@@ -5,7 +5,23 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
-**Upstream drift watch for the Postman contract layer.** See
+**Postman re-pin to `a6dbbbb` (2026-10-22).** This is the first automated
+upstream-watch PR.
+
+- **Deprecated:** `CryptoLoan.borrowHistory`, `income`,
+  `ltvAdjustmentHistory` and `repayHistory`. Binance removed their v1
+  endpoints (`/sapi/v1/loan/{borrow/history,income,ltv/adjustment/history,repay/history}`)
+  from the official Postman collections. Use `flexibleBorrowHistory`,
+  `flexibleLtvAdjustmentHistory` and `flexibleRepayHistory` instead.
+  `income` has no documented flexible-loan equivalent. The methods still
+  work for now; removal is deferred to the next major version.
+- **Parameter drift, no code change needed:** upstream dropped `page` from
+  `GET /papi/v1/{um,cm}/income` and `from` from
+  `POST /sapi/v1/portfolio/repay` and
+  `POST /sapi/v1/portfolio/repay-futures-negative-balance`. The SDK never
+  exposed either parameter.
+
+  **Upstream drift watch for the Postman contract layer.** See
 `docs/superpowers/plans/2026-10-24-upstream-drift-watch.md`.
 
 - **Pinned, reproducible imports.** `contracts:import-postman` now fetches

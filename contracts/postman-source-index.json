@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "sourceUrl": "https://github.com/binance/binance-api-postman",
   "officialDocsUrl": "https://developers.binance.com/en/docs/sdks-tools/postman/collections",
-  "pinnedSha": "3d1b72341fce7a0eb86dd240bc0924a38188041a",
-  "pinnedAt": "2026-10-20",
+  "pinnedSha": "a6dbbbb97f27cd8b181455cd1c2d50d9966b6c3a",
+  "pinnedAt": "2026-10-22",
   "unmappedCollections": [
     "Binance Stocks API.json",
     "Binance W3W Prediction API.json"
@@ -48,7 +48,7 @@
       "collectionFile": "Binance Crypto Loan API.json",
       "collectionName": "Crypto Loan REST API",
       "description": "Access Binance Crypto Loans to query assets, subscribe to loans, and manage loan positions.",
-      "endpointCount": 16,
+      "endpointCount": 12,
       "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Crypto%20Loan%20API.json"
     },
     {

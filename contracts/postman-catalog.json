@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "sourceUrl": "https://github.com/binance/binance-api-postman",
   "officialDocsUrl": "https://developers.binance.com/en/docs/sdks-tools/postman/collections",
-  "pinnedSha": "3d1b72341fce7a0eb86dd240bc0924a38188041a",
-  "pinnedAt": "2026-10-20",
-  "totalEndpoints": 713,
+  "pinnedSha": "a6dbbbb97f27cd8b181455cd1c2d50d9966b6c3a",
+  "pinnedAt": "2026-10-22",
+  "totalEndpoints": 709,
   "totalCollections": 24,
   "endpoints": [
     {
@@ -1392,275 +1392,6 @@
       ],
       "bodyParams": [],
       "docRef": "Copy Trading REST API → Future Copy Trading > Get Futures Lead Trader Status (TRADE)"
-    },
-    {
-      "sourceCollection": "Binance Crypto Loan API.json",
-      "sourceFolder": [
-        "Stable Rate"
-      ],
-      "name": "Get Loan Borrow History (USER_DATA)",
-      "product": "cryptoLoan",
-      "hostKey": "apiRoot",
-      "method": "GET",
-      "path": "/sapi/v1/loan/borrow/history",
-      "auth": "signed",
-      "queryParams": [
-        {
-          "name": "orderId",
-          "description": "orderId in `POST /sapi/v1/loan/borrow`",
-          "required": false,
-          "exampleValue": "1"
-        },
-        {
-          "name": "loanCoin",
-          "required": false,
-          "exampleValue": "BUSD"
-        },
-        {
-          "name": "collateralCoin",
-          "required": false,
-          "exampleValue": "BNB"
-        },
-        {
-          "name": "startTime",
-          "required": false,
-          "exampleValue": "1623319461670"
-        },
-        {
-          "name": "endTime",
-          "required": false,
-          "exampleValue": "1641782889000"
-        },
-        {
-          "name": "current",
-          "description": "Current querying page",
-          "required": false,
-          "exampleValue": "1"
-        },
-        {
-          "name": "limit",
-          "description": "Number of records to return",
-          "required": false,
-          "exampleValue": "10"
-        },
-        {
-          "name": "recvWindow",
-          "description": "Request validity window in milliseconds",
-          "required": false,
-          "exampleValue": "5000"
-        },
-        {
-          "name": "timestamp",
-          "description": "UTC timestamp in ms",
-          "required": true
-        },
-        {
-          "name": "signature",
-          "description": "Signature",
-          "required": true
-        }
-      ],
-      "bodyParams": [],
-      "docRef": "Crypto Loan REST API → Stable Rate > Get Loan Borrow History (USER_DATA)"
-    },
-    {
-      "sourceCollection": "Binance Crypto Loan API.json",
-      "sourceFolder": [
-        "Stable Rate"
-      ],
-      "name": "Get Crypto Loans Income History (USER_DATA)",
-      "product": "cryptoLoan",
-      "hostKey": "apiRoot",
-      "method": "GET",
-      "path": "/sapi/v1/loan/income",
-      "auth": "signed",
-      "queryParams": [
-        {
-          "name": "asset",
-          "required": false,
-          "exampleValue": "BUSD"
-        },
-        {
-          "name": "type",
-          "description": "All types will be returned by default.",
-          "required": false,
-          "exampleValue": "borrowIn"
-        },
-        {
-          "name": "startTime",
-          "required": false,
-          "exampleValue": "1623319461670"
-        },
-        {
-          "name": "endTime",
-          "required": false,
-          "exampleValue": "1641782889000"
-        },
-        {
-          "name": "limit",
-          "description": "Number of records to return",
-          "required": false,
-          "exampleValue": "10"
-        },
-        {
-          "name": "recvWindow",
-          "description": "Request validity window in milliseconds",
-          "required": false,
-          "exampleValue": "5000"
-        },
-        {
-          "name": "timestamp",
-          "description": "UTC timestamp in ms",
-          "required": true
-        },
-        {
-          "name": "signature",
-          "description": "Signature",
-          "required": true
-        }
-      ],
-      "bodyParams": [],
-      "docRef": "Crypto Loan REST API → Stable Rate > Get Crypto Loans Income History (USER_DATA)"
-    },
-    {
-      "sourceCollection": "Binance Crypto Loan API.json",
-      "sourceFolder": [
-        "Stable Rate"
-      ],
-      "name": "Get Loan LTV Adjustment History (USER_DATA)",
-      "product": "cryptoLoan",
-      "hostKey": "apiRoot",
-      "method": "GET",
-      "path": "/sapi/v1/loan/ltv/adjustment/history",
-      "auth": "signed",
-      "queryParams": [
-        {
-          "name": "orderId",
-          "description": "orderId in `POST /sapi/v1/loan/borrow`",
-          "required": false,
-          "exampleValue": "1"
-        },
-        {
-          "name": "loanCoin",
-          "required": false,
-          "exampleValue": "BUSD"
-        },
-        {
-          "name": "collateralCoin",
-          "required": false,
-          "exampleValue": "BNB"
-        },
-        {
-          "name": "startTime",
-          "required": false,
-          "exampleValue": "1623319461670"
-        },
-        {
-          "name": "endTime",
-          "required": false,
-          "exampleValue": "1641782889000"
-        },
-        {
-          "name": "current",
-          "description": "Current querying page",
-          "required": false,
-          "exampleValue": "1"
-        },
-        {
-          "name": "limit",
-          "description": "Number of records to return",
-          "required": false,
-          "exampleValue": "10"
-        },
-        {
-          "name": "recvWindow",
-          "description": "Request validity window in milliseconds",
-          "required": false,
-          "exampleValue": "5000"
-        },
-        {
-          "name": "timestamp",
-          "description": "UTC timestamp in ms",
-          "required": true
-        },
-        {
-          "name": "signature",
-          "description": "Signature",
-          "required": true
-        }
-      ],
-      "bodyParams": [],
-      "docRef": "Crypto Loan REST API → Stable Rate > Get Loan LTV Adjustment History (USER_DATA)"
-    },
-    {
-      "sourceCollection": "Binance Crypto Loan API.json",
-      "sourceFolder": [
-        "Stable Rate"
-      ],
-      "name": "Get Loan Repayment History (USER_DATA)",
-      "product": "cryptoLoan",
-      "hostKey": "apiRoot",
-      "method": "GET",
-      "path": "/sapi/v1/loan/repay/history",
-      "auth": "signed",
-      "queryParams": [
-        {
-          "name": "orderId",
-          "description": "orderId in `POST /sapi/v1/loan/borrow`",
-          "required": false,
-          "exampleValue": "1"
-        },
-        {
-          "name": "loanCoin",
-          "required": false,
-          "exampleValue": "BUSD"
-        },
-        {
-          "name": "collateralCoin",
-          "required": false,
-          "exampleValue": "BNB"
-        },
-        {
-          "name": "startTime",
-          "required": false,
-          "exampleValue": "1623319461670"
-        },
-        {
-          "name": "endTime",
-          "required": false,
-          "exampleValue": "1641782889000"
-        },
-        {
-          "name": "current",
-          "description": "Current querying page",
-          "required": false,
-          "exampleValue": "1"
-        },
-        {
-          "name": "limit",
-          "description": "Number of records to return",
-          "required": false,
-          "exampleValue": "10"
-        },
-        {
-          "name": "recvWindow",
-          "description": "Request validity window in milliseconds",
-          "required": false,
-          "exampleValue": "5000"
-        },
-        {
-          "name": "timestamp",
-          "description": "UTC timestamp in ms",
-          "required": true
-        },
-        {
-          "name": "signature",
-          "description": "Signature",
-          "required": true
-        }
-      ],
-      "bodyParams": [],
-      "docRef": "Crypto Loan REST API → Stable Rate > Get Loan Repayment History (USER_DATA)"
     },
     {
       "sourceCollection": "Binance Crypto Loan API.json",
@@ -10299,11 +10030,6 @@
           "exampleValue": "1641782889000"
         },
         {
-          "name": "page",
-          "required": false,
-          "exampleValue": "1"
-        },
-        {
           "name": "limit",
           "description": "Number of results returned.",
           "required": false,
@@ -11205,12 +10931,6 @@
           "description": "Timestamp in ms to get funding until INCLUSIVE.",
           "required": false,
           "exampleValue": "1641782889000"
-        },
-        {
-          "name": "page",
-          "description": "Page number.",
-          "required": false,
-          "exampleValue": "1"
         },
         {
           "name": "limit",
@@ -12440,11 +12160,6 @@
       "auth": "signed",
       "queryParams": [
         {
-          "name": "from",
-          "required": false,
-          "exampleValue": "SPOT"
-        },
-        {
           "name": "recvWindow",
           "required": false,
           "exampleValue": "5000"
@@ -12475,11 +12190,6 @@
       "path": "/sapi/v1/portfolio/repay-futures-negative-balance",
       "auth": "signed",
       "queryParams": [
-        {
-          "name": "from",
-          "required": false,
-          "exampleValue": "SPOT"
-        },
         {
           "name": "recvWindow",
           "required": false,
