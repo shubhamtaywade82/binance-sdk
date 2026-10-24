@@ -6,7 +6,7 @@ import type { WsApiResponse } from '../../types/userdata.types.js';
 import { Signer, type SignatureAlgorithm } from '../../client/Signer.js';
 import type { EventBus } from '../../core/events.js';
 import { exponentialBackoff } from './ReconnectPolicy.js';
-import { WS_PLATFORM_DEFAULTS, type ReconnectPolicy } from './types.js';
+import type { ReconnectPolicy } from './types.js';
 
 export interface WsApiClientOptions {
   /** WS API endpoint, e.g. `wss://ws-fapi.binance.com/ws-fapi/v1`. */

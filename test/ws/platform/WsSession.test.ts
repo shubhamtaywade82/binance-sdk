@@ -47,7 +47,7 @@ describe('WsSession', () => {
     expect(session.isAuthenticated).toBe(false);
 
     const transport: WsSessionTransport = {
-      async sendRpc<T = unknown>(method: string, params: Record<string, unknown>) {
+      async sendRpc<_T = unknown>(method: string, params: Record<string, unknown>) {
         expect(method).toBe('session.logon');
         expect(params.apiKey).toBe('pk123');
         expect(typeof params.timestamp).toBe('number');
@@ -77,7 +77,7 @@ describe('WsSession', () => {
   it('logon surfaces a non-200 status as a BinanceError and clears authenticated state', async () => {
     const session = new WsSession({ apiKey: 'pk123', privateKey: ed25519Pem() });
     const transport: WsSessionTransport = {
-      async sendRpc<T = unknown>(_method: string, _params: Record<string, unknown>) {
+      async sendRpc<_T = unknown>(_method: string, _params: Record<string, unknown>) {
         return { id: 'r1', status: 400, result: {} as never, error: { code: -3006, msg: 'ed25519 required' } } as never;
       },
     };
@@ -114,7 +114,7 @@ describe('WsSession', () => {
   it('clearSession resets authenticated state (called by transport on dropped socket)', async () => {
     const session = new WsSession({ apiKey: 'pk', privateKey: ed25519Pem() });
     const transport: WsSessionTransport = {
-      async sendRpc<T = unknown>(_method: string, _params: Record<string, unknown>) {
+      async sendRpc<_T = unknown>(_method: string, _params: Record<string, unknown>) {
         return {
           id: 'r1',
           status: 200,
@@ -140,7 +140,7 @@ describe('WsSession', () => {
   it('logout is a no-op when not authenticated, otherwise issues session.logout', async () => {
     const session = new WsSession({ apiKey: 'pk', privateKey: ed25519Pem() });
     const noopTransport: WsSessionTransport = {
-      async sendRpc<T = unknown>(_method: string, _params: Record<string, unknown>) {
+      async sendRpc<_T = unknown>(_method: string, _params: Record<string, unknown>) {
         return { id: '1', status: 200, result: {} as never } as never;
       },
     };
@@ -148,7 +148,7 @@ describe('WsSession', () => {
 
     // Authenticate then log out.
     const logonTransport: WsSessionTransport = {
-      async sendRpc<T = unknown>(_method: string, _params: Record<string, unknown>) {
+      async sendRpc<_T = unknown>(_method: string, _params: Record<string, unknown>) {
         return {
           id: '1',
           status: 200,
@@ -166,7 +166,7 @@ describe('WsSession', () => {
     await session.logon(logonTransport);
     let called = false;
     const logoutTransport: WsSessionTransport = {
-      async sendRpc<T = unknown>(method: string, _params: Record<string, unknown>) {
+      async sendRpc<_T = unknown>(method: string, _params: Record<string, unknown>) {
         called = true;
         expect(method).toBe('session.logout');
         return { id: '2', status: 200, result: { apiKey: 'pk', serverTime: 2 } as never } as never;

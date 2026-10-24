@@ -1,4 +1,3 @@
-import type { EventBus } from '../core/events.js';
 import { parseWsPayload, type WsStreamPayload } from '../types/ws.types.js';
 import { WsConnection, type WsConnectionOptions, type WsConnectionState } from './WsConnection.js';
 

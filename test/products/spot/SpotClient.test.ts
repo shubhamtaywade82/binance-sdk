@@ -32,8 +32,8 @@ describe('v3 SpotClient (standalone product client)', () => {
     const b = new SpotClient(core);
     expect(a.core).toBe(core);
     expect(b.core).toBe(core);
-    a.market.tickerPrice;
-    b.market.tickerPrice;
+    expect(a.market.tickerPrice).toBeDefined();
+    expect(b.market.tickerPrice).toBeDefined();
     expect(a.core.http('spot')).toBe(b.core.http('spot'));
   });
 

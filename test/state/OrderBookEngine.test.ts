@@ -98,7 +98,7 @@ describe('OrderBookEngine — v2 multi-symbol local book', () => {
   it('applies in-order diffs that sequence-match the snapshot (pu == lastUpdateId)', async () => {
     const ws = fakeWs();
     const engine = new OrderBookEngine({ ws, fetchSnapshot: () => Promise.resolve(snapshotInput(100)) });
-    const book = await engine.subscribe('BTCUSDT');
+    await engine.subscribe('BTCUSDT');
     // Diff at u=101, pu=100 — sequential. New bid at 50500 beats the old best of 50000.
     ws.emitMessage('btcusdt@depth', {
       e: 'depthUpdate', s: 'BTCUSDT', U: 101, u: 101, pu: 100,

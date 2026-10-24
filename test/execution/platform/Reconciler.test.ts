@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { CoreContext } from '../../../src/core/context.js';
 import { ExecutionPlatform } from '../../../src/execution/platform/ExecutionPlatform.js';
 import { createPaperExecutionPlatform } from '../../../src/execution/platform/PaperBackend.js';

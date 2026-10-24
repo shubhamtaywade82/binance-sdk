@@ -28,13 +28,6 @@ interface ResourceMethod {
   returnType: string; // current return type (e.g. "Promise<unknown>")
 }
 
-interface ResourceFile {
-  path: string;
-  className: string;
-  product: string;
-  methods: ResourceMethod[];
-}
-
 function extractMethods(filePath: string): ResourceMethod[] {
   const content = readFileSync(filePath, 'utf8');
   const methods: ResourceMethod[] = [];
@@ -191,7 +184,6 @@ const COMMON_FIELDS = `
 
 function schemaForMethod(methodName: string, path: string, httpMethod: string): { schemaName: string; kind: 'object' | 'array' | 'unknown' } {
   const lower = methodName.toLowerCase();
-  const pathLower = path.toLowerCase();
   // Empty / ping responses
   if (/ping|testconnectivity|connectivity|serverstatus/.test(lower)) {
     return { schemaName: '', kind: 'unknown' };

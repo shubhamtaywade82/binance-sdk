@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import type { BinanceClient } from '../client/BinanceClient.js';
 import type { ExecutionGateway } from '../execution/Gateway.js';
-import type { ExecutionBackend } from '../execution/Gateway.js';
 import { orderParamsSchema } from './trading.tools.js';
 import type { ToolDefinition } from './types.js';
 import { textResult, normalizeSymbol } from './types.js';

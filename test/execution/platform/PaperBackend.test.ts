@@ -117,7 +117,7 @@ describe('createPaperExecutionPlatform (paper behind the platform boundary)', ()
     const paper = createPaperExecutionPlatform(paperCore());
     await paper.platform.startUserSession();
 
-    const open = await paper.execution.placeOrder({
+    await paper.execution.placeOrder({
       symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: '0.02',
     });
     expect(paper.platform.positions.get('BTCUSDT')?.positionAmount).toBe('0.02');

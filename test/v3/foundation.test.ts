@@ -124,7 +124,7 @@ describe('v3 lazy BinanceClient facade', () => {
     const client = new BinanceClient({ apiKey: 'k', apiSecret: 's' });
     expect(client.core.events).toBe(client.events);
     // one shared fapi transport: futures namespace and account reuse it
-    client.futures.market.tickerPrice; // touch to build
+    expect(client.futures.market.tickerPrice).toBeDefined(); // touch to build
     expect(client.core.hasHttp('fapi')).toBe(true);
     expect(client.core.hasHttp('fapiRoot')).toBe(true);
   });
@@ -165,8 +165,8 @@ describe('v3 USDMClient (standalone product client)', () => {
     expect(usdm.core).toBe(core);
     expect(other.core).toBe(core);
     // two product clients, one shared fapi transport identity
-    usdm.market.tickerPrice;
-    other.market.tickerPrice;
+    expect(usdm.market.tickerPrice).toBeDefined();
+    expect(other.market.tickerPrice).toBeDefined();
     expect(usdm.core.http('fapi')).toBe(other.core.http('fapi'));
   });
 

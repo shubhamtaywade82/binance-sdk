@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, dec, sum, vwap } from '../../src/core/decimal.js';
+import { dec, sum, vwap } from '../../src/core/decimal.js';
 
 describe('Decimal', () => {
   it('parses strings, numbers, and bigints exactly', () => {

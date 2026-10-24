@@ -20,7 +20,7 @@ const MIN_SAFE_BIG = -9007199254740991n;
  * Binance sends klines as arrays) with 16+ digits — the conservative pre-filter;
  * the precise safe-range check is done with BigInt on the candidate afterwards.
  */
-const LARGE_INT_PATTERN = /([:,\[]\s*)(-?\d{16,})(\s*[},\]])/g;
+const LARGE_INT_PATTERN = /([:,[]\s*)(-?\d{16,})(\s*[},\]])/g;
 
 export function parseJsonLossless(text: string): unknown {
   const patched = text.replace(LARGE_INT_PATTERN, (match, prefix, digits, tail) => {

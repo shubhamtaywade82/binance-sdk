@@ -35,13 +35,13 @@ describe('BinanceClient — contract-first generated product surfaces (Wave 5)',
   it('fiat resource sends GET /sapi/v1/fiat/orders (signed)', async () => {
     server.use(
       http.get(`${SAPI}/sapi/v1/fiat/orders`, () =>
-        HttpResponse.json([{ orderNo: '1', fiatCurrency: 'USD', amount: '100' }])),
+        HttpResponse.json({ code: '000000', message: 'success', data: [{ orderNo: '1', fiatCurrency: 'USD', amount: '100' }], total: 1, success: true })),
     );
     const client = new BinanceClient({ apiKey: 'k', apiSecret: 's' });
     // The generated method is `getFiatDepositWithdrawHistoryUserData` (lowerCamelCase
     // of the Postman request name "Get Fiat Deposit/Withdraw History (USER_DATA)").
     const r = await client.fiat.fiat.getFiatDepositWithdrawHistoryUserData({ transactionType: 0 });
-    expect(Array.isArray(r)).toBe(true);
+    expect(r.data).toHaveLength(1);
   });
 
   it('staking resource sends GET /sapi/v1/onchain-yields/account (signed)', async () => {
