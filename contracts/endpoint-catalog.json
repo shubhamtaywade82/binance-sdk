@@ -1,6 +1,6 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-10-22T05:22:12.711Z",
+  "generatedAt": "2026-10-28T05:07:57.983Z",
   "endpoints": [
     {
       "product": "spot",
@@ -3441,6 +3441,16 @@
       "security": "SIGNED",
       "weight": null,
       "implementedBy": "subaccount.createSubAccountApiKeyForMasterAccountUserData"
+    },
+    {
+      "product": "subaccount",
+      "operation": "subaccount.createSubAccountApiKeyV2ForMasterAccountUserData",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v2/sub-account/subAccountApi",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "subaccount.createSubAccountApiKeyV2ForMasterAccountUserData"
     },
     {
       "product": "subaccount",
