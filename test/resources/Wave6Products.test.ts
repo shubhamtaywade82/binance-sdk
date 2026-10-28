@@ -95,6 +95,29 @@ describe('BinanceClient — Wave 6 gap closure (188 endpoints across 7 products)
     expect(r).toBeDefined();
   });
 
+  it('covers the upstream Postman v2 addition: Create Sub-account API Key V2 (POST /sapi/v2/sub-account/subAccountApi)', async () => {
+    let capturedQuery: URLSearchParams | undefined;
+    server.use(
+      http.post(`${SAPI}/sapi/v2/sub-account/subAccountApi`, ({ request }) => {
+        capturedQuery = new URL(request.url).searchParams;
+        return HttpResponse.json({ apiKey: 'sub-key-123', apiName: 'agent-key', type: 'HMAC' });
+      }),
+    );
+    const client = new BinanceClient({ apiKey: 'k', apiSecret: 's' });
+    const r = await client.subaccountWave6.createSubAccountApiKeyV2ForMasterAccountUserData({
+      email: 'sub@example.com',
+      apiName: 'agent-key',
+      status: '2',
+      ipAddress: '1.2.3.4',
+      canTrade: true,
+    });
+    expect(r).toEqual({ apiKey: 'sub-key-123', apiName: 'agent-key', type: 'HMAC' });
+    expect(capturedQuery!.get('email')).toBe('sub@example.com');
+    expect(capturedQuery!.get('status')).toBe('2');
+    expect(capturedQuery!.get('canTrade')).toBe('true');
+    expect(capturedQuery!.get('signature')).toBeTruthy(); // signed request
+  });
+
   it('Wave 6 closed the Spot allOrderList gap (GET /api/v3/allOrderList)', async () => {
     server.use(
       http.get(`${SAPI}/api/v3/allOrderList`, () =>

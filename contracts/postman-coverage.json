@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceUrl": "https://github.com/binance/binance-api-postman",
-  "generatedAt": "2026-10-22T05:27:25.347Z",
+  "generatedAt": "2026-10-28T05:08:57.878Z",
   "products": [
     {
       "product": "algo",
@@ -40,11 +40,15 @@
     },
     {
       "product": "cryptoLoan",
-      "contractCount": 16,
+      "contractCount": 12,
       "existingCount": 17,
       "missing": [],
       "extra": [
-        "GET /sapi/v1/loan/repay/collateral/rate"
+        "GET /sapi/v1/loan/borrow/history",
+        "GET /sapi/v1/loan/income",
+        "GET /sapi/v1/loan/ltv/adjustment/history",
+        "GET /sapi/v1/loan/repay/collateral/rate",
+        "GET /sapi/v1/loan/repay/history"
       ]
     },
     {
@@ -239,8 +243,8 @@
     },
     {
       "product": "subaccount",
-      "contractCount": 49,
-      "existingCount": 50,
+      "contractCount": 50,
+      "existingCount": 51,
       "missing": [],
       "extra": [
         "POST /sapi/v1/sub-account/margin/enable"

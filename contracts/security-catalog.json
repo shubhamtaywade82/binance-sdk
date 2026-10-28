@@ -1,6 +1,6 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-10-22T05:22:12.711Z",
+  "generatedAt": "2026-10-28T05:07:57.983Z",
   "products": {
     "algo": {
       "public": 0,
@@ -131,8 +131,8 @@
     "subaccount": {
       "public": 0,
       "apiKey": 0,
-      "signed": 50,
-      "total": 50
+      "signed": 51,
+      "total": 51
     },
     "usdm": {
       "public": 39,
