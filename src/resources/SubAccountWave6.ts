@@ -21,6 +21,37 @@ export class SubAccountWave6 {
     return this.http.delete("/sapi/v1/sub-account/subAccountApi/ipRestriction/ipList", params, 'signed').then(d => subaccountWave6Types.deleteIpListForASubAccountApiKeyForMasterAccountUserDataResponseSchema.parse(d));
   }
 
+  /**
+   * Binance Sub Account REST API → Api-Management > Create Sub-account API Key
+   * V2 (For Master Account) (USER_DATA). `POST /sapi/v2/sub-account/subAccountApi` (SIGNED).
+   *
+   * Covers the HMAC key path (the default). The optional `publicKey` parameter
+   * (RSA / Ed25519 keys) must be sent in the request body per Binance docs,
+   * which the SDK's query-string signing model does not transport yet; create
+   * RSA/Ed25519 sub-account keys through the exchange UI or a raw HTTP client
+   * until HttpClient grows body-signing support.
+   */
+  async createSubAccountApiKeyV2ForMasterAccountUserData(params: {
+    email: string | number;
+    apiName: string | number;
+    /** IP restriction status: 1 = unrestricted, 2 = trusted-IP only, 3 = third-party IP. */
+    status?: string | number;
+    canTrade?: boolean;
+    canMarginLoanRepay?: boolean;
+    canFuturesTrade?: boolean;
+    canUniversalTransfer?: boolean;
+    canVanillaOptions?: boolean;
+    /** FIX API permissions — Ed25519 keys only. */
+    canFixApiTrading?: boolean;
+    canFixApiReading?: boolean;
+    /** Required when status=2; comma-separated list, max 500 chars. */
+    ipAddress?: string;
+    /** Required when status=3. */
+    thirdPartyName?: string;
+  }): Promise<subaccountWave6Types.createSubAccountApiKeyV2ForMasterAccountUserDataResponse> {
+    return this.http.post("/sapi/v2/sub-account/subAccountApi", params, 'signed').then(d => subaccountWave6Types.createSubAccountApiKeyV2ForMasterAccountUserDataResponseSchema.parse(d));
+  }
+
   /** Binance Sub Account REST API → Managed-Sub-Account > Query Managed Sub-account Snapshot (For Investor Master Account) (USER_DATA). `GET /sapi/v1/managed-subaccount/accountSnapshot` (SIGNED). */
   async queryManagedSubAccountSnapshotForInvestorMasterAccountUserData(params: { email: string | number; type: string | number; startTime?: number; endTime?: number; limit?: number }): Promise<subaccountWave6Types.queryManagedSubAccountSnapshotForInvestorMasterAccountUserDataResponse> {
     return this.http.get("/sapi/v1/managed-subaccount/accountSnapshot", params, 'signed').then(d => subaccountWave6Types.queryManagedSubAccountSnapshotForInvestorMasterAccountUserDataResponseSchema.parse(d));

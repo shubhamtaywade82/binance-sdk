@@ -21,9 +21,11 @@ host (MCP server `binance-sdk-mcp`, or a chat-ui's `createFuturesToolkit(...)` o
   REST `https://fapi.binance.com`, WS market streams `wss://fstream.binance.com/market/stream`,
   WS public aggregate streams `wss://fstream.binance.com/public/stream`,
   WS user data `wss://fstream.binance.com/public/ws`, WS API `wss://ws-fapi.binance.com/ws-fapi/v1`.
-- Rate limits: **2400 weight/min** (REST, per IP) + **1200 orders/10s** + 300 orders/10s/uid (WS API). The SDK
-  paces every request through a local Bottleneck queue; it does not yet read back the
-  `X-MBX-USED-WEIGHT-*` / `X-MBX-ORDER-COUNT-*` response headers, so leave headroom under the caps above.
+- Rate limits: **2400 weight/min** (REST, per IP) + **1200 orders/10s** + 300 orders/10s/uid (WS API). The SDK's
+  `RateLimitTracker` parses the `X-MBX-USED-WEIGHT-*` / `X-MBX-ORDER-COUNT-*` response headers and delays queued
+  requests once usage crosses the configured safety margin (`rateLimitWeightPerMinute` / `rateLimitSafetyMargin`),
+  preempting `-1003` IP bans. Inspect live per-host usage via `client.getRateLimitUsage()`; a safety margin of
+  80-90% of the caps above is still recommended so bursts of market-data scans stay clear of the ceiling.
 
 ## Trigger
 

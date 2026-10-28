@@ -4,6 +4,21 @@ import { createFuturesToolkit, type FuturesToolkitOptions } from '../tools/index
 import { VERSION } from '../version.js';
 
 /**
+ * MCP tool results are plain `text` content: serialize handler output without
+ * losing structure. `String(obj)` would collapse every object payload to
+ * "[object Object]", which makes account/order tools useless to the model.
+ */
+function toMcpText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (value instanceof Error) return value.message;
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
+/**
  * MCP server over the toolkit. Pass `toolkit: { executionBackend: 'paper' }`
  * to route every order tool through the simulator — safe to expose to any
  * host without API-key trading risk.
@@ -14,7 +29,7 @@ export function createBinanceMcpServer(client: BinanceClient, options: FuturesTo
 
   toolkit.tools.forEach((tool) => {
     server.registerTool(tool.name, { description: tool.description, inputSchema: tool.inputSchema }, async (args) => ({
-      content: [{ type: 'text', text: String(await tool.handler(args, { env: 'live', isSigned: true })) }],
+      content: [{ type: 'text', text: toMcpText(await tool.handler(args, { env: 'live', isSigned: true })) }],
     }));
   });
 
