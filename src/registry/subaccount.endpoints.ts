@@ -8,6 +8,7 @@ const rows: Row[] = [
   ["subaccount.deleteSubAccountApiKeyForMasterAccountUserData", "DELETE", "/sapi/v1/sub-account/subAccountApi", "signed", "subaccount.deleteSubAccountApiKeyForMasterAccountUserData"],
   ["subaccount.querySubAccountApiKeyForMasterAccountUserData", "GET", "/sapi/v1/sub-account/subAccountApi", "signed", "subaccount.querySubAccountApiKeyForMasterAccountUserData"],
   ["subaccount.createSubAccountApiKeyForMasterAccountUserData", "POST", "/sapi/v1/sub-account/subAccountApi", "signed", "subaccount.createSubAccountApiKeyForMasterAccountUserData"],
+  ["subaccount.createSubAccountApiKeyV2ForMasterAccountUserData", "POST", "/sapi/v2/sub-account/subAccountApi", "signed", "subaccount.createSubAccountApiKeyV2ForMasterAccountUserData"],
   ["subaccount.modifySubAccountApiKeyPermissionForMasterAccountUserData", "POST", "/sapi/v1/sub-account/subAccountApiPermission", "signed", "subaccount.modifySubAccountApiKeyPermissionForMasterAccountUserData"],
 
   // ---- Wave 6: contract-first gap closure (Postman-driven) ----

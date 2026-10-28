@@ -4732,3 +4732,27 @@ export const addIpRestrictionForSubAccountApiKeyForMasterAccountUserDataResponse
   items: z.array(z.record(z.string(), z.unknown())).optional(),
 }).loose());
 export type addIpRestrictionForSubAccountApiKeyForMasterAccountUserDataResponse = z.infer<typeof addIpRestrictionForSubAccountApiKeyForMasterAccountUserDataResponseSchema>;
+
+/**
+ * `POST /sapi/v2/sub-account/subAccountApi` — Create Sub-account API Key V2
+ * (For Master Account) (USER_DATA). Hand-curated schema: Binance documents
+ * apiKey/apiName/type for the HMAC path; every field is optional because the
+ * exchange response varies with the key type.
+ */
+export const createSubAccountApiKeyV2ForMasterAccountUserDataResponseSchema = z.object({
+  apiKey: z.string().optional(),
+  apiName: z.string().optional(),
+  /** HMAC, RSA or Ed25519. */
+  type: z.string().optional(),
+  canTrade: z.boolean().optional(),
+  canMarginLoanRepay: z.boolean().optional(),
+  canFuturesTrade: z.boolean().optional(),
+  canUniversalTransfer: z.boolean().optional(),
+  canVanillaOptions: z.boolean().optional(),
+  canFixApiTrading: z.boolean().optional(),
+  canFixApiReading: z.boolean().optional(),
+  ipRestrict: z.boolean().optional(),
+  ipAddress: z.string().optional(),
+  thirdPartyName: z.string().optional(),
+}).loose();
+export type createSubAccountApiKeyV2ForMasterAccountUserDataResponse = z.infer<typeof createSubAccountApiKeyV2ForMasterAccountUserDataResponseSchema>;

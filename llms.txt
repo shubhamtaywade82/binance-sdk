@@ -26,7 +26,7 @@
 - [COIN-M Futures](docs/endpoint-map/coinm.md): 66 endpoints
 - [Margin](docs/endpoint-map/margin.md): 71 endpoints
 - [Wallet](docs/endpoint-map/wallet.md): 50 endpoints
-- [Sub-account](docs/endpoint-map/subaccount.md): 50 endpoints
+- [Sub-account](docs/endpoint-map/subaccount.md): 51 endpoints
 - [Options](docs/endpoint-map/options.md): 44 endpoints
 - [Portfolio Margin](docs/endpoint-map/portfolio.md): 158 endpoints
 - [Portfolio Margin Pro](docs/endpoint-map/portfolioPro.md): 30 endpoints
