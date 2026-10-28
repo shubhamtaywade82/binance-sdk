@@ -106,7 +106,8 @@
     "example:quickstart": "tsx examples/quickstart.ts",
     "example:ws": "tsx examples/ws-streams.ts",
     "example:paper": "tsx examples/paper-trading.ts",
-    "example:new-products": "tsx examples/new-products.ts"
+    "example:new-products": "tsx examples/new-products.ts",
+    "example:agent": "tsx examples/agentic-futures.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

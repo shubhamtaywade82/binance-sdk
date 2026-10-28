@@ -77,6 +77,13 @@ export const WsTicker24hrPayloadSchema = z.object({
 });
 export type WsTicker24hrPayload = z.infer<typeof WsTicker24hrPayloadSchema>;
 
+/**
+ * Aggregate all-market 24h ticker stream (`!ticker@arr`) — the payload is an
+ * array of per-symbol tickers, not a single object.
+ */
+export const WsTicker24hrArrayPayloadSchema = z.array(WsTicker24hrPayloadSchema);
+export type WsTicker24hrArrayPayload = z.infer<typeof WsTicker24hrArrayPayloadSchema>;
+
 export const WsBookTickerPayloadSchema = z.object({
   u: z.number(),
   s: z.string(),
@@ -111,6 +118,10 @@ export const WsMiniTickerPayloadSchema = z.object({
   q: z.string().transform(Number),
 });
 export type WsMiniTickerPayload = z.infer<typeof WsMiniTickerPayloadSchema>;
+
+/** Aggregate all-market mini ticker stream (`!miniTicker@arr`) — array payload. */
+export const WsMiniTickerArrayPayloadSchema = z.array(WsMiniTickerPayloadSchema);
+export type WsMiniTickerArrayPayload = z.infer<typeof WsMiniTickerArrayPayloadSchema>;
 
 export const WsForceOrderPayloadSchema = z.object({
   e: z.literal('forceOrder'),
@@ -269,6 +280,10 @@ export const WsRollingWindowTickerPayloadSchema = z.object({
 });
 export type WsRollingWindowTickerPayload = z.infer<typeof WsRollingWindowTickerPayloadSchema>;
 
+/** Aggregate all-market rolling-window ticker stream (`!ticker_{window}@arr`) — array payload. */
+export const WsRollingWindowTickerArrayPayloadSchema = z.array(WsRollingWindowTickerPayloadSchema);
+export type WsRollingWindowTickerArrayPayload = z.infer<typeof WsRollingWindowTickerArrayPayloadSchema>;
+
 export const WsSpotAvgPricePayloadSchema = z.object({
   e: z.literal('avgPrice'),
   E: z.number(),
@@ -285,10 +300,12 @@ export type WsStreamPayload =
   | WsTradePayload
   | WsDepthUpdatePayload
   | WsTicker24hrPayload
+  | WsTicker24hrArrayPayload
   | WsBookTickerPayload
   | WsMarkPricePayload
   | WsMarkPriceArrayPayload
   | WsMiniTickerPayload
+  | WsMiniTickerArrayPayload
   | WsForceOrderPayload
   | WsCompositeIndexPayload
   | WsAssetIndexPayload
@@ -296,6 +313,7 @@ export type WsStreamPayload =
   | WsRpiDepthPayload
   | WsTradingSessionPayload
   | WsRollingWindowTickerPayload
+  | WsRollingWindowTickerArrayPayload
   | WsSpotAvgPricePayload;
 
 export function parseWsPayload(streamName: string, raw: unknown): WsStreamPayload {
@@ -312,6 +330,15 @@ export function parseWsPayload(streamName: string, raw: unknown): WsStreamPayloa
   // deliver an array payload; per-symbol `@markPrice` is a single object.
   if (streamName.startsWith('!markPrice@arr')) return WsMarkPriceArrayPayloadSchema.parse(raw);
   if (streamName.includes('@markPrice')) return WsMarkPricePayloadSchema.parse(raw);
+  // Aggregate all-market ticker arrays deliver array payloads, exactly like
+  // `!markPrice@arr` above: `!ticker@arr`, `!miniTicker@arr` and
+  // `!ticker_{window}@arr`. They must be matched before the per-symbol
+  // `@ticker` / `@miniTicker` branches, which would reject an array payload.
+  if (streamName.startsWith('!ticker@arr')) return WsTicker24hrArrayPayloadSchema.parse(raw);
+  if (streamName.startsWith('!miniTicker@arr')) return WsMiniTickerArrayPayloadSchema.parse(raw);
+  if (streamName.startsWith('!ticker_') && streamName.endsWith('@arr')) {
+    return WsRollingWindowTickerArrayPayloadSchema.parse(raw);
+  }
   if (streamName.includes('@miniTicker')) return WsMiniTickerPayloadSchema.parse(raw);
   if (streamName.includes('@forceOrder')) return WsForceOrderPayloadSchema.parse(raw);
   if (streamName.includes('@compositeIndex')) return WsCompositeIndexPayloadSchema.parse(raw);

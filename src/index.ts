@@ -435,3 +435,7 @@ export {
   type SessionAuthMethod,
   newSessionRequestId,
 } from './ws/platform/WsSession.js';
+
+// Agentic futures trading layer: watchlist scanner, regime classifier,
+// confluence scorer and risk-gated execution helpers (live + paper).
+export * from './agent/index.js';
