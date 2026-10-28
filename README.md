@@ -571,12 +571,69 @@ const fill = await call('execution_place_order', {
 - **Agent skills**: Markdown skills under `skills/` — futures trading / market-data / algo /
   portfolio-margin, plus spot trading / market-data — for Skills-Hub-style agents.
 
+## Agentic Futures Layer
+
+`src/agent/` is a complete decision stack for autonomous USD-M futures trading on top of the
+SDK's data, risk and execution layers — the pieces an LLM agent should *not* improvise:
+
+- **`WatchlistScanner`** — one `!ticker@arr` WS subscription ranks every perpetual by 24h quote
+  volume; REST gates (PERPETUAL + TRADING, spread <= 5 bps, 24h volume floor, open-interest
+  floor) admit the top-50. `ingestTickers()` is a public seam for tests and offline feeds.
+- **`classifyRegime`** — deterministic five-state classifier (`TREND_UP / TREND_DOWN / RANGE /
+  SQUEEZE / CHAOS`) from EMA structure, the ATR distribution, funding z-score and the OI slope.
+  Conflicting inputs are CHAOS — the classifier refuses to guess.
+- **`scoreSymbol`** — a confluence scorer (0-95): EMA structure, session VWAP side, book
+  imbalance, taker flow, OI shift, funding posture, crowd skew. Book imbalance against the
+  trade is a **hard veto**; stops wider than 1.2 ATR refuse the signal.
+- **`executeEntry`** — risk-based sizing through `ops.sizePosition`, then the full protective
+  package placed through the idempotent `ExecutionGateway`: hard stop (`STOP_MARKET`,
+  `closePosition`, mark price), 40% at +1R and 30% at +2R reduce-only limits, and a
+  trailing-stop runner armed at +2.5R. Fails closed — if the hard stop is rejected, the fresh
+  position is flattened immediately.
+- **Session helpers** — `refreshDeadman` (5-minute countdown-cancel-all heartbeat),
+  `emergencyFlatten`, `currentEquity`, and `safetyOptions()` which derives the RiskGateway
+  fence (allowlist = watchlist, notional caps, 10% daily-loss breaker, withdrawals denied)
+  from the profile.
+
+```ts
+import {
+  BinanceClient, WatchlistScanner, classifyRegime, scoreSymbol,
+  createAgentGateway, SymbolRulesCache, executeEntry, currentEquity,
+  DEFAULT_PROFILE, safetyOptions,
+} from '@nemesis-oss/binance-sdk';
+
+// Stage 1 of the promotion ladder: paper backend, identical code path.
+const client = new BinanceClient({ testnet: true });
+const gateway = createAgentGateway(client, { paper: true, paperBalance: 10_000 });
+
+const scanner = new WatchlistScanner(client);
+await scanner.start();                       // !ticker@arr ranking
+for (const cand of await scanner.eligibleWatchlist()) {
+  const regime = await classifyRegime(client, cand.symbol);
+  if (regime === 'CHAOS' || regime === 'SQUEEZE') continue;
+  const sig = await scoreSymbol(client, cand.symbol, regime, utcDayStart());
+  if (!sig || sig.score < DEFAULT_PROFILE.confluenceEntry) continue;
+  await executeEntry(client, gateway, new SymbolRulesCache(client),
+    cand.symbol, sig, await currentEquity(client, gateway));
+}
+```
+
+Paper parity: entries fill at the live mark through the simulator; the paper engine rests
+MARKET/LIMIT only, so protective legs report `PAPER_UNSIMULATED` and the session loop drives
+those exits from the returned levels (see `examples/agentic-futures.ts` for the full session
+loop with caps, deadman, breaker halt and paper exit ledger).
+
+Also in this layer: aggregate all-market ticker array streams (`!ticker@arr`,
+`!miniTicker@arr`, `!ticker_{window}@arr`) now parse to typed arrays instead of throwing —
+the same treatment `!markPrice@arr` already had.
+
 ## Examples
 
 ```bash
 npx tsx examples/quickstart.ts      # market data, symbol rules, risk-based sizing
 npx tsx examples/ws-streams.ts      # live kline / trade / mark-price / book streams
 npx tsx examples/paper-trading.ts   # simulated position lifecycle
+npx tsx examples/agentic-futures.ts # full agent session loop (AGENT_PAPER=1 to simulate)
 ```
 
 ## Development

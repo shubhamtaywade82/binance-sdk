@@ -41,6 +41,42 @@ describe('ws.types', () => {
     expect((payload as { p: number }[])[0]?.p).toBe(60000);
   });
 
+  it('parses the aggregate !ticker@arr payload as an array of 24h tickers', () => {
+    const payload = parseWsPayload('!ticker@arr', [
+      { e: '24hrTicker', E: 1, s: 'BTCUSDT', p: '60000', P: '1', c: '61000', o: '60000', h: '61500', l: '59500', v: '1000', q: '61000000' },
+      { e: '24hrTicker', E: 2, s: 'ETHUSDT', p: '2500', P: '2', c: '2550', o: '2500', h: '2560', l: '2490', v: '20000', q: '51000000' },
+    ]);
+    expect(Array.isArray(payload)).toBe(true);
+    const tickers = payload as { s: string; q: number; c: number }[];
+    expect(tickers.map((t) => t.s)).toEqual(['BTCUSDT', 'ETHUSDT']);
+    expect(tickers[0]!.q).toBe(61_000_000); // numeric quote volume
+    expect(tickers[1]!.c).toBe(2550);
+  });
+
+  it('parses the aggregate !miniTicker@arr payload as an array', () => {
+    const payload = parseWsPayload('!miniTicker@arr', [
+      { e: '24hrMiniTicker', E: 1, s: 'BTCUSDT', c: '61000', o: '60000', h: '61500', l: '59500', v: '1000', q: '61000000' },
+    ]);
+    expect(Array.isArray(payload)).toBe(true);
+    expect((payload as { s: string }[])[0]!.s).toBe('BTCUSDT');
+  });
+
+  it('parses the aggregate !ticker_1h@arr rolling-window payload as an array', () => {
+    const payload = parseWsPayload('!ticker_1h@arr', [
+      { e: '1hTicker', E: 1, s: 'BTCUSDT', p: '60000', P: '1', o: '60000', h: '61500', l: '59500', c: '61000', v: '1000', q: '61000000', O: 1, C: 2 },
+    ]);
+    expect(Array.isArray(payload)).toBe(true);
+    expect((payload as { s: string }[])[0]!.s).toBe('BTCUSDT');
+  });
+
+  it('still parses a per-symbol @ticker payload as a single object', () => {
+    const payload = parseWsPayload('btcusdt@ticker', {
+      e: '24hrTicker', E: 1, s: 'BTCUSDT', p: '60000', P: '1', c: '61000', o: '60000', h: '61500', l: '59500', v: '1000', q: '61000000',
+    });
+    expect(Array.isArray(payload)).toBe(false);
+    expect(payload).toMatchObject({ e: '24hrTicker', s: 'BTCUSDT', q: 61_000_000 });
+  });
+
   it('parses a !contractInfo stream payload', () => {
     const payload = parseWsPayload('!contractInfo', {
       e: 'contractInfo',
