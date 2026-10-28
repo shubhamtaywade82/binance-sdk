@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { EventBus } from '../../../src/core/events.js';
 import { OrderTracker } from '../../../src/execution/platform/OrderTracker.js';
 import { orderUpdateFromOrderTradeUpdate } from '../../../src/execution/platform/normalize.js';

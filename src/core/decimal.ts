@@ -15,7 +15,6 @@
 
 const SCALE = 18n;
 const SCALE_FACTOR = 10n ** SCALE;
-const MAX_SAFE = Number.MAX_SAFE_INTEGER;
 
 export type DecimalInput = Decimal | string | number | bigint;
 

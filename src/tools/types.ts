@@ -9,6 +9,9 @@ export interface ToolDefinition<TInput extends z.ZodTypeAny = z.ZodTypeAny> {
   name: string;
   description: string;
   inputSchema: TInput;
+  // Tool lists mix schemas, so the element type erases TInput; each handler's
+  // args are validated against its own inputSchema by MCP registerTool.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handler: (args: any, ctx: ToolContext) => Promise<unknown>;
 }
 

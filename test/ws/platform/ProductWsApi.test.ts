@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { FuturesWsApiClient, SpotWsApiClient } from '../../../src/ws/platform/ProductWsApi.js';
 import type { WsApiResponse } from '../../../src/types/userdata.types.js';
 

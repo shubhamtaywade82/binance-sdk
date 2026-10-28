@@ -26,6 +26,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - run: npm run lint
       - run: npm test -- --coverage
       # Drift gate: fail when the endpoint catalog / security catalog /
       # docs / llms.txt are stale relative to ENDPOINT_REGISTRY. Regenerate

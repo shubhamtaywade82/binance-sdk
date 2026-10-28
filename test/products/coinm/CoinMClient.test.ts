@@ -51,8 +51,8 @@ describe('v3 CoinMClient (standalone product client)', () => {
     const b = new CoinMClient(core);
     expect(a.core).toBe(core);
     expect(b.core).toBe(core);
-    a.market.tickerPrice;
-    b.market.tickerPrice;
+    expect(a.market.tickerPrice).toBeDefined();
+    expect(b.market.tickerPrice).toBeDefined();
     expect(a.core.http('dapi')).toBe(b.core.http('dapi'));
   });
 

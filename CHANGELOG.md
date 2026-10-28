@@ -5,6 +5,28 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **MCP tool `fiat_orders_history`** called `walletWave6.systemStatusSystem()`
+  (`GET /sapi/v1/system/status`) and ignored its arguments. It now calls
+  `fiat.fiat.getFiatDepositWithdrawHistoryUserData()` (`GET /sapi/v1/fiat/orders`).
+- **`fiat.getFiatDepositWithdrawHistoryUserData()` and
+  `fiat.getFiatPaymentsHistoryUserData()`** validated the response as an
+  array, so every real response failed parsing. Binance returns an envelope,
+  `{ code, message, data[], total, success }`
+  (developers.binance.com fiat REST docs). The schemas now match it, and the
+  methods return that envelope.
+
+### Changed
+
+- **ESLint added** (`@eslint/js` + `typescript-eslint` recommended).
+  `npm run lint` fails on any warning, in CI and in the pre-commit hook. It
+  found 60 issues: unused imports and variables, dead helpers in the one-off
+  wave scripts, statement-only expressions in tests, and one useless regex
+  escape. All are fixed. `any` stays allowed in test doubles and on the
+  tool-handler signature, where MCP validates arguments against each tool's
+  schema.
+
 **COIN-M WebSocket API.** `client.coinm.wsApi` and `CoinMClient.wsApi` connect
 to `wss://ws-dapi.binance.com/ws-dapi/v1` (testnet and demo:
 `wss://testnet.binancefuture.com/ws-dapi/v1`; override with `wsDapiApiBase`).

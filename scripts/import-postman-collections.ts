@@ -202,21 +202,6 @@ function toParamContract(p: { key: string; value?: string; description?: string;
   };
 }
 
-function deriveOperationId(product: string, path: string, method: string, name: string): string {
-  // Convert the request name into an operationId like "trading.createOrder".
-  // Heuristic: take the last folder + a camelCase version of the request name.
-  // Falls back to method + path tail if no name available.
-  const cleanName = (name || '')
-    .replace(/[^\w\s-]/g, '')
-    .trim()
-    .toLowerCase()
-    .replace(/[-\s]+(.)/g, (_, c) => c.toUpperCase());
-  // Avoid clashing with reserved words / collisions across collections.
-  const pathTail = path.split('/').filter(Boolean).pop() ?? '';
-  const tail = pathTail.replace(/[^\w]/g, '');
-  return `${product}.${cleanName || `${method.toLowerCase()}${tail}`}`;
-}
-
 export interface CollectionFile {
   file: string;
   collection: PostmanCollection;

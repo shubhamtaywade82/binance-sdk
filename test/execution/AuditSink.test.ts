@@ -54,7 +54,7 @@ describe('AuditSink — InMemoryAuditSink', () => {
     (poisoned as unknown as { buffer: AuditRecord[] }).buffer = null as never;
     expect(() => poisoned.record(auditRecordFromExecution(fakeExecution(), 'place', 'acked', 'live'))).not.toThrow();
     expect(poisoned.size).toBe(0);
-    sink.size; // baseline; never threw on the un-poisoned one
+    expect(() => sink.size).not.toThrow(); // baseline; never threw on the un-poisoned one
   });
 
   it('evicts oldest records past capacity', () => {

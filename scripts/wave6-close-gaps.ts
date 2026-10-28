@@ -76,7 +76,7 @@ function tsMethodName(c: EndpointContract): string {
     .replace(/^./, (c) => c.toLowerCase());
 }
 
-function guessTsType(exampleValue: string | undefined, name: string): string {
+function guessTsType(exampleValue: string | undefined, _name: string): string {
   if (exampleValue === undefined) return 'string | number';
   if (/^-?\d+(\.\d+)?$/.test(exampleValue)) return 'number';
   if (exampleValue === 'true' || exampleValue === 'false') return 'boolean';
@@ -124,19 +124,6 @@ function appendRegistryRows(product: string, registryFile: string, contracts: En
   );
   writeFileSync(filePath, updated);
   console.log(`  ✓ ${registryFile} (+${contracts.length} rows)`);
-}
-
-function resourceMethod(c: EndpointContract): string {
-  const name = tsMethodName(c);
-  const params = [...c.queryParams, ...c.bodyParams]
-    .filter((p) => p.name !== 'signature' && p.name !== 'timestamp' && p.name !== 'recvWindow');
-  const paramSig = params.length === 0
-    ? ''
-    : `params: { ${params.map((p) => `${p.name}${p.required ? '' : '?'}: ${guessTsType(p.exampleValue, p.name)}`).join('; ')} }`;
-  const argsForCall = params.length === 0 ? 'undefined' : 'params';
-  const call = httpVerbCall(c).replace('params', argsForCall);
-  const docRef = c.docRef.replace(/\n/g, ' ').slice(0, 200);
-  return `  /** ${docRef}. \`${c.method} ${c.path}\` (${c.auth.toUpperCase()}). */\n  async ${name}(${paramSig}): Promise<unknown> {\n    return ${call};\n  }`;
 }
 
 function emitWave6ResourceFile(resourceClass: string, resourceFile: string, contracts: EndpointContract[], product: string): void {

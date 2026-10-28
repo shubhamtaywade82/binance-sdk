@@ -1,12 +1,11 @@
 import type { AxiosRequestConfig } from 'axios';
-import { HttpClient, type SignatureAlgorithm } from './HttpClient.js';
+import type { SignatureAlgorithm } from './HttpClient.js';
 import type { RateLimitUsage } from './RateLimitTracker.js';
-import { TradingPolicy, type TradingPolicyOptions } from './TradingPolicy.js';
+import { TradingPolicy } from './TradingPolicy.js';
 import { RiskGateway, type RiskGatewayOptions } from '../risk/RiskGateway.js';
 import { EventBus } from '../core/events.js';
 import { CoreContext } from '../core/context.js';
 import type { WsPlatform, WsPlatformOptions } from '../ws/platform/WsPlatform.js';
-import { resolveEnvironment } from './endpoints.js';
 import { MarginAccount, MarginTrading } from '../resources/Margin.js';
 import { MarginWave6 } from '../resources/MarginWave6.js';
 import { Wallet } from '../resources/Wallet.js';

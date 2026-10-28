@@ -1,6 +1,5 @@
 import WebSocket from 'ws';
 import type { EventBus } from '../../core/events.js';
-import { BaseWS } from '../BaseWS.js';
 import { FuturesMarketWS, futuresStreamRoute, type FuturesStreamRoute } from '../FuturesMarketWS.js';
 import { SpotMarketWS } from '../SpotMarketWS.js';
 import { CoinMMarketWS } from '../CoinMMarketWS.js';

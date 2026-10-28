@@ -17,7 +17,6 @@ import {
   isExecutionAdapter,
   type ExecutionAdapter,
   type ExecutionReportShape,
-  type OrderShape,
   type UserStreamLike,
 } from './adapter.js';
 
