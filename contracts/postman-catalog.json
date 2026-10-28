@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "sourceUrl": "https://github.com/binance/binance-api-postman",
   "officialDocsUrl": "https://developers.binance.com/en/docs/sdks-tools/postman/collections",
-  "pinnedSha": "a6dbbbb97f27cd8b181455cd1c2d50d9966b6c3a",
-  "pinnedAt": "2026-10-22",
-  "totalEndpoints": 709,
+  "pinnedSha": "2dbd378be100f170d859d56fcd0ec23457a72d30",
+  "pinnedAt": "2026-10-27",
+  "totalEndpoints": 710,
   "totalCollections": 24,
   "endpoints": [
     {
@@ -25961,7 +25961,7 @@
         },
         {
           "name": "symbolStatus",
-          "description": "Supported values: `TRADING`, `HALT`, `BREAK`",
+          "description": "Supported values: `TRADING`, `HALT`, `BREAK`, `CANCEL_ONLY`",
           "required": false,
           "exampleValue": "TRADING"
         }
@@ -30198,6 +30198,18 @@
           "exampleValue": "false"
         },
         {
+          "name": "canFixApiTrading",
+          "description": "FIX API Trading permission. Only supported for API Keys using an Ed25519 public key. Setting it to `true` for any other key type returns `-9000` `Unsupported operation`",
+          "required": false,
+          "exampleValue": "true"
+        },
+        {
+          "name": "canFixApiReading",
+          "description": "FIX API Reading permission. Only supported for API Keys using an Ed25519 public key. Setting it to `true` for any other key type returns `-9000` `Unsupported operation`",
+          "required": false,
+          "exampleValue": "false"
+        },
+        {
           "name": "ipAddress",
           "description": "Required when status=2. IP address list, max 500 chars",
           "required": false,
@@ -30484,6 +30496,18 @@
           "exampleValue": "false"
         },
         {
+          "name": "canFixApiTrading",
+          "description": "FIX API Trading permission. If omitted, the existing value is unchanged. Only supported for API Keys using an Ed25519 public key. Setting it to `true` for any other key type returns `-9000` `Unsupported operation`",
+          "required": false,
+          "exampleValue": "true"
+        },
+        {
+          "name": "canFixApiReading",
+          "description": "FIX API Reading permission. If omitted, the existing value is unchanged. Only supported for API Keys using an Ed25519 public key. Setting it to `true` for any other key type returns `-9000` `Unsupported operation`",
+          "required": false,
+          "exampleValue": "false"
+        },
+        {
           "name": "recvWindow",
           "required": false,
           "exampleValue": "5000"
@@ -30501,6 +30525,118 @@
       ],
       "bodyParams": [],
       "docRef": "Sub Account REST API → Api Management > Modify Sub-account API Key Permission (For Master Account) (USER_DATA)"
+    },
+    {
+      "sourceCollection": "Binance Sub Account API.json",
+      "sourceFolder": [
+        "Api Management"
+      ],
+      "name": "Create Sub-account API Key V2 (For Master Account) (USER_DATA)",
+      "product": "subaccount",
+      "hostKey": "apiRoot",
+      "method": "POST",
+      "path": "/sapi/v2/sub-account/subAccountApi",
+      "auth": "signed",
+      "queryParams": [
+        {
+          "name": "email",
+          "description": "Sub-account email",
+          "required": true,
+          "defaultValue": "123@test.com",
+          "exampleValue": "123@test.com"
+        },
+        {
+          "name": "apiName",
+          "description": "API Key name",
+          "required": true,
+          "defaultValue": "my-fix-api",
+          "exampleValue": "my-fix-api"
+        },
+        {
+          "name": "status",
+          "description": "IP restriction status. 1 = unrestricted, 2 = restricted to trusted IPs, 3 = third-party IP restriction",
+          "required": true,
+          "defaultValue": "2",
+          "exampleValue": "2"
+        },
+        {
+          "name": "canTrade",
+          "description": "Spot & Margin trading permission, default false",
+          "required": false,
+          "exampleValue": "true"
+        },
+        {
+          "name": "canMarginLoanRepay",
+          "description": "Margin borrow/repay permission, default false",
+          "required": false,
+          "exampleValue": "false"
+        },
+        {
+          "name": "canFuturesTrade",
+          "description": "Futures trading permission, default false",
+          "required": false,
+          "exampleValue": "false"
+        },
+        {
+          "name": "canUniversalTransfer",
+          "description": "Universal transfer permission, default false",
+          "required": false,
+          "exampleValue": "false"
+        },
+        {
+          "name": "canVanillaOptions",
+          "description": "Vanilla options permission, default false",
+          "required": false,
+          "exampleValue": "false"
+        },
+        {
+          "name": "canFixApiTrading",
+          "description": "FIX API Trading permission. Only supported for API Keys using an Ed25519 public key. Setting it to `true` for any other key type returns `-9000` `Unsupported operation`",
+          "required": false,
+          "exampleValue": "true"
+        },
+        {
+          "name": "canFixApiReading",
+          "description": "FIX API Reading permission. Only supported for API Keys using an Ed25519 public key. Setting it to `true` for any other key type returns `-9000` `Unsupported operation`",
+          "required": false,
+          "exampleValue": "true"
+        },
+        {
+          "name": "ipAddress",
+          "description": "Required when status=2. IP address list, max 500 chars",
+          "required": false,
+          "exampleValue": "1.2.3.4"
+        },
+        {
+          "name": "thirdPartyName",
+          "description": "Required when status=3. Third-party name",
+          "required": false,
+          "exampleValue": "thirdParty"
+        },
+        {
+          "name": "publicKey",
+          "description": "RSA or Ed25519 public key (optional). Must be sent in the request body; it is rejected if passed in the URL query string",
+          "required": false,
+          "exampleValue": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAptEM59ao3nOD2baduIA830qZU4k4mqfvv7PwHVAfZhg&#x3D;\n-----END PUBLIC KEY-----"
+        },
+        {
+          "name": "recvWindow",
+          "required": false,
+          "exampleValue": "5000"
+        },
+        {
+          "name": "timestamp",
+          "description": "UTC timestamp in ms",
+          "required": true
+        },
+        {
+          "name": "signature",
+          "description": "Signature",
+          "required": true
+        }
+      ],
+      "bodyParams": [],
+      "docRef": "Sub Account REST API → Api Management > Create Sub-account API Key V2 (For Master Account) (USER_DATA)"
     },
     {
       "sourceCollection": "Binance Sub Account API.json",

@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "sourceUrl": "https://github.com/binance/binance-api-postman",
   "officialDocsUrl": "https://developers.binance.com/en/docs/sdks-tools/postman/collections",
-  "pinnedSha": "a6dbbbb97f27cd8b181455cd1c2d50d9966b6c3a",
-  "pinnedAt": "2026-10-22",
+  "pinnedSha": "2dbd378be100f170d859d56fcd0ec23457a72d30",
+  "pinnedAt": "2026-10-27",
   "unmappedCollections": [
     "Binance Stocks API.json",
     "Binance W3W Prediction API.json"
@@ -160,7 +160,7 @@
       "collectionFile": "Binance Sub Account API.json",
       "collectionName": "Sub Account REST API",
       "description": "Create and manage sub-accounts, control permissions, and transfer assets via the Sub Account API.",
-      "endpointCount": 49,
+      "endpointCount": 50,
       "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Sub%20Account%20API.json"
     },
     {
