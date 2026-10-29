@@ -1,0 +1,21 @@
+{
+  "total": 1,
+  "orders": [
+    {
+      "algoId": 5,
+      "symbol": "BTCUSDT",
+      "side": "SELL",
+      "totalQty": "10",
+      "executedQty": "10",
+      "executedAmt": "100",
+      "avgPrice": "10000",
+      "clientAlgoId": "abc",
+      "bookTime": 1645000000000,
+      "endTime": 1645000000000,
+      "algoStatus": "COMPLETED",
+      "algoType": "TWAP",
+      "urgency": "LOW",
+      "duration": 60
+    }
+  ]
+}

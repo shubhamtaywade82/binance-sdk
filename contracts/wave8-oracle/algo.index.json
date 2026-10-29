@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "product": "algo",
+  "sourceUrl": "https://github.com/binance/binance-connector-js",
+  "sourcePath": "clients/algo/src/rest-api/types",
+  "pinnedSha": "1fe304445e34d014a0e457ef0006f7c426f0203c",
+  "pinnedAt": "2026-10-23",
+  "upstreamDoc": "https://developers.binance.com/en/docs/algo/introduction",
+  "files": [
+    "cancel-algo-order-future-algo-response.ts",
+    "cancel-algo-order-spot-algo-response.ts",
+    "query-current-algo-open-orders-future-algo-response-orders-inner.ts",
+    "query-current-algo-open-orders-future-algo-response.ts",
+    "query-current-algo-open-orders-spot-algo-response-orders-inner.ts",
+    "query-current-algo-open-orders-spot-algo-response.ts",
+    "query-historical-algo-orders-future-algo-response-orders-inner.ts",
+    "query-historical-algo-orders-future-algo-response.ts",
+    "query-historical-algo-orders-spot-algo-response-orders-inner.ts",
+    "query-historical-algo-orders-spot-algo-response.ts",
+    "query-sub-orders-future-algo-response-sub-orders-inner.ts",
+    "query-sub-orders-future-algo-response.ts",
+    "query-sub-orders-spot-algo-response.ts",
+    "time-weighted-average-price-future-algo-response.ts",
+    "time-weighted-average-price-spot-algo-response.ts",
+    "volume-participation-future-algo-response.ts",
+    "volume-participation-response.ts"
+  ]
+}

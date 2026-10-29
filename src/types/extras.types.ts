@@ -149,40 +149,10 @@ export const CryptoLoanRepayHistorySchema = z.object({
 export type CryptoLoanRepayHistory = z.infer<typeof CryptoLoanRepayHistorySchema>;
 export const CryptoLoanRepayHistoryResponseSchema = z.array(CryptoLoanRepayHistorySchema);
 
-export const CryptoLoanFlexibleBorrowSchema = z.object({
-  loanCoin: z.string(),
-  collateralCoin: z.string(),
-  loanAmount: z.string().transform(Number).optional(),
-  collateralAmount: z.string().transform(Number).optional(),
-  orderId: z.number().optional(),
-}).loose();
-export type CryptoLoanFlexibleBorrow = z.infer<typeof CryptoLoanFlexibleBorrowSchema>;
-
-export const CryptoLoanFlexibleLoanableSchema = z.object({
-  loanCoin: z.string(),
-  flexibleInterestRate: z.string().transform(Number),
-  flexibleMinLimit: z.string().transform(Number).optional(),
-  flexibleMaxLimit: z.string().transform(Number).optional(),
-}).loose();
-export type CryptoLoanFlexibleLoanable = z.infer<typeof CryptoLoanFlexibleLoanableSchema>;
-export const CryptoLoanFlexibleLoanableResponseSchema = z.array(CryptoLoanFlexibleLoanableSchema);
-
-export const CryptoLoanFlexibleCollateralSchema = z.object({
-  collateralCoin: z.string(),
-  initialLTV: z.string().transform(Number).optional(),
-  marginCallLTV: z.string().transform(Number).optional(),
-  liquidationLTV: z.string().transform(Number).optional(),
-}).loose();
-export type CryptoLoanFlexibleCollateral = z.infer<typeof CryptoLoanFlexibleCollateralSchema>;
-export const CryptoLoanFlexibleCollateralResponseSchema = z.array(CryptoLoanFlexibleCollateralSchema);
-
-export const CryptoLoanInterestRateHistorySchema = z.object({
-  loanCoin: z.string(),
-  dailyInterestRate: z.string().transform(Number),
-  time: z.number(),
-}).loose();
-export type CryptoLoanInterestRateHistory = z.infer<typeof CryptoLoanInterestRateHistorySchema>;
-export const CryptoLoanInterestRateHistoryResponseSchema = z.array(CryptoLoanInterestRateHistorySchema);
+// Wave 8 moved the flexible (v2) Crypto Loan response schemas to the
+// connector-js oracle (src/types/cryptoLoan.wave8.types.ts). The v1
+// fixed-term schemas above stay: those endpoints are deprecated (removed
+// from upstream Postman) and are not modeled by the oracle.
 
 // ---------------------------------------------------------------------------
 // Convert SAPI
@@ -204,38 +174,8 @@ export const ConvertAssetInfoSchema = z.object({
 }).loose();
 export type ConvertAssetInfo = z.infer<typeof ConvertAssetInfoSchema>;
 
-// ---------------------------------------------------------------------------
-// Algo SAPI
-// ---------------------------------------------------------------------------
-
-export const AlgoOrderSchema = z.object({
-  algoId: z.number().optional(),
-  symbol: z.string(),
-  side: z.string(),
-  type: z.string().optional(),
-  quantity: z.string().transform(Number).optional(),
-  duration: z.number().optional(),
-  status: z.string().optional(),
-  clientOrderId: z.string().optional(),
-  createTime: z.number().optional(),
-}).loose();
-export type AlgoOrder = z.infer<typeof AlgoOrderSchema>;
-export const AlgoOrdersResponseSchema = z.array(AlgoOrderSchema);
-export const AlgoOrderResponseSchema = AlgoOrderSchema;
-
-export const AlgoSubOrderSchema = z.object({
-  subId: z.number().optional(),
-  algoId: z.number().optional(),
-  symbol: z.string().optional(),
-  side: z.string().optional(),
-  price: z.string().transform(Number).optional(),
-  quantity: z.string().transform(Number).optional(),
-  executedQty: z.string().transform(Number).optional(),
-  status: z.string().optional(),
-  time: z.number().optional(),
-}).loose();
-export type AlgoSubOrder = z.infer<typeof AlgoSubOrderSchema>;
-export const AlgoSubOrdersResponseSchema = z.array(AlgoSubOrderSchema);
+// Wave 8 moved the Algo SAPI response schemas to the connector-js oracle
+// (src/types/algo.wave8.types.ts).
 
 // ---------------------------------------------------------------------------
 // Dual Investment

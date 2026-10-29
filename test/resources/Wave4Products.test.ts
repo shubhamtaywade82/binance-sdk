@@ -21,7 +21,11 @@ function http_(base: string): HttpClient {
 }
 
 describe('CryptoLoan', () => {
-  it('parses borrow history', async () => {
+  // v1 fixed-term methods (deprecated upstream) keep their Wave 1 schemas;
+  // the v2 flexible methods migrated to Wave 8 oracle schemas — their real
+  // wire shape is wrapped { rows, total } (test/resources/Wave8CryptoLoan.test.ts
+  // carries the full acceptance suite).
+  it('parses borrow history (deprecated v1 surface, plain array wire)', async () => {
     server.use(
       http.get(`${SAPI}/sapi/v1/loan/borrow/history`, () =>
         HttpResponse.json([
@@ -34,7 +38,7 @@ describe('CryptoLoan', () => {
     expect(r[0]?.loanAmount).toBe(1000);
   });
 
-  it('parses repay collateral rate', async () => {
+  it('parses repay collateral rate (deprecated v1 surface)', async () => {
     server.use(
       http.get(`${SAPI}/sapi/v1/loan/repay/collateral/rate`, () =>
         HttpResponse.json({
@@ -49,29 +53,36 @@ describe('CryptoLoan', () => {
     expect(r.collateralReturnAmount).toBe(0.002);
   });
 
-  it('parses flexible loanable data', async () => {
+  it('parses flexible loanable data (Wave 8: wrapped { rows, total } wire)', async () => {
     server.use(
       http.get(`${SAPI}/sapi/v2/loan/flexible/loanable/data`, () =>
-        HttpResponse.json([
-          { loanCoin: 'USDT', flexibleInterestRate: '0.0001', flexibleMinLimit: '10', flexibleMaxLimit: '1000000' },
-        ]),
+        HttpResponse.json({
+          rows: [
+            { loanCoin: 'USDT', flexibleInterestRate: '0.0001', flexibleMinLimit: '10', flexibleMaxLimit: '1000000' },
+          ],
+          total: 1,
+        }),
       ),
     );
     const r = await new CryptoLoan(http_(SAPI)).flexibleLoanableData();
-    expect(r[0]?.loanCoin).toBe('USDT');
-    expect(r[0]?.flexibleInterestRate).toBe(0.0001);
+    expect(r.total).toBe(1);
+    expect(r.rows?.[0]?.loanCoin).toBe('USDT');
+    expect(r.rows?.[0]?.flexibleInterestRate).toBe(0.0001);
   });
 
-  it('parses interest rate history', async () => {
+  it('parses interest rate history (Wave 8: wrapped { rows, total } wire)', async () => {
     server.use(
       http.get(`${SAPI}/sapi/v2/loan/interestRateHistory`, () =>
-        HttpResponse.json([
-          { loanCoin: 'USDT', dailyInterestRate: '0.0001', time: 1 },
-        ]),
+        HttpResponse.json({
+          rows: [
+            { coin: 'USDT', annualizedInterestRate: '0.0001', time: 1 },
+          ],
+          total: 1,
+        }),
       ),
     );
     const r = await new CryptoLoan(http_(SAPI)).interestRateHistory();
-    expect(r[0]?.dailyInterestRate).toBe(0.0001);
+    expect(r.rows?.[0]?.annualizedInterestRate).toBe(0.0001);
   });
 });
 

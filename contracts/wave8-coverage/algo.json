@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "product": "algo",
+  "oracleSource": {
+    "repo": "https://github.com/binance/binance-connector-js",
+    "commit": "1fe304445e34d014a0e457ef0006f7c426f0203c",
+    "pinnedAt": "2026-10-23",
+    "path": "clients/algo/src/rest-api/types"
+  },
+  "generatedFile": "src/types/algo.wave8.types.ts",
+  "interfaces": [
+    {
+      "name": "CancelAlgoOrderFutureAlgoResponse",
+      "arrayBase": null,
+      "fields": 4
+    },
+    {
+      "name": "CancelAlgoOrderSpotAlgoResponse",
+      "arrayBase": null,
+      "fields": 4
+    },
+    {
+      "name": "QueryCurrentAlgoOpenOrdersFutureAlgoResponseOrdersInner",
+      "arrayBase": null,
+      "fields": 14
+    },
+    {
+      "name": "QueryCurrentAlgoOpenOrdersFutureAlgoResponse",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "QueryCurrentAlgoOpenOrdersSpotAlgoResponseOrdersInner",
+      "arrayBase": null,
+      "fields": 14
+    },
+    {
+      "name": "QueryCurrentAlgoOpenOrdersSpotAlgoResponse",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "QueryHistoricalAlgoOrdersFutureAlgoResponseOrdersInner",
+      "arrayBase": null,
+      "fields": 14
+    },
+    {
+      "name": "QueryHistoricalAlgoOrdersFutureAlgoResponse",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "QueryHistoricalAlgoOrdersSpotAlgoResponseOrdersInner",
+      "arrayBase": null,
+      "fields": 14
+    },
+    {
+      "name": "QueryHistoricalAlgoOrdersSpotAlgoResponse",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "QuerySubOrdersFutureAlgoResponseSubOrdersInner",
+      "arrayBase": null,
+      "fields": 14
+    },
+    {
+      "name": "QuerySubOrdersFutureAlgoResponse",
+      "arrayBase": null,
+      "fields": 4
+    },
+    {
+      "name": "QuerySubOrdersSpotAlgoResponse",
+      "arrayBase": null,
+      "fields": 4
+    },
+    {
+      "name": "TimeWeightedAveragePriceFutureAlgoResponse",
+      "arrayBase": null,
+      "fields": 4
+    },
+    {
+      "name": "TimeWeightedAveragePriceSpotAlgoResponse",
+      "arrayBase": null,
+      "fields": 4
+    },
+    {
+      "name": "VolumeParticipationFutureAlgoResponse",
+      "arrayBase": null,
+      "fields": 4
+    },
+    {
+      "name": "VolumeParticipationResponse",
+      "arrayBase": null,
+      "fields": 4
+    }
+  ],
+  "schemaCount": 17,
+  "fieldCount": 110
+}

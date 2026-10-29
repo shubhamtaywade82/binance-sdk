@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "product": "cryptoLoan",
+  "sourceUrl": "https://github.com/binance/binance-connector-js",
+  "sourcePath": "clients/crypto-loan/src/rest-api/types",
+  "pinnedSha": "1fe304445e34d014a0e457ef0006f7c426f0203c",
+  "pinnedAt": "2026-10-23",
+  "upstreamDoc": "https://developers.binance.com/en/docs/crypto_loan/introduction",
+  "files": [
+    "check-collateral-repay-rate-response.ts",
+    "flexible-loan-adjust-ltv-response.ts",
+    "flexible-loan-borrow-response.ts",
+    "flexible-loan-repay-response.ts",
+    "get-flexible-loan-assets-data-response-rows-inner.ts",
+    "get-flexible-loan-assets-data-response.ts",
+    "get-flexible-loan-borrow-history-response-rows-inner.ts",
+    "get-flexible-loan-borrow-history-response.ts",
+    "get-flexible-loan-collateral-assets-data-response-rows-inner.ts",
+    "get-flexible-loan-collateral-assets-data-response.ts",
+    "get-flexible-loan-interest-rate-history-response-rows-inner.ts",
+    "get-flexible-loan-interest-rate-history-response.ts",
+    "get-flexible-loan-liquidation-history-response-rows-inner.ts",
+    "get-flexible-loan-liquidation-history-response.ts",
+    "get-flexible-loan-ltv-adjustment-history-response-rows-inner.ts",
+    "get-flexible-loan-ltv-adjustment-history-response.ts",
+    "get-flexible-loan-ongoing-orders-response-rows-inner.ts",
+    "get-flexible-loan-ongoing-orders-response.ts",
+    "get-flexible-loan-repayment-history-response-rows-inner.ts",
+    "get-flexible-loan-repayment-history-response.ts"
+  ]
+}

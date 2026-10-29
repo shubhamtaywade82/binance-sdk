@@ -1,0 +1,13 @@
+{
+  "rows": [
+    {
+      "loanCoin": "USDT",
+      "repayAmount": "100.5",
+      "collateralCoin": "BUSD",
+      "collateralReturn": "100.1",
+      "repayStatus": "Repaid",
+      "repayTime": 1645000000000
+    }
+  ],
+  "total": 1
+}

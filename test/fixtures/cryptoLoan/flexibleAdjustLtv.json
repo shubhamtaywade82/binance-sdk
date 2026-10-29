@@ -1,0 +1,8 @@
+{
+  "loanCoin": "USDT",
+  "collateralCoin": "BUSD",
+  "direction": "ADDITIONAL",
+  "adjustmentAmount": "10.5",
+  "currentLTV": "0.55",
+  "status": "Succeed"
+}

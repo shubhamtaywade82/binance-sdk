@@ -1,0 +1,21 @@
+{
+  "total": 1,
+  "orders": [
+    {
+      "algoId": 6,
+      "symbol": "BTCUSDT",
+      "side": "BUY",
+      "totalQty": "20",
+      "executedQty": "5",
+      "executedAmt": "50",
+      "avgPrice": "10000",
+      "clientAlgoId": "ghi",
+      "bookTime": 1645000000000,
+      "endTime": 1645000000000,
+      "algoStatus": "WORKING",
+      "algoType": "TWAP",
+      "urgency": "MEDIUM",
+      "duration": 120
+    }
+  ]
+}

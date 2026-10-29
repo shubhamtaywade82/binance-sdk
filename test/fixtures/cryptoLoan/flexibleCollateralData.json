@@ -1,0 +1,12 @@
+{
+  "rows": [
+    {
+      "collateralCoin": "BNB",
+      "initialLTV": "0.75",
+      "marginCallLTV": "0.8",
+      "liquidationLTV": "0.85",
+      "maxLimit": "1000"
+    }
+  ],
+  "total": 1
+}

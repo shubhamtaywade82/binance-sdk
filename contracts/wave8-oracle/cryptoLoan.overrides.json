@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "product": "cryptoLoan",
+  "$comment": "SDK conventions layered on top of the connector-js crypto-loan oracle. The oracle covers the flexible (v2) surface — the v1 fixed-term methods are deprecated (removed from upstream Postman in a6dbbbb) and stay on their existing hand-written schemas. Every entry needs a reason — this file is the review surface for deliberate divergences from the upstream OpenAPI typing.",
+  "numericStringFields": {
+    "$comment": "Oracle types these as string; the SDK's established convention (Wave 1, asserted by test/resources/Wave4Products.test.ts) transforms decimal-amount/rate strings to number at the parse boundary so consumers get numeric amounts. Applied by field name across all interfaces of this product.",
+    "fields": [
+      "loanAmount",
+      "collateralAmount",
+      "initialLoanAmount",
+      "initialCollateralAmount",
+      "flexibleInterestRate",
+      "flexibleMinLimit",
+      "flexibleMaxLimit",
+      "initialLTV",
+      "marginCallLTV",
+      "liquidationLTV",
+      "maxLimit",
+      "annualizedInterestRate",
+      "totalDebt",
+      "currentLTV",
+      "remainingDebt",
+      "remainingCollateral",
+      "repayAmount",
+      "collateralReturn",
+      "liquidationDebt",
+      "liquidationCollateralAmount",
+      "returnCollateralAmount",
+      "liquidationFee",
+      "liquidationStartingPrice",
+      "adjustmentAmount",
+      "preLTV",
+      "afterLTV",
+      "rate"
+    ]
+  },
+  "flexibleIdFields": {
+    "$comment": "None for crypto-loan: no numeric id fields on this surface (loanCoin/collateralCoin/status are strings; rows are keyed by content, not id). Listed explicitly so the next rung knows the knob was considered.",
+    "fields": []
+  },
+  "extraFields": {}
+}

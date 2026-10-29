@@ -1,0 +1,9 @@
+{
+  "loanCoin": "USDT",
+  "collateralCoin": "BUSD",
+  "remainingDebt": "10.1",
+  "remainingCollateral": "5.1",
+  "fullRepayment": true,
+  "currentLTV": "0.55",
+  "repayStatus": "Repaid"
+}
