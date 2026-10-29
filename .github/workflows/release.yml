@@ -60,6 +60,10 @@ jobs:
             console.log('Postman contract coverage: 100% match (' + cov.products.reduce((a, p) => a + p.existingCount, 0) + ' endpoints).');
           "
       - run: npm run build
+      # Footprint gate on the exact release commit: never publish source
+      # maps or a package over the unpacked-size budget
+      # (scripts/check-package-footprint.ts).
+      - run: npm run package:check-footprint
       - run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
