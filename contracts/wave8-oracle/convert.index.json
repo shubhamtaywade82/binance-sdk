@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "product": "convert",
+  "sourceUrl": "https://github.com/binance/binance-connector-js",
+  "sourcePath": "clients/convert/src/rest-api/types",
+  "pinnedSha": "1fe304445e34d014a0e457ef0006f7c426f0203c",
+  "pinnedAt": "2026-10-23",
+  "upstreamDoc": "https://developers.binance.com/en/docs/catalog/core-trading-convert/api/rest-api",
+  "files": [
+    "accept-quote-response.ts",
+    "cancel-limit-order-response.ts",
+    "get-convert-trade-history-response.ts",
+    "get-convert-trade-history-response-list-inner.ts",
+    "list-all-convert-pairs-response.ts",
+    "list-all-convert-pairs-response-inner.ts",
+    "order-status-response.ts",
+    "place-limit-order-response.ts",
+    "query-limit-open-orders-response.ts",
+    "query-limit-open-orders-response-list-inner.ts",
+    "query-order-quantity-precision-per-asset-response.ts",
+    "query-order-quantity-precision-per-asset-response-inner.ts",
+    "send-quote-request-response.ts"
+  ]
+}

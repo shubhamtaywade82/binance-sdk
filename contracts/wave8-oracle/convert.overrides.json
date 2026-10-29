@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "product": "convert",
+  "$comment": "SDK conventions layered on top of the connector-js oracle. The generator applies these when emitting src/types/convert.wave8.types.ts. Every entry needs a reason — this file is the review surface for deliberate divergences from the upstream OpenAPI typing.",
+  "numericStringFields": {
+    "$comment": "Oracle types these as string; the SDK's established convention (Wave 1, asserted by test/resources/ConvertAndAlgo.test.ts) transforms decimal-amount strings to number at the parse boundary so consumers get numeric amounts. Overrides are applied by field name across all interfaces of this product.",
+    "fields": [
+      "ratio",
+      "inverseRatio",
+      "toAmount",
+      "fromAmount",
+      "fromAssetMinAmount",
+      "fromAssetMaxAmount",
+      "toAssetMinAmount",
+      "toAssetMaxAmount",
+      "baseAmount",
+      "quoteAmount",
+      "limitPrice"
+    ]
+  },
+  "flexibleIdFields": {
+    "$comment": "Oracle types these as number|bigint (current upstream OpenAPI), but Binance's own docs examples and the wire have historically returned string ids on this surface (the pre-catalog docs typed orderId as string). The SDK's established public type is string, so these parse with z.coerce.string() — accepting both wire forms, emitting the established type.",
+    "fields": ["orderId"]
+  },
+  "extraFields": {
+    "AcceptQuoteResponse": {
+      "$comment": "The wire returns the full conversion detail on acceptQuote. The current upstream OpenAPI models only orderId/createTime/orderStatus (trimmed when Binance migrated Convert docs to the core-trading-convert catalog). Keeping the richer established shape is non-breaking and matches observed responses; drop after the next wire verification if Binance really trims it.",
+      "fields": {
+        "fromAsset": "z.string().optional()",
+        "fromAmount": "z.string().transform(Number).optional()",
+        "toAsset": "z.string().optional()",
+        "toAmount": "z.string().transform(Number).optional()",
+        "ratio": "z.string().transform(Number).optional()"
+      }
+    }
+  }
+}

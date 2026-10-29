@@ -1,0 +1,8 @@
+{
+  "fromAsset": "USDT",
+  "toAsset": "BTC",
+  "fromAssetMinAmount": "10",
+  "fromAssetMaxAmount": "100000",
+  "toAssetMinAmount": "0.000001",
+  "toAssetMaxAmount": "500000"
+}

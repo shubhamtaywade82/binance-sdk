@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "$comment": "Wave 8 ratchet baseline — the permissive-schema debt of the Wave 5-7 expansion, recorded after the convert pilot. test/contracts/wave8-ratchet.test.ts fails when either counter GROWS. Lower a counter in the same commit that shrinks it (migrating a product to oracle-derived strict schemas via contracts/wave8-oracle/ does exactly that). Metrics at pilot close: 137 unvalidated resource returns (was 138; Convert.limitCancelOrder now parses with cancelLimitOrderResponseSchema), 17385 permissive z.union([z.string(), z.number()]) fields across the 16 wave7 type files. Migration order: money-movement first (algo, cryptoLoan, vipLoan, simpleEarn, staking), then the Wave 6/7 long tail. When both counters reach 0, replace the ratchet with a hard 'no raw returns' assertion.",
+  "unvalidatedResourceReturns": 137,
+  "permissiveUnionFields": 17385
+}

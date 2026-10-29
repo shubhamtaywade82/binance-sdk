@@ -1,0 +1,10 @@
+{
+  "orderId": "947256916426721520",
+  "createTime": 1623381330444,
+  "orderStatus": "PROCESS",
+  "fromAsset": "USDT",
+  "fromAmount": "10",
+  "toAsset": "BTC",
+  "toAmount": "0.000262",
+  "ratio": "38163.7"
+}

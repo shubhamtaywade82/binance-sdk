@@ -187,53 +187,12 @@ export const CryptoLoanInterestRateHistoryResponseSchema = z.array(CryptoLoanInt
 // ---------------------------------------------------------------------------
 // Convert SAPI
 // ---------------------------------------------------------------------------
-
-export const ConvertQuoteSchema = z.object({
-  quoteId: z.string(),
-  ratio: z.string().transform(Number).optional(),
-  inverseRatio: z.string().transform(Number).optional(),
-  validTimestamp: z.number().optional(),
-  toAmount: z.string().transform(Number).optional(),
-  fromAmount: z.string().transform(Number).optional(),
-}).loose();
-export type ConvertQuote = z.infer<typeof ConvertQuoteSchema>;
-
-export const ConvertAcceptQuoteSchema = z.object({
-  orderId: z.string(),
-  orderStatus: z.string().optional(),
-  fromAsset: z.string().optional(),
-  fromAmount: z.string().transform(Number).optional(),
-  toAsset: z.string().optional(),
-  toAmount: z.string().transform(Number).optional(),
-  ratio: z.string().transform(Number).optional(),
-  createTime: z.number().optional(),
-}).loose();
-export type ConvertAcceptQuote = z.infer<typeof ConvertAcceptQuoteSchema>;
-
-export const ConvertOrderStatusSchema = z.object({
-  orderId: z.string(),
-  orderStatus: z.string().optional(),
-  fromAsset: z.string().optional(),
-  fromAmount: z.string().transform(Number).optional(),
-  toAsset: z.string().optional(),
-  toAmount: z.string().transform(Number).optional(),
-  ratio: z.string().transform(Number).optional(),
-  createTime: z.number().optional(),
-}).loose();
-export type ConvertOrderStatus = z.infer<typeof ConvertOrderStatusSchema>;
-
-export const ConvertTradeFlowSchema = z.object({
-  orderId: z.string(),
-  fromAsset: z.string().optional(),
-  fromAmount: z.string().transform(Number).optional(),
-  toAsset: z.string().optional(),
-  toAmount: z.string().transform(Number).optional(),
-  ratio: z.string().transform(Number).optional(),
-  createTime: z.number().optional(),
-  status: z.string().optional(),
-}).loose();
-export type ConvertTradeFlow = z.infer<typeof ConvertTradeFlowSchema>;
-export const ConvertTradeFlowResponseSchema = z.array(ConvertTradeFlowSchema);
+// Wave 8 moved the Convert response schemas to the connector-js oracle
+// (src/types/convert.wave8.types.ts). The legacy pair-limits assetInfo
+// shape stays here as the transition-union member for Convert.assetInfo:
+// Binance re-documented GET /sapi/v1/convert/assetInfo as per-asset
+// precision, but the pre-catalog wire shape must keep parsing until the
+// next major pins the current documented shape.
 
 export const ConvertAssetInfoSchema = z.object({
   fromAsset: z.string().optional(),
@@ -244,32 +203,6 @@ export const ConvertAssetInfoSchema = z.object({
   toAssetMaxAmount: z.string().transform(Number).optional(),
 }).loose();
 export type ConvertAssetInfo = z.infer<typeof ConvertAssetInfoSchema>;
-
-export const ConvertPairSchema = z.object({
-  fromAsset: z.string(),
-  toAsset: z.string(),
-  fromAssetMinAmount: z.string().transform(Number).optional(),
-  fromAssetMaxAmount: z.string().transform(Number).optional(),
-  toAssetMinAmount: z.string().transform(Number).optional(),
-  toAssetMaxAmount: z.string().transform(Number).optional(),
-}).loose();
-export type ConvertPair = z.infer<typeof ConvertPairSchema>;
-export const ConvertExchangeInfoResponseSchema = z.array(ConvertPairSchema);
-
-export const ConvertLimitOrderSchema = z.object({
-  orderId: z.string(),
-  orderStatus: z.string().optional(),
-  baseAsset: z.string().optional(),
-  quoteAsset: z.string().optional(),
-  baseAmount: z.string().transform(Number).optional(),
-  quoteAmount: z.string().transform(Number).optional(),
-  limitPrice: z.string().transform(Number).optional(),
-  side: z.string().optional(),
-  expireTime: z.number().optional(),
-  createTime: z.number().optional(),
-}).loose();
-export type ConvertLimitOrder = z.infer<typeof ConvertLimitOrderSchema>;
-export const ConvertLimitOrderResponseSchema = z.array(ConvertLimitOrderSchema);
 
 // ---------------------------------------------------------------------------
 // Algo SAPI
