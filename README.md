@@ -1,12 +1,34 @@
 # binance-sdk
 
 TypeScript SDK for Binance — **Spot, USD-M Futures, COIN-M Futures, Margin, Wallet, and
-Sub-account**, REST + WebSocket, public market data and authenticated trading, with
-zod-validated typed responses throughout.
+Sub-account**, REST + WebSocket, public market data and authenticated trading.
 
-Full REST + WebSocket coverage with typed, zod-validated schemas, plus production
-infrastructure (header-based rate-limit tracking, server time sync, HMAC/Ed25519/RSA
-signing) and client-side safety guardrails for autonomous/LLM-driven callers.
+Full REST + WebSocket endpoint coverage against the official Postman contract
+catalog (710/710 endpoints, CI-gated), with a tiered typing model: the core
+products validate requests **and** responses with field-strict zod schemas at
+runtime; generated long-tail products carry permissive `.loose()` response
+schemas (runtime-checked, but not field-strict contracts) or `unknown`
+responses until their schemas land. The schema debt is tracked and ratcheted
+in CI — it only shrinks. On top of that: production infrastructure
+(header-based rate-limit tracking, server time sync, HMAC/Ed25519/RSA
+signing), idempotent reconciling execution, an in-process paper simulator,
+and client-side safety guardrails for autonomous/LLM-driven callers.
+
+## Typing coverage, precisely
+
+When the docs below say an endpoint is *covered*, the guarantee is tiered —
+check the tier before you rely on a response shape:
+
+| Tier | Meaning | Where |
+|------|---------|-------|
+| **Strict-validated** | Method implemented; request params schema-checked; response parsed and validated by a field-strict zod schema at runtime | Core products (spot, usdm, coinm, margin, wallet, subaccount, options, portfolio margin, portfolio margin pro) + strictness-migrated long-tail (convert) |
+| **Permissively-validated** | Method implemented; response parsed against a generated `.loose()` zod schema — runtime-validated but fields are optional (the schema guesses common fields; it is not a field-strict contract) | Most generated long-tail products (Wave 7 schemas) |
+| **Typed-request** | Method implemented and registered; request params schema-checked; response typed as `unknown` until a schema lands | The remaining contract-first surfaces (see the comments in `BinanceClient.ts`) |
+
+The Postman coverage gate enforces *endpoint presence* (no endpoint in the
+official collection is missing from the SDK) — it cannot by itself establish
+that every request/response contract is typed; the schema ratchet in CI
+(`contracts:check`) tracks that side and only moves in one direction.
 
 ## Install
 
