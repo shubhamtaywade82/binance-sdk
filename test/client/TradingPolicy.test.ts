@@ -165,3 +165,134 @@ describe('BinanceClient safety config', () => {
     client.spot.ws.close();
   });
 });
+
+describe('TradingPolicy fail-closed allowlist', () => {
+  it('an explicitly empty allowedSymbols list permits NO symbols', () => {
+    const policy = new TradingPolicy({ allowedSymbols: [] });
+    // Before the fix, an empty array silently disabled the allowlist entirely.
+    expect(() =>
+      policy.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 1 }),
+    ).toThrow(/symbolNotAllowed/);
+  });
+
+  it('omitting allowedSymbols entirely leaves every symbol permitted', () => {
+    const policy = new TradingPolicy({ allowedSymbols: undefined });
+    expect(() =>
+      policy.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 1 }),
+    ).not.toThrow();
+  });
+
+  it('setAllowedSymbols refreshes the fence in place', () => {
+    const policy = new TradingPolicy({ allowedSymbols: ['BTCUSDT'] });
+    policy.setAllowedSymbols(['ETHUSDT']);
+    expect(() =>
+      policy.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 1 }),
+    ).toThrow(/symbolNotAllowed/);
+    expect(() =>
+      policy.check('POST', '/fapi/v1/order', { symbol: 'ethusdt', side: 'BUY', type: 'MARKET', quantity: 1 }),
+    ).not.toThrow();
+  });
+});
+
+describe('TradingPolicy trusted pre-trade notional validation (price-less MARKET orders)', () => {
+  it('still fails closed without a reference price — unverifiable stays unsafe', () => {
+    const policy = new TradingPolicy({ maxNotionalPerOrder: 25_000 });
+    expect(() =>
+      policy.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 2 }),
+    ).toThrow(/notionalUndeterminable/);
+  });
+
+  it('assertOrderNotional passes within the cap and unlocks the MARKET order', () => {
+    const policy = new TradingPolicy({ maxNotionalPerOrder: 25_000 });
+    // 2 BTC at a 20,000 reference = 40,000 — over cap.
+    expect(() => policy.assertOrderNotional({ symbol: 'BTCUSDT', quantity: 2 }, 20_000)).toThrow(
+      /exceeds the 25000 cap/,
+    );
+    // 0.1 BTC at 20,000 = 2,000 — within cap, and the reference is registered.
+    expect(() => policy.assertOrderNotional({ symbol: 'BTCUSDT', quantity: 0.1 }, 20_000)).not.toThrow();
+    // The transport-time gate now verifies the same order with the same reference.
+    expect(() =>
+      policy.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.1 }),
+    ).not.toThrow();
+    // ...and still refuses a bigger order than the one that was validated.
+    expect(() =>
+      policy.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 2 }),
+    ).toThrow(/maxNotionalPerOrder/);
+  });
+
+  it('assertOrderNotional with a non-positive reference is rejected', () => {
+    const policy = new TradingPolicy({ maxNotionalPerOrder: 25_000 });
+    expect(() => policy.assertOrderNotional({ symbol: 'BTCUSDT', quantity: 0.1 }, 0)).toThrow(
+      /not a usable market price/,
+    );
+    expect(() => policy.assertOrderNotional({ symbol: 'BTCUSDT', quantity: 0.1 }, Number.NaN)).toThrow(
+      /not a usable market price/,
+    );
+  });
+
+  it('quoteOrderQty orders validate on their own quote amount', () => {
+    const policy = new TradingPolicy({ maxNotionalPerOrder: 25_000 });
+    expect(() => policy.assertOrderNotional({ symbol: 'BTCUSDT', quoteOrderQty: 30_000 }, 20_000)).toThrow(
+      /exceeds the 25000 cap/,
+    );
+    expect(() =>
+      policy.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', type: 'MARKET', quoteOrderQty: 24_000 }),
+    ).not.toThrow();
+  });
+
+  it('an order carrying neither quantity nor quoteOrderQty is undeterminable', () => {
+    const policy = new TradingPolicy({ maxNotionalPerOrder: 25_000 });
+    expect(() => policy.assertOrderNotional({ symbol: 'BTCUSDT' }, 20_000)).toThrow(/notionalUndeterminable/);
+  });
+
+  it('a stale reference price expires (fail-closed again)', () => {
+    const policy = new TradingPolicy({ maxNotionalPerOrder: 25_000, referencePriceTtlMs: 1_000 });
+    policy.setReferencePrice('BTCUSDT', 20_000, Date.now() - 2_000); // registered 2s ago
+    expect(() =>
+      policy.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.1 }),
+    ).toThrow(/notionalUndeterminable/);
+  });
+
+  it('a non-positive reference price is never accepted by setReferencePrice', () => {
+    const policy = new TradingPolicy({ maxNotionalPerOrder: 25_000 });
+    policy.setReferencePrice('BTCUSDT', -5);
+    expect(() =>
+      policy.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.1 }),
+    ).toThrow(/notionalUndeterminable/);
+  });
+
+  it('end-to-end: a MARKET order through a policy-armed HttpClient needs the pre-trade check', async () => {
+    server.use(
+      http.post('https://fapi.binance.com/fapi/v1/order', () =>
+        HttpResponse.json({
+          orderId: 1, symbol: 'BTCUSDT', status: 'FILLED', clientOrderId: 'x',
+          price: '0', avgPrice: '20000', origQty: '0.1', executedQty: '0.1',
+          cumQuote: '2000', type: 'MARKET', reduceOnly: false, side: 'BUY',
+          positionSide: 'BOTH', time: 1, updateTime: 1,
+        })),
+    );
+    const client = new BinanceClient({
+      apiKey: 'k',
+      apiSecret: 's',
+      safety: { maxNotionalPerOrder: 25_000 },
+      maxRetries: 0,
+    });
+
+    // Without validation the MARKET order is refused (fail-closed).
+    await expect(
+      client.futures.trading.createOrder({ symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 2 }),
+    ).rejects.toThrow(/notionalUndeterminable/);
+
+    // Pre-trade validation over cap → refused before anything is sent.
+    expect(() => client.policy!.assertOrderNotional({ symbol: 'BTCUSDT', quantity: 2 }, 20_000)).toThrow(
+      /maxNotionalPerOrder/,
+    );
+
+    // Within cap → validation passes and the order flows.
+    client.policy!.assertOrderNotional({ symbol: 'BTCUSDT', quantity: 0.1 }, 20_000);
+    const placed = await client.futures.trading.createOrder({
+      symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 0.1,
+    });
+    expect(placed.orderId).toBe(1); // reached the exchange and parsed back
+  });
+});

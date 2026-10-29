@@ -124,3 +124,21 @@ describe('futures toolkit', () => {
     );
   });
 });
+
+describe('futures toolkit execution defaults (fail-closed)', () => {
+  function newClient() {
+    return new BinanceClient({ apiKey: 'k', apiSecret: 's', maxRetries: 0, retryBaseDelayMs: 1, retryMaxDelayMs: 1 });
+  }
+
+  it('routes execution tools to the PAPER simulator by default', () => {
+    // v3.3 defaulted to live: an autonomous host that never asked for live
+    // trading got it by omission. Now the omission routes to the simulator.
+    const tk = createFuturesToolkit(newClient());
+    expect(tk.gateway.backend).toBe('paper');
+  });
+
+  it('live execution must be an explicit opt-in', () => {
+    const tk = createFuturesToolkit(newClient(), { executionBackend: 'live' });
+    expect(tk.gateway.backend).toBe('live');
+  });
+});

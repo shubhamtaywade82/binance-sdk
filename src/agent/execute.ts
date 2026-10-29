@@ -14,6 +14,14 @@
  * fills at the live mark while protective legs are reported as
  * `PAPER_UNSIMULATED` — the session loop drives those exits itself from
  * the `EntryResult` levels.
+ *
+ * Market entries carry no price, so before anything is sent a *trusted
+ * pre-trade validation* runs: the top of book is fetched, the expected
+ * notional is computed against a conservative reference and asserted
+ * against the client's `maxNotionalPerOrder` cap (see
+ * {@link TradingPolicy.assertOrderNotional}). The reference is registered on
+ * the policy — never added to the order parameters — so the transport-time
+ * gate verifies the same notional against the same reference.
  */
 import type { BinanceClient } from '../client/BinanceClient.js';
 import type { ExecutionGateway } from '../execution/Gateway.js';
@@ -180,6 +188,20 @@ export async function executeEntry(
   const qty = sizing.quantityStr;
   const nQty = Number(qty);
   const paper = gateway.backend === 'paper';
+
+  // ---- trusted pre-trade validation (price-less MARKET entries) ----------
+  // An order whose notional cannot be verified is not a safe order, and a
+  // MARKET order carries no price — so the notional is verified against a
+  // reference fetched from the exchange right now, before submission. The
+  // reference is kept on the policy as validation metadata; the order params
+  // sent to the exchange stay clean (no synthetic `price` on a MARKET order).
+  const policy = client.policy;
+  if (policy) {
+    const book = await client.futures.market.bookTicker(symbol);
+    // Conservative: the worse of the two sides bounds the notional from above.
+    const reference = Math.max(book.bidPrice, book.askPrice);
+    policy.assertOrderNotional({ symbol, quantity: qty }, reference);
+  }
 
   const entry = await gateway.placeOrder({
     symbol, side, type: 'MARKET', quantity: qty,

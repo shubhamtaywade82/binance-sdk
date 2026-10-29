@@ -28,8 +28,9 @@ export { createPaperContext, paperTools, type PaperState, type PaperPosition, ty
 export interface FuturesToolkitOptions {
   /**
    * Backend the execution tools use when a call does not specify one.
-   * Default 'live'. Set 'paper' to run the whole toolkit against the
-   * simulator (no API keys required, public market data only).
+   * DEFAULT 'paper' (fail-closed: an autonomous host that never asked for
+   * live trading cannot get it by omission). Set 'live' explicitly to route
+   * execution tools to the real exchange.
    */
   executionBackend?: ExecutionBackend;
   /** Simulator configuration for the paper backend (start balance, models). */
@@ -68,7 +69,9 @@ export function createFuturesToolkit(client: BinanceClient, options: FuturesTool
   const paper = paperTools(paperContext);
   const gateway = client.createExecutionGateway({
     paper: options.paper,
-    defaultBackend: options.executionBackend,
+    // Fail-closed default: orders land in the simulator unless the host
+    // explicitly opts into live execution.
+    defaultBackend: options.executionBackend ?? 'paper',
   });
   const execution = executionTools(gateway, client);
   return {

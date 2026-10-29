@@ -185,3 +185,86 @@ describe('executeEntry (paper gateway)', () => {
     expect(flat?.quantity).toBe(0);
   });
 });
+
+describe('executeEntry pre-trade notional validation (maxNotionalPerOrder-armed client)', () => {
+  function mockBook(bid = 99.9, ask = 100.1): void {
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/ticker/bookTicker', ({ request }) => {
+        const symbol = new URL(request.url).searchParams.get('symbol');
+        return HttpResponse.json({
+          symbol, bidPrice: String(bid), bidQty: '1', askPrice: String(ask), askQty: '1', time: 1,
+        });
+      }),
+    );
+  }
+
+  it('a MARKET entry within the cap passes pre-trade validation and reaches the exchange', async () => {
+    mockPublicData();
+    mockBook();
+    const bodies: Array<Record<string, unknown>> = [];
+    server.use(
+      http.post('https://fapi.binance.com/fapi/v1/order', ({ request }) => {
+        bodies.push(Object.fromEntries(new URL(request.url).searchParams));
+        return HttpResponse.json(orderAck());
+      }),
+    );
+
+    // Live-mode reality check: the session client is armed with the safety fence.
+    const client = new BinanceClient({
+      apiKey: 'test', apiSecret: 'test', maxRetries: 0,
+      safety: { allowedSymbols: ['BTCUSDT'], maxNotionalPerOrder: 25_000 },
+    });
+    const gateway = createAgentGateway(client);
+    const rules = new SymbolRulesCache(client);
+
+    // equity 10,000 x 2.5% = 250 risk -> qty 125 BTC at ~100 -> ~12.5k notional.
+    const res = await executeEntry(client, gateway, rules, 'BTCUSDT', signal(), 10_000);
+    expect(res).not.toBeNull();
+
+    // The MARKET entry went out with clean parameters — no synthetic price.
+    const entry = bodies[0];
+    expect(entry).toMatchObject({ type: 'MARKET', side: 'BUY', quantity: '125.000' });
+    expect(entry.price).toBeUndefined();
+  });
+
+  it('a MARKET entry over the cap is refused by pre-trade validation — nothing is sent', async () => {
+    mockPublicData();
+    mockBook();
+    let posts = 0;
+    server.use(
+      http.post('https://fapi.binance.com/fapi/v1/order', () => {
+        posts += 1;
+        return HttpResponse.json(orderAck());
+      }),
+    );
+
+    const client = new BinanceClient({
+      apiKey: 'test', apiSecret: 'test', maxRetries: 0,
+      safety: { allowedSymbols: ['BTCUSDT'], maxNotionalPerOrder: 25_000 },
+    });
+    const gateway = createAgentGateway(client);
+    const rules = new SymbolRulesCache(client);
+
+    // equity 30,000 x 2.5% = 750 risk -> qty 375 BTC at ~100 -> ~37.5k notional.
+    // Sizing succeeds, but the pre-trade notional check must refuse before submission.
+    await expect(
+      executeEntry(client, gateway, rules, 'BTCUSDT', signal(), 30_000),
+    ).rejects.toThrow(/exceeds the 25000 cap/);
+    expect(posts).toBe(0);
+  });
+
+  it('without the fence (no safety) entries behave exactly as before', async () => {
+    mockPublicData();
+    mockBook();
+    server.use(
+      http.post('https://fapi.binance.com/fapi/v1/order', () => HttpResponse.json(orderAck())),
+    );
+
+    const client = new BinanceClient({ apiKey: 'test', apiSecret: 'test', maxRetries: 0 });
+    const gateway = createAgentGateway(client);
+    const res = await executeEntry(
+      client, gateway, new SymbolRulesCache(client), 'BTCUSDT', signal(), 30_000,
+    );
+    expect(res).not.toBeNull(); // no cap configured -> no validation refusal
+  });
+});

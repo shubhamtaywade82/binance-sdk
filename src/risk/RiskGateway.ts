@@ -51,6 +51,18 @@ export interface RiskStatus {
   day: string;
 }
 
+/**
+ * Persistable slice of {@link RiskStatus}: everything that must survive a process
+ * restart. `openNotional` is deliberately excluded — open-order exposure is
+ * process-local state the execution layer re-establishes as orders re-register.
+ */
+export interface PersistedRiskState {
+  day: string;
+  dailyPnl: string | number;
+  breaker?: CircuitBreakerState;
+  consecutiveFailures?: number;
+}
+
 const MUTATING = new Set<HttpMethod>(['POST', 'PUT', 'DELETE']);
 const ORDER_PATH = /order/i;
 
@@ -163,9 +175,15 @@ export class RiskGateway extends TradingPolicy {
     if (quantity === undefined && quoteOrderQty === undefined) return;
 
     const price = toDecimal(params.price);
+    // Price-less orders budget against a *fresh* registered reference price
+    // (the trusted pre-trade validation path). Still undeterminable → leave the
+    // order untracked rather than guessing; TradingPolicy.maxNotionalPerOrder
+    // remains the fail-closed gate for that case.
+    const reference = toDecimal(this.freshReferencePrice(params.symbol));
     const notional =
       quoteOrderQty ??
-      (price !== undefined && quantity !== undefined ? price.mul(quantity) : undefined);
+      (price !== undefined && quantity !== undefined ? price.mul(quantity) : undefined) ??
+      (reference !== undefined && quantity !== undefined ? reference.mul(quantity) : undefined);
     if (notional === undefined) return; // TradingPolicy.maxNotionalPerOrder handles "undeterminable"
 
     const projected = this.openNotional.add(notional);
@@ -219,7 +237,8 @@ export class RiskGateway extends TradingPolicy {
 
   /**
    * Accumulate realized PnL. Trips the breaker when the day's loss reaches
-   * `-maxDailyLoss`.
+   * `-maxDailyLoss`. Feed this from a reliable, deduplicated source — see
+   * {@link RealizedPnlFeed} (exchange income records) or user-data events.
    */
   recordRealizedPnl(delta: string | number): void {
     this.rollDayIfNeeded();
@@ -233,6 +252,46 @@ export class RiskGateway extends TradingPolicy {
     const maxLoss = toDecimal(this.gatewayOptions.maxDailyLoss);
     if (maxLoss !== undefined && this.dailyPnl.neg().gte(maxLoss)) {
       this.trip('maxDailyLoss', `daily realized loss ${this.dailyPnl} reached limit ${maxLoss.neg()}`);
+    }
+  }
+
+  /**
+   * Restore persisted daily state (process restart). Explicit restart contract:
+   *
+   *  - a snapshot from a *previous* UTC day is ignored — the new day starts clean;
+   *  - a same-day snapshot restores the daily PnL, the failure streak and a tripped
+   *    breaker — a restart must never silently clear a tripped breaker;
+   *  - a restored day already at/below `-maxDailyLoss` re-trips the breaker;
+   *  - the accumulator is *replaced*, not added to — seed from the authoritative
+   *    source (e.g. exchange income for the day) and this stays exact.
+   */
+  restoreDailyState(state: PersistedRiskState): void {
+    const today = utcDay();
+    if (state.day !== today) return; // stale snapshot from a previous day
+
+    this.day = today;
+    const pnl = toDecimal(state.dailyPnl);
+    this.dailyPnl = pnl ?? Decimal.ZERO;
+    const failures = Number(state.consecutiveFailures);
+    this.consecutiveFailures = Number.isFinite(failures) && failures > 0 ? failures : 0;
+
+    if (state.breaker?.tripped) {
+      this.breaker = { ...state.breaker };
+      this.emitEvent('risk.circuit.restored', {
+        reason: state.breaker.reason,
+        trippedAt: state.breaker.trippedAt,
+      });
+    }
+
+    const maxLoss = toDecimal(this.gatewayOptions.maxDailyLoss);
+    if (maxLoss !== undefined && this.dailyPnl.neg().gte(maxLoss)) {
+      this.breaker = {
+        tripped: true,
+        reason: 'maxDailyLoss',
+        detail: `restored daily realized loss ${this.dailyPnl} at limit ${maxLoss.neg()}`,
+        trippedAt: Date.now(),
+      };
+      this.emitEvent('risk.circuit.restored', { reason: 'maxDailyLoss' });
     }
   }
 
@@ -266,6 +325,20 @@ export class RiskGateway extends TradingPolicy {
     this.breaker = { tripped: false };
     this.consecutiveFailures = 0;
     this.emitEvent('risk.circuit.reset', {});
+  }
+
+  /**
+   * Persistable daily state for {@link restoreDailyState} (round-trips through
+   * JSON storage). `openNotional` is intentionally absent — see {@link PersistedRiskState}.
+   */
+  persistedState(): PersistedRiskState {
+    this.rollDayIfNeeded();
+    return {
+      day: this.day,
+      dailyPnl: this.dailyPnl.toString(),
+      breaker: { ...this.breaker },
+      consecutiveFailures: this.consecutiveFailures,
+    };
   }
 
   /** Current risk state snapshot (all money values are exact decimal strings). */

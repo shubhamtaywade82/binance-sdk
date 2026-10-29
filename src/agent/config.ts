@@ -98,20 +98,23 @@ export function clusterOf(symbol: string): string {
 
 /**
  * RiskGateway fence for a session: the watchlist becomes the hard symbol
- * allowlist, and the profile's notional / daily-loss / failure caps become
- * circuit breakers enforced inside every mutating call. Withdrawals are
+ * allowlist, and the profile's notional / daily-loss / failure / leverage caps
+ * become circuit breakers enforced inside every mutating call. Withdrawals are
  * always denied.
+ *
+ * The daily-loss limit only functions when the gateway is *fed* realized PnL —
+ * see {@link RealizedPnlFeed} (the session loop polls it once per cycle).
  */
 export function safetyOptions(profile: AgentProfile, watchlist: string[]): RiskGatewayOptions {
   return {
+    // Fail-closed: an empty watchlist yields an empty allowlist — every
+    // symbol-bearing order is refused until the scanner finds candidates.
     allowedSymbols: watchlist,
     maxNotionalPerOrder: 25_000,
     maxOpenNotional: 24_000,
     maxDailyLoss: 1_000,
     maxConsecutiveFailures: 5,
+    maxLeverage: profile.maxLeverage,
     allowWithdrawals: false,
-    // NOTE: leverage is *not* a RiskGateway option in this SDK; the profile's
-    // maxLeverage cap is applied via futures.trading.setLeverage and passed to
-    // ops.sizePosition when sizing.
   };
 }

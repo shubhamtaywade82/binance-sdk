@@ -1,20 +1,15 @@
 #!/usr/bin/env node
 import http from 'node:http';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { BinanceClient } from '../client/BinanceClient.js';
 import { createBinanceMcpServer } from './server.js';
-
-function clientFromEnv(): BinanceClient {
-  return new BinanceClient({
-    apiKey: process.env.BINANCE_API_KEY,
-    apiSecret: process.env.BINANCE_API_SECRET,
-    testnet: process.env.BINANCE_TESTNET === 'true' || process.env.BINANCE_ENV === 'testnet',
-    demo: process.env.BINANCE_ENV === 'demo',
-  });
-}
+import { mcpClientFromEnv, mcpModeBanner, resolveMcpMode } from './mode.js';
 
 async function startStdio(): Promise<void> {
-  const server = createBinanceMcpServer(clientFromEnv());
+  const mode = resolveMcpMode();
+  for (const line of mcpModeBanner(mode)) console.error(line);
+  const server = createBinanceMcpServer(mcpClientFromEnv(), {
+    executionBackend: mode.backend,
+  });
   await server.connect(new StdioServerTransport());
 }
 

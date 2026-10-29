@@ -19,7 +19,9 @@ export type { RateLimitUsage, RateLimitTrackerOptions } from './client/RateLimit
 export { TradingPolicy } from './client/TradingPolicy.js';
 export type { TradingPolicyOptions } from './client/TradingPolicy.js';
 export { RiskGateway } from './risk/RiskGateway.js';
-export type { RiskGatewayOptions, RiskStatus, CircuitBreakerState } from './risk/RiskGateway.js';
+export type { RiskGatewayOptions, RiskStatus, CircuitBreakerState, PersistedRiskState } from './risk/RiskGateway.js';
+export { RealizedPnlFeed } from './risk/RealizedPnlFeed.js';
+export type { RealizedPnlFeedOptions } from './risk/RealizedPnlFeed.js';
 
 // ---- Core: exact decimal math, observability, lossless JSON ----
 export { Decimal, dec, sum, vwap } from './core/decimal.js';

@@ -116,3 +116,92 @@ describe('RiskGateway', () => {
     expect(status.dailyPnl).toBe('0.05');
   });
 });
+
+describe('RiskGateway state carry across allowlist refreshes and restarts', () => {
+  it('setAllowedSymbols refreshes the fence without resetting daily/breaker state', () => {
+    // The v3.3 agent rebuilt its session client on every watchlist scan, which
+    // silently reset the daily-loss breaker every 15 minutes. Refreshing the
+    // allowlist in place must keep every other gate and all state.
+    const gateway = new RiskGateway({ maxDailyLoss: 500, allowedSymbols: ['BTCUSDT'] });
+    gateway.recordRealizedPnl(-300);
+    gateway.recordRealizedPnl(-250); // trips at -550
+    expect(gateway.riskStatus().circuitBreaker.tripped).toBe(true);
+
+    // "watchlist refresh": allowlist replaced, state untouched.
+    gateway.setAllowedSymbols(['ETHUSDT', 'SOLUSDT']);
+    expect(gateway.riskStatus().circuitBreaker.tripped).toBe(true);
+    expect(gateway.riskStatus().dailyPnl).toBe('-550');
+    expect(() =>
+      gateway.check('POST', '/fapi/v1/order', { symbol: 'ETHUSDT', side: 'BUY', type: 'MARKET' }),
+    ).toThrow(/circuit breaker/);
+  });
+
+  it('persistedState/restoreDailyState round-trips a tripped breaker across a restart', () => {
+    const first = new RiskGateway({ maxDailyLoss: 500, maxConsecutiveFailures: 3 });
+    first.recordRealizedPnl(-400);
+    first.recordRealizedPnl(-200); // trips at -600
+    const snapshot = first.persistedState();
+
+    // "process restart": a brand-new gateway starts from nothing but restores
+    // the persisted same-day snapshot — the breaker must stay tripped.
+    const second = new RiskGateway({ maxDailyLoss: 500, maxConsecutiveFailures: 3 });
+    expect(second.riskStatus().circuitBreaker.tripped).toBe(false);
+    second.restoreDailyState(snapshot);
+    expect(second.riskStatus().circuitBreaker.tripped).toBe(true);
+    expect(second.riskStatus().circuitBreaker.reason).toBe('maxDailyLoss');
+    expect(second.riskStatus().dailyPnl).toBe('-600');
+    expect(() =>
+      second.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET' }),
+    ).toThrow(/circuit breaker/);
+  });
+
+  it('restoreDailyState re-trips when the restored day is already at the limit', () => {
+    const gateway = new RiskGateway({ maxDailyLoss: 1_000 });
+    const today = new Date().toISOString().slice(0, 10);
+    gateway.restoreDailyState({ day: today, dailyPnl: -1_000 });
+    expect(gateway.riskStatus().circuitBreaker.tripped).toBe(true);
+    expect(gateway.riskStatus().circuitBreaker.reason).toBe('maxDailyLoss');
+  });
+
+  it('a snapshot from a previous UTC day is ignored — the new day starts clean', () => {
+    const gateway = new RiskGateway({ maxDailyLoss: 500 });
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    gateway.restoreDailyState({ day: yesterday, dailyPnl: -400, breaker: { tripped: true, reason: 'maxDailyLoss' } });
+    expect(gateway.riskStatus().dailyPnl).toBe('0');
+    expect(gateway.riskStatus().circuitBreaker.tripped).toBe(false);
+  });
+
+  it('restoring a breaker tripped on failures keeps it tripped (fail stays failed)', () => {
+    const gateway = new RiskGateway({ maxConsecutiveFailures: 2 });
+    const today = new Date().toISOString().slice(0, 10);
+    gateway.restoreDailyState({
+      day: today,
+      dailyPnl: 0,
+      consecutiveFailures: 2,
+      breaker: { tripped: true, reason: 'maxConsecutiveFailures', detail: 'runaway' },
+    });
+    expect(gateway.riskStatus().circuitBreaker.tripped).toBe(true);
+    expect(gateway.riskStatus().circuitBreaker.reason).toBe('maxConsecutiveFailures');
+  });
+});
+
+describe('RiskGateway open-notional budget with reference prices', () => {
+  it('a MARKET order budgets against a fresh registered reference price', () => {
+    const gateway = new RiskGateway({ maxOpenNotional: 1_000 });
+    gateway.setReferencePrice('BTCUSDT', 50);
+    // 5 x 50 = 250 — budgetable now that a reference exists.
+    expect(() =>
+      gateway.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 5 }),
+    ).not.toThrow();
+    gateway.registerOpenOrder(250);
+    // 5 more x 50 = 250 on top of 250 tracked > 1_000? no -> 500, fine.
+    expect(() =>
+      gateway.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 5 }),
+    ).not.toThrow();
+    gateway.registerOpenOrder(750);
+    // 250 tracked more (500 total) + existing 750 = 1_250 > 1_000 → denied.
+    expect(() =>
+      gateway.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 5 }),
+    ).toThrow(/maxOpenNotional/);
+  });
+});

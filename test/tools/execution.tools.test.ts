@@ -71,7 +71,7 @@ describe('execution tools (gateway-routed order surface)', () => {
     const names = tk.execution.map((t) => t.name);
     expect(names).toEqual(EXECUTION_TOOL_NAMES);
     expect(tk.gateway).toBeDefined();
-    expect(tk.gateway.backend).toBe('live'); // default
+    expect(tk.gateway.backend).toBe('paper'); // fail-closed default (P0 fix): live must be an explicit opt-in
     expect(tk.execution.every((t) => tk.tools.includes(t))).toBe(true);
     // every tool still converts to a JSON-schema-bearing definition
     for (const t of tk.execution) {
