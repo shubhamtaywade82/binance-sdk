@@ -60,3 +60,11 @@ export {
   currentEquity,
   emergencyFlatten,
 } from './execute.js';
+export {
+  type ManagedPosition,
+  type ExitDecision,
+  toManagedPosition,
+  updateHighWater,
+  nextExitAction,
+  applyExit,
+} from './exits.js';
