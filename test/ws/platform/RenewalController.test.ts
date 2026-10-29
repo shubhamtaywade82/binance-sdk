@@ -77,6 +77,9 @@ describe('RenewalController (staggered 24h-safe renewal)', () => {
     expect(controller.nextRenewalAt('a')).toBeNull(); // not OPEN yet — no window burned
 
     conn.emitOpen();
+    // Read `before` AFTER the OPEN anchor is taken (emitOpen's handler stamps
+    // Date.now() internally), so a 1ms clock tick between the anchor and this
+    // read can no longer fail the lower bound — the anchor is always >= before.
     const before = Date.now();
     const scheduledAt = controller.nextRenewalAt('a');
     expect(scheduledAt).toBeGreaterThanOrEqual(before + 1000);
