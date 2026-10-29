@@ -71,3 +71,6 @@ jobs:
             console.log('Postman contract coverage: 100% match (' + cov.products.reduce((a, p) => a + p.existingCount, 0) + ' endpoints).');
           "
       - run: npm run build
+      # Footprint gate: the publishable artifact must stay map-free and
+      # within the unpacked-size budget (scripts/check-package-footprint.ts).
+      - run: npm run package:check-footprint
