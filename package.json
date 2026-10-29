@@ -1,7 +1,7 @@
 {
   "name": "@nemesis-oss/binance-sdk",
   "version": "3.3.0",
-  "description": "TypeScript SDK for Binance APIs (Spot, USD-M Futures, COIN-M Futures, Margin, Wallet, Sub-account) — market data, account, trading, algo orders, user data streams, signed REST + WS APIs (HMAC/Ed25519/RSA), LLM tool layer + MCP server",
+  "description": "TypeScript SDK for Binance APIs (Spot, USD-M Futures, COIN-M Futures, Margin, Wallet, Sub-account) \u2014 market data, account, trading, algo orders, user data streams, signed REST + WS APIs (HMAC/Ed25519/RSA), LLM tool layer + MCP server",
   "license": "MIT",
   "author": "Shubham Taywade",
   "repository": {
@@ -97,6 +97,7 @@
     "contracts:check": "tsx scripts/check-contracts-drift.ts",
     "contracts:import-postman": "tsx scripts/import-postman-collections.ts",
     "contracts:generate-from-postman": "tsx scripts/generate-sdk-from-postman.ts",
+    "contracts:wave8-strict-schemas": "tsx scripts/wave8-strict-schemas.ts",
     "contracts:upstream-drift": "tsx scripts/upstream-drift.ts",
     "contracts:wave6-close-gaps": "tsx scripts/wave6-close-gaps.ts",
     "contracts:wave7-add-schemas": "tsx scripts/wave7-add-schemas.ts",

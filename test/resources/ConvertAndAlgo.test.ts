@@ -92,7 +92,9 @@ describe('Convert', () => {
         HttpResponse.json({ fromAsset: 'USDT', toAsset: 'BTC', fromAssetMinAmount: '10', fromAssetMaxAmount: '100000' })),
     );
     const info = await new Convert(http_()).assetInfo({ fromAsset: 'USDT', toAsset: 'BTC' });
-    expect(info.fromAsset).toBe('USDT');
+    // Wave 8 transition union: the legacy pair-limits shape must keep parsing
+    // ('fromAsset' in info narrows out the per-asset-precision array branch).
+    expect('fromAsset' in info ? info.fromAsset : undefined).toBe('USDT');
   });
 });
 

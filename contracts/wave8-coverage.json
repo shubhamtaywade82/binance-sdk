@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "product": "convert",
+  "oracleSource": {
+    "repo": "https://github.com/binance/binance-connector-js",
+    "commit": "1fe304445e34d014a0e457ef0006f7c426f0203c",
+    "pinnedAt": "2026-10-23",
+    "path": "clients/convert/src/rest-api/types"
+  },
+  "generatedFile": "src/types/convert.wave8.types.ts",
+  "interfaces": [
+    {
+      "name": "AcceptQuoteResponse",
+      "arrayBase": null,
+      "fields": 3
+    },
+    {
+      "name": "CancelLimitOrderResponse",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "GetConvertTradeHistoryResponseListInner",
+      "arrayBase": null,
+      "fields": 10
+    },
+    {
+      "name": "GetConvertTradeHistoryResponse",
+      "arrayBase": null,
+      "fields": 5
+    },
+    {
+      "name": "ListAllConvertPairsResponseInner",
+      "arrayBase": null,
+      "fields": 6
+    },
+    {
+      "name": "ListAllConvertPairsResponse",
+      "arrayBase": "ListAllConvertPairsResponseInner",
+      "fields": 0
+    },
+    {
+      "name": "OrderStatusResponse",
+      "arrayBase": null,
+      "fields": 9
+    },
+    {
+      "name": "PlaceLimitOrderResponse",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "QueryLimitOpenOrdersResponseListInner",
+      "arrayBase": null,
+      "fields": 11
+    },
+    {
+      "name": "QueryLimitOpenOrdersResponse",
+      "arrayBase": null,
+      "fields": 1
+    },
+    {
+      "name": "QueryOrderQuantityPrecisionPerAssetResponseInner",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "QueryOrderQuantityPrecisionPerAssetResponse",
+      "arrayBase": "QueryOrderQuantityPrecisionPerAssetResponseInner",
+      "fields": 0
+    },
+    {
+      "name": "SendQuoteRequestResponse",
+      "arrayBase": null,
+      "fields": 6
+    }
+  ],
+  "schemaCount": 13,
+  "fieldCount": 62
+}
