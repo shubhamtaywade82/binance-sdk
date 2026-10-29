@@ -1,0 +1,12 @@
+{
+  "rows": [
+    {
+      "loanCoin": "USDT",
+      "totalDebt": "100.5",
+      "collateralCoin": "BUSD",
+      "collateralAmount": "100.1",
+      "currentLTV": "0.55"
+    }
+  ],
+  "total": 1
+}

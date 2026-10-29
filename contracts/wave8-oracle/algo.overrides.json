@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "product": "algo",
+  "$comment": "SDK conventions layered on top of the connector-js algo oracle. The generator applies these when emitting src/types/algo.wave8.types.ts. Every entry needs a reason — this file is the review surface for deliberate divergences from the upstream OpenAPI typing.",
+  "numericStringFields": {
+    "$comment": "Oracle types these as string; the SDK's established convention (Wave 1, asserted by test/resources/ConvertAndAlgo.test.ts) transforms decimal-amount strings to number at the parse boundary so consumers get numeric amounts. Applied by field name across all interfaces of this product.",
+    "fields": [
+      "totalQty",
+      "executedQty",
+      "executedAmt",
+      "avgPrice",
+      "feeAmt"
+    ]
+  },
+  "flexibleIdFields": {
+    "$comment": "None for algo: the established SDK algo types keep algoId/orderId/subId as numbers (Binance algo ids are well inside 2^53), which is what the oracle already types them as (number | bigint -> z.number()). Listed explicitly so the next rung knows the knob was considered.",
+    "fields": []
+  },
+  "extraFields": {}
+}

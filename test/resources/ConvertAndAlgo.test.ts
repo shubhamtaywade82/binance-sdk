@@ -99,53 +99,61 @@ describe('Convert', () => {
 });
 
 describe('Algo', () => {
-  it('parses spot historicalOrders', async () => {
+  // Wave 8: the mocks carry the documented (and live) wire shapes. The
+  // pre-Wave-8 mocks below asserted plain arrays / full order echoes —
+  // shapes that never existed on the wire; the old schemas threw on every
+  // real response. See test/resources/Wave8Algo.test.ts for the full
+  // oracle-schema acceptance suite.
+  it('parses spot historicalOrders (wrapped { total, orders })', async () => {
     server.use(
       http.get(`${BASE}/sapi/v1/algo/spot/historicalOrders`, () =>
-        HttpResponse.json([
-          { algoId: 1, symbol: 'BTCUSDT', side: 'BUY', type: 'TWAP', quantity: '1', duration: 60, status: 'COMPLETED', createTime: 1 },
-        ]),
-      ),
+        HttpResponse.json({
+          total: 1,
+          orders: [
+            { algoId: 1, symbol: 'BTCUSDT', side: 'BUY', totalQty: '1', executedQty: '1', executedAmt: '50000', avgPrice: '50000', algoType: 'TWAP', algoStatus: 'COMPLETED', bookTime: 1, endTime: 2, duration: 60 },
+          ],
+        })),
     );
-    const orders = await new Algo(http_()).spot.historicalOrders();
-    expect(orders[0]?.algoId).toBe(1);
-    expect(orders[0]?.quantity).toBe(1);
+    const r = await new Algo(http_()).spot.historicalOrders();
+    expect(r.total).toBe(1);
+    expect(r.orders?.[0]?.algoId).toBe(1);
+    expect(r.orders?.[0]?.totalQty).toBe(1);
   });
 
-  it('parses spot TWAP new-order response', async () => {
+  it('parses spot TWAP new-order ack ({ clientAlgoId, success, code, msg })', async () => {
     server.use(
       http.post(`${BASE}/sapi/v1/algo/spot/newOrderTwap`, () =>
         HttpResponse.json({
-          algoId: 42,
-          symbol: 'BTCUSDT',
-          side: 'BUY',
-          type: 'TWAP',
-          quantity: '1',
-          duration: 60,
-          status: 'NEW',
-          createTime: 1,
+          clientAlgoId: 'c1',
+          success: true,
+          code: 0,
+          msg: 'success',
         })),
     );
-    const order = await new Algo(http_()).spot.newOrderTwap({
+    const ack = await new Algo(http_()).spot.newOrderTwap({
       symbol: 'BTCUSDT',
       side: 'BUY',
       quantity: '1',
       duration: 60,
     });
-    expect(order.algoId).toBe(42);
-    expect(order.status).toBe('NEW');
+    expect(ack.clientAlgoId).toBe('c1');
+    expect(ack.success).toBe(true);
   });
 
-  it('parses futures subOrders', async () => {
+  it('parses futures subOrders (wrapped { total, executedQty, executedAmt, subOrders })', async () => {
     server.use(
       http.get(`${BASE}/sapi/v1/algo/futures/subOrders`, () =>
-        HttpResponse.json([
-          { subId: 1, algoId: 42, symbol: 'BTCUSDT', side: 'BUY', price: '50000', quantity: '0.1', executedQty: '0.1', status: 'FILLED', time: 1 },
-        ]),
-      ),
+        HttpResponse.json({
+          total: 1,
+          executedQty: '0.1',
+          executedAmt: '5000',
+          subOrders: [
+            { subId: 1, algoId: 42, symbol: 'BTCUSDT', side: 'BUY', avgPrice: '50000', executedQty: '0.1', executedAmt: '5000', orderStatus: 'FILLED', bookTime: 1 },
+          ],
+        })),
     );
-    const subs = await new Algo(http_()).futures.subOrders({ algoId: '42' });
-    expect(subs[0]?.subId).toBe(1);
-    expect(subs[0]?.price).toBe(50000);
+    const r = await new Algo(http_()).futures.subOrders({ algoId: '42' });
+    expect(r.subOrders?.[0]?.subId).toBe(1);
+    expect(r.subOrders?.[0]?.avgPrice).toBe(50000);
   });
 });

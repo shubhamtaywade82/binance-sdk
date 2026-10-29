@@ -1,0 +1,10 @@
+{
+  "rows": [
+    {
+      "coin": "USDT",
+      "annualizedInterestRate": "0.0075",
+      "time": 1645000000000
+    }
+  ],
+  "total": 1
+}

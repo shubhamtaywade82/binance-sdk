@@ -16,7 +16,10 @@
  *    to the caller (`Promise<Record<string, unknown>>`,
  *    `Promise<unknown>`, `Promise<any>`), i.e. responses with no schema
  *    parse at all. The convert pilot removed one of these
- *    (Convert.limitCancelOrder).
+ *    (Convert.limitCancelOrder); the algo + cryptoLoan rungs removed eight
+ *    more (2x Algo.cancelOrder, CryptoLoan flexibleBorrow / flexibleRepay /
+ *    flexibleAdjustLtv, and the three flexible history/orders raw
+ *    returns).
  *
  * 2. `permissiveUnionFields` — `z.union([z.string(), z.number()])`
  *    fields across the generated wave7 type files: the per-field debt
@@ -39,6 +42,13 @@ const RATCHET_FILE = join(ROOT, 'contracts', 'wave8-ratchet.json');
 const RESOURCES_DIR = join(ROOT, 'src', 'resources');
 const TYPES_DIR = join(ROOT, 'src', 'types');
 
+/** Products migrated to Wave 8 strict schemas — raw returns forbidden here. */
+const MIGRATED_PRODUCTS: Record<string, string> = {
+  convert: 'Convert.ts',
+  algo: 'Algo.ts',
+  cryptoLoan: 'CryptoLoan.ts',
+};
+
 interface RatchetBaseline {
   schemaVersion: number;
   $comment: string;
@@ -46,7 +56,9 @@ interface RatchetBaseline {
   permissiveUnionFields: number;
 }
 
-const UNVALIDATED_RETURN = /Promise<(Record<string,\s*unknown>|unknown|any)>/;
+/** Raw JSON return types — unparsed responses, including array forms
+ * (`unknown[]` is exactly as unvalidated as `unknown`). */
+const UNVALIDATED_RETURN = /Promise<(Record<string,\s*unknown>|unknown|any)(\[\])?>/;
 
 function countUnvalidatedResourceReturns(): { count: number; files: string[] } {
   const files: string[] = [];
@@ -103,12 +115,31 @@ describe('Wave 8 ratchet — permissive-schema debt never grows', () => {
     ).toBeLessThanOrEqual(baseline.permissiveUnionFields);
   });
 
-  it('the pilot product (convert) contributes zero unvalidated returns', () => {
-    const text = readFileSync(join(RESOURCES_DIR, 'Convert.ts'), 'utf8');
-    const hits = text.split('\n').filter((l) => UNVALIDATED_RETURN.test(l));
-    expect(
-      hits,
-      'Convert migrated to Wave 8 strict schemas — every response must be parsed. Raw returns are forbidden here.',
-    ).toHaveLength(0);
+  it('every migrated product contributes zero unvalidated returns', () => {
+    for (const [product, file] of Object.entries(MIGRATED_PRODUCTS)) {
+      const text = readFileSync(join(RESOURCES_DIR, file), 'utf8');
+      const hits = text.split('\n').filter((l) => UNVALIDATED_RETURN.test(l));
+      expect(
+        hits,
+        `${product} migrated to Wave 8 strict schemas — every response must be parsed. Raw returns are forbidden here.`,
+      ).toHaveLength(0);
+    }
+  });
+
+  it('every migrated product has oracle coverage census on file', () => {
+    // The ladder: a migrated product must carry its oracle pin + census in
+    // contracts/wave8-coverage/<product>.json, generated from
+    // contracts/wave8-oracle/<product>/ at a pinned upstream commit.
+    for (const product of Object.keys(MIGRATED_PRODUCTS)) {
+      const census = JSON.parse(readFileSync(join(ROOT, 'contracts', 'wave8-coverage', `${product}.json`), 'utf8')) as {
+        product: string;
+        oracleSource: { commit: string; pinnedAt: string };
+        schemaCount: number;
+        fieldCount: number;
+      };
+      expect(census.product, `${product}.json must describe ${product}`).toBe(product);
+      expect(census.oracleSource.commit, `${product}.json must pin the oracle commit`).toMatch(/^[0-9a-f]{40}$/);
+      expect(census.schemaCount, `${product}.json must record a non-empty schema census`).toBeGreaterThan(0);
+    }
   });
 });

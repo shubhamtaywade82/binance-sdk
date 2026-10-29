@@ -1,0 +1,13 @@
+{
+  "rows": [
+    {
+      "loanCoin": "USDT",
+      "initialLoanAmount": "100.5",
+      "collateralCoin": "BUSD",
+      "initialCollateralAmount": "100.1",
+      "borrowTime": 1645000000000,
+      "status": "Repaid"
+    }
+  ],
+  "total": 1
+}

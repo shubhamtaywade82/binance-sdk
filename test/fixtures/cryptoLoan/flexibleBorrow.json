@@ -1,0 +1,7 @@
+{
+  "loanCoin": "USDT",
+  "loanAmount": "100.5",
+  "collateralCoin": "BUSD",
+  "collateralAmount": "100.1",
+  "status": "Succeed"
+}

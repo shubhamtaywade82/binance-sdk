@@ -1,0 +1,16 @@
+{
+  "rows": [
+    {
+      "loanCoin": "USDT",
+      "liquidationDebt": "100.5",
+      "collateralCoin": "BUSD",
+      "liquidationCollateralAmount": "100.1",
+      "returnCollateralAmount": "0.1",
+      "liquidationFee": "0.01",
+      "liquidationStartingPrice": "19000.5",
+      "liquidationStartingTime": 1645000000000,
+      "status": "Liquidated"
+    }
+  ],
+  "total": 1
+}

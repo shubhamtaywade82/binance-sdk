@@ -1,0 +1,22 @@
+{
+  "total": 1,
+  "executedQty": "10",
+  "executedAmt": "100",
+  "subOrders": [
+    {
+      "algoId": 14511,
+      "orderId": 11,
+      "orderStatus": "FILLED",
+      "executedQty": "5",
+      "executedAmt": "50",
+      "feeAmt": "0.01",
+      "feeAsset": "USDT",
+      "bookTime": 1645000000000,
+      "avgPrice": "10000",
+      "side": "BUY",
+      "symbol": "BTCUSDT",
+      "subId": 1,
+      "timeInForce": "GTC"
+    }
+  ]
+}

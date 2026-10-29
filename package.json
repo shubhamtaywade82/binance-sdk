@@ -99,6 +99,7 @@
     "contracts:import-postman": "tsx scripts/import-postman-collections.ts",
     "contracts:generate-from-postman": "tsx scripts/generate-sdk-from-postman.ts",
     "contracts:wave8-strict-schemas": "tsx scripts/wave8-strict-schemas.ts",
+    "contracts:wave8-vendor-oracle": "tsx scripts/wave8-vendor-oracle.ts",
     "contracts:upstream-drift": "tsx scripts/upstream-drift.ts",
     "contracts:wave6-close-gaps": "tsx scripts/wave6-close-gaps.ts",
     "contracts:wave7-add-schemas": "tsx scripts/wave7-add-schemas.ts",
