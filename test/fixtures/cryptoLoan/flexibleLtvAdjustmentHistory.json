@@ -1,0 +1,14 @@
+{
+  "rows": [
+    {
+      "loanCoin": "USDT",
+      "collateralCoin": "BUSD",
+      "direction": "ADDITIONAL",
+      "collateralAmount": "100.1",
+      "preLTV": "0.5",
+      "afterLTV": "0.55",
+      "adjustTime": 1645000000000
+    }
+  ],
+  "total": 1
+}

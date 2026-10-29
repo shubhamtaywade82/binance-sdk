@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "product": "cryptoLoan",
+  "oracleSource": {
+    "repo": "https://github.com/binance/binance-connector-js",
+    "commit": "1fe304445e34d014a0e457ef0006f7c426f0203c",
+    "pinnedAt": "2026-10-23",
+    "path": "clients/crypto-loan/src/rest-api/types"
+  },
+  "generatedFile": "src/types/cryptoLoan.wave8.types.ts",
+  "interfaces": [
+    {
+      "name": "CheckCollateralRepayRateResponse",
+      "arrayBase": null,
+      "fields": 3
+    },
+    {
+      "name": "FlexibleLoanAdjustLtvResponse",
+      "arrayBase": null,
+      "fields": 6
+    },
+    {
+      "name": "FlexibleLoanBorrowResponse",
+      "arrayBase": null,
+      "fields": 5
+    },
+    {
+      "name": "FlexibleLoanRepayResponse",
+      "arrayBase": null,
+      "fields": 7
+    },
+    {
+      "name": "GetFlexibleLoanAssetsDataResponseRowsInner",
+      "arrayBase": null,
+      "fields": 4
+    },
+    {
+      "name": "GetFlexibleLoanAssetsDataResponse",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "GetFlexibleLoanBorrowHistoryResponseRowsInner",
+      "arrayBase": null,
+      "fields": 6
+    },
+    {
+      "name": "GetFlexibleLoanBorrowHistoryResponse",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "GetFlexibleLoanCollateralAssetsDataResponseRowsInner",
+      "arrayBase": null,
+      "fields": 5
+    },
+    {
+      "name": "GetFlexibleLoanCollateralAssetsDataResponse",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "GetFlexibleLoanInterestRateHistoryResponseRowsInner",
+      "arrayBase": null,
+      "fields": 3
+    },
+    {
+      "name": "GetFlexibleLoanInterestRateHistoryResponse",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "GetFlexibleLoanLiquidationHistoryResponseRowsInner",
+      "arrayBase": null,
+      "fields": 9
+    },
+    {
+      "name": "GetFlexibleLoanLiquidationHistoryResponse",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "GetFlexibleLoanLtvAdjustmentHistoryResponseRowsInner",
+      "arrayBase": null,
+      "fields": 7
+    },
+    {
+      "name": "GetFlexibleLoanLtvAdjustmentHistoryResponse",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "GetFlexibleLoanOngoingOrdersResponseRowsInner",
+      "arrayBase": null,
+      "fields": 5
+    },
+    {
+      "name": "GetFlexibleLoanOngoingOrdersResponse",
+      "arrayBase": null,
+      "fields": 2
+    },
+    {
+      "name": "GetFlexibleLoanRepaymentHistoryResponseRowsInner",
+      "arrayBase": null,
+      "fields": 6
+    },
+    {
+      "name": "GetFlexibleLoanRepaymentHistoryResponse",
+      "arrayBase": null,
+      "fields": 2
+    }
+  ],
+  "schemaCount": 20,
+  "fieldCount": 82
+}

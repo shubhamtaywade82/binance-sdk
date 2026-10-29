@@ -11,41 +11,57 @@ connector-js — it is not a runtime dependency of the SDK.
 
 ## Layout
 
-- `convert/` — vendored connector-js response interfaces for the pilot
-  product. Each file carries a provenance header with the pinned commit.
-- `convert.index.json` — the pin: source repo, commit, date, file list.
-- `convert.overrides.json` — per-product SDK conventions layered on top
-  of the oracle (numeric-string transforms, id-flexibility, extra
-  fields the wire carries but the current upstream OpenAPI omits). Every
-  entry must carry a reason; this file is the review surface for
-  deliberate divergences from the oracle.
+- `convert/`, `algo/`, `cryptoLoan/` — vendored connector-js response
+  interfaces per migrated product, each file carrying a provenance header
+  with the pinned commit.
+- `<product>.index.json` — the pin: source repo, commit, date, file list.
+- `<product>.overrides.json` — per-product SDK conventions layered on top
+  of the oracle (numeric-string transforms, id-flexibility, extra fields
+  the wire carries but the current upstream OpenAPI omits). Every entry
+  must carry a reason; this file is the review surface for deliberate
+  divergences from the oracle.
+- `../wave8-coverage/<product>.json` — generated census (schema/field
+  counts) per migrated product; the ratchet gate asserts it exists for
+  every migrated product.
 
-## Regenerating
+## Re-vendoring / climbing the ladder
+
+Vendoring a rung is automated (`scripts/wave8-vendor-oracle.ts`):
 
 ```bash
-npm run contracts:wave8-strict-schemas -- --product convert
+npm run contracts:wave8-vendor-oracle -- --product <sdkProduct> --client <connectorJsClientDir>
+# e.g. --product vipLoan --client vip-loan
+# then author <product>.overrides.json — the deliberate-divergence review surface
+npm run contracts:wave8-strict-schemas -- --product <sdkProduct>
+# wire the resource + fixtures + tests, lower the ratchet
 ```
 
-Reads every `*.ts` in `wave8-oracle/<product>/`, emits
-`src/types/<product>.wave8.types.ts` (strict Zod + inferred types) and
-`contracts/wave8-coverage.json`. Generated files carry `GENERATED`
-headers — do not hand-edit.
+Re-vendoring an existing oracle at a newer upstream commit:
 
-## Re-vendoring an oracle
-
-1. Fetch the connector-js client's `src/rest-api/types/*.ts` at a chosen
-   upstream commit.
-2. Prepend the provenance header (see any existing file).
-3. Update `<product>.index.json` with the new commit.
-4. Re-run the generator and review the diff — **wire-shape drift shows up
+1. Re-run the vendor script with `--sha <commit> --date <yyyy-mm-dd>` (it
+   overwrites `wave8-oracle/<product>/` and the pin).
+2. Re-run the generator and review the diff — **wire-shape drift shows up
    here**: the Postman drift watch only tracks endpoint inventory and
    params, not response schemas. The convert pilot caught three real
-   response-shape divergences on its first run (see the Wave 8 PR).
+   response-shape divergences on its first run; the algo + cryptoLoan
+   rungs caught two more classes (list endpoints are wrapped
+   `{total,orders}` / `{rows,total}`, submits ack with
+   `{clientAlgoId,success,code,msg}`) where the SDK's own mocks had been
+   asserting shapes that never existed on the wire.
 
-## Pilot status
+## Ladder status
 
-`convert` is the first product. The ratchet gate
-(`test/contracts/wave8-ratchet.test.ts`) records the permissive-schema
-baselines; every product migrated to Wave 8 lowers them. Priority order
-for the rest: money-movement first (algo, cryptoLoan, vipLoan,
-simpleEarn, staking), then the Wave 6/7 long tail.
+| Rung | Product | Status |
+| ---- | ------- | ------ |
+| 1 | convert | migrated (pilot) |
+| 2 | algo | migrated |
+| 3 | cryptoLoan | migrated (v2 flexible surface; deprecated v1 keeps its schemas — not modeled by the oracle) |
+| 4 | vipLoan | next |
+| 5 | simpleEarn | next |
+| 6 | staking | next |
+| — | Wave 6/7 long tail | after money-movement |
+
+The ratchet gate (`test/contracts/wave8-ratchet.test.ts`) records the
+permissive-schema baselines; every product migrated to Wave 8 lowers
+them. Priority order for the rest: money-movement first
+(`wave8-ratchet.json`), then the Wave 6/7 long tail.

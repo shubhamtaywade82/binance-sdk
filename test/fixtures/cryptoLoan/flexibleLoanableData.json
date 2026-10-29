@@ -1,0 +1,11 @@
+{
+  "rows": [
+    {
+      "loanCoin": "BUSD",
+      "flexibleInterestRate": "0.0075",
+      "flexibleMinLimit": "100",
+      "flexibleMaxLimit": "1000"
+    }
+  ],
+  "total": 1
+}

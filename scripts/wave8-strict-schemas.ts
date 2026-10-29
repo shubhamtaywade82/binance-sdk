@@ -11,8 +11,8 @@
  *         divergences; the oracle drives everything else.
  * Output: src/types/<product>.wave8.types.ts — strict, field-level Zod
  *         schemas + inferred types, marked GENERATED (do not hand-edit),
- *         plus contracts/wave8-coverage.json (schema/field census for the
- *         ratchet gates).
+ *         plus contracts/wave8-coverage/<product>.json (schema/field census
+ *         for the ratchet gates).
  *
  * Design rules:
  *   - Oracle field presence drives schema fields (all-optional upstream
@@ -308,9 +308,9 @@ function main(): void {
   const census = emitGeneratedFile(meta, interfaces, overrides, outFile);
   console.log(`  -> ${basename(outFile)}: ${census.schemas} schemas, ${census.fields} fields`);
 
-  const coverageFile = join(ROOT, 'contracts', 'wave8-coverage.json');
+  const coverageFile = join(ROOT, 'contracts', 'wave8-coverage', `${meta.product}.json`);
   emitCoverage(meta, interfaces, census, coverageFile);
-  console.log(`  -> contracts/wave8-coverage.json`);
+  console.log(`  -> contracts/wave8-coverage/${meta.product}.json`);
 }
 
 if (process.argv[1] && process.argv[1].endsWith('wave8-strict-schemas.ts')) {
