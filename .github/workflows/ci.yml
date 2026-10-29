@@ -38,16 +38,22 @@ jobs:
       # exists in the official collection. The coverage report is written
       # to contracts/postman-coverage.json for inspection.
       - name: Postman contract coverage gate
+        env:
+          # Pinned upstream revision, so coverage results are reproducible run-to-run
+          # instead of tracking the moving master HEAD. Bump this deliberately:
+          # upstream-watch flags drift on new upstream commits and opens a PR
+          # that re-imports the catalog (contracts/postman-catalog.json records
+          # the same pinnedSha).
+          POSTMAN_REF: 2dbd378be100f170d859d56fcd0ec23457a72d30
         run: |
           # Download the official Binance Postman collections (if not cached).
-          if [ ! -d ../postman-extract/binance-api-postman-master/collections ]; then
-            curl -sSL https://github.com/binance/binance-api-postman/archive/refs/heads/master.tar.gz \
-              | tar xz -C ..
-            mkdir -p ../postman-extract
-            mv ../binance-api-postman-master ../postman-extract/ 2>/dev/null || true
+          if [ ! -d "../postman-extract/binance-api-postman-${POSTMAN_REF}/collections" ]; then
+            rm -rf ../postman-extract && mkdir -p ../postman-extract
+            curl -sSL "https://github.com/binance/binance-api-postman/archive/${POSTMAN_REF}.tar.gz" \
+              | tar xz -C ../postman-extract
           fi
-          POSTMAN_COLLECTIONS_DIR=../postman-extract/binance-api-postman-master/collections \
-            npm run contracts:import-postman
+          POSTMAN_COLLECTIONS_DIR="../postman-extract/binance-api-postman-${POSTMAN_REF}/collections" \
+            npm run contracts:import-postman -- --ref "$POSTMAN_REF"
           npm run contracts:generate-from-postman
           # Fail if any endpoints are missing from the SDK relative to the contract.
           node -e "

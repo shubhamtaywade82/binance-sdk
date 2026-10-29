@@ -265,7 +265,7 @@ export { WsConnection } from './ws/WsConnection.js';
 export type { WsConnectionOptions } from './ws/WsConnection.js';
 export { SpotMarketWS } from './ws/SpotMarketWS.js';
 export { SpotUserWS } from './ws/SpotUserWS.js';
-export type { SpotUserWSOptions } from './ws/SpotUserWS.js';
+export type { SpotUserWSOptions, SpotUserDataSigner } from './ws/SpotUserWS.js';
 export { FuturesMarketWS } from './ws/FuturesMarketWS.js';
 export type { ContractType, MarkPriceSpeed } from './ws/FuturesMarketWS.js';
 export { FuturesUserWS } from './ws/FuturesUserWS.js';
