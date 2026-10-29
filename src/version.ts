@@ -11,4 +11,4 @@
  * marker below); rename the `[Unreleased]` section of `CHANGELOG.md` on the
  * release PR branch before merging it.
  */
-export const VERSION = '3.4.0'; // x-release-please-version
+export const VERSION = '3.4.1'; // x-release-please-version
