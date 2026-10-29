@@ -20,6 +20,8 @@ export interface Bar {
   volume: number;
   quoteAssetVolume: number;
   takerBuyBaseVolume: number;
+  /** Bar close timestamp (ms). Present on SDK klines; optional for hand-built bars. */
+  closeTime?: number;
 }
 
 /** Exponential moving average over `values`; index i uses data up to and including i. */
@@ -58,11 +60,38 @@ export function atr(bars: Bar[], period = 14): number {
   return terms > 0 ? sum / terms : 0;
 }
 
-/** Percentile of `current` within `history`, as a 0..1 fraction. Empty history -> 0.5. */
+/**
+ * Percentile rank of `current` within `history`, as a 0..1 fraction.
+ *
+ * Convention: midrank — `(strictlyBelow + 0.5 x ties) / n`. The observation
+ * itself counts as half, so an extreme value is reachable at both tails:
+ * with n=6 the minimum rank is 1/12 ≈ 0.083 (not 1/6), letting the scorer's
+ * `posPct <= 0.1` / `>= 0.9` crowd-extreme gates actually fire. Empty
+ * history -> 0.5 (no information).
+ */
 export function percentile(current: number, history: number[]): number {
-  if (history.length === 0) return 0.5;
-  const below = history.filter((h) => h <= current).length;
-  return below / history.length;
+  const n = history.length;
+  if (n === 0) return 0.5;
+  let below = 0;
+  let ties = 0;
+  for (const h of history) {
+    if (h < current) below += 1;
+    else if (h === current) ties += 1;
+  }
+  return (below + 0.5 * ties) / n;
+}
+
+/**
+ * Drop the still-forming candle: keep only bars whose `closeTime` has
+ * passed (or that carry no `closeTime`, which hand-built bars in tests
+ * may not). Signals computed on closed candles are reproducible and match
+ * backtests; the forming candle repaints and must not drive entries.
+ */
+export function closedBars(bars: Bar[], now = Date.now()): Bar[] {
+  const last = bars.at(-1);
+  if (!last || last.closeTime === undefined || last.closeTime <= now) return bars;
+  // Only the trailing bar can be forming on any sane fetch.
+  return bars.slice(0, -1);
 }
 
 /** Volume-weighted average price of bars since `sinceMs`; last close when no bars qualify. */

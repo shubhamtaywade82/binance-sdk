@@ -112,6 +112,7 @@ export function safetyOptions(profile: AgentProfile, watchlist: string[]): RiskG
     allowedSymbols: watchlist,
     maxNotionalPerOrder: 25_000,
     maxOpenNotional: 24_000,
+    maxPositionNotional: 30_000,
     maxDailyLoss: 1_000,
     maxConsecutiveFailures: 5,
     maxLeverage: profile.maxLeverage,

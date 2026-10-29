@@ -11,6 +11,7 @@ export type PolicyRule =
   | 'circuitBreaker'
   | 'maxLeverage'
   | 'maxOpenNotional'
+  | 'maxPositionNotional'
   | 'maxDailyLoss';
 
 /**

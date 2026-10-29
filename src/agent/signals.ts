@@ -8,7 +8,7 @@
  */
 import type { BinanceClient } from '../client/BinanceClient.js';
 import {
-  atr, ema, percentile, sessionVwap, takerRatio, type Bar,
+  atr, closedBars, ema, percentile, sessionVwap, takerRatio, type Bar,
 } from './indicators.js';
 import type { Regime } from './regime.js';
 
@@ -94,6 +94,14 @@ export function scoreFromInputs(i: SignalInputs): Signal | null {
  * Score a symbol: 5m/15m klines, top-20 book depth, 1h of 5m OI history,
  * 6h of top-trader position ratio and the last funding settlements.
  * `dayStartMs` anchors the session VWAP (e.g. UTC midnight).
+ *
+ * Signal policy: CLOSED CANDLES ONLY — the forming 5m bar repaints, so it
+ * is dropped before any indicator runs. This keeps live entries aligned
+ * with backtests evaluated on the same closed data.
+ *
+ * VWAP policy: the 5m fetch covers the whole session (bars since `dayStartMs`
+ * plus padding), so the session VWAP is computed over the same window it is
+ * anchored to instead of a trailing 10-hour slice of it.
  */
 export async function scoreSymbol(
   client: BinanceClient,
@@ -101,8 +109,11 @@ export async function scoreSymbol(
   regime: Regime,
   dayStartMs: number,
 ): Promise<Signal | null> {
-  const bars5: Bar[] = await client.futures.market.klines(symbol, '5m', { limit: 120 });
-  const bars15: Bar[] = await client.futures.market.klines(symbol, '15m', { limit: 60 });
+  // Enough 5m bars to cover the session so far (288 = one full UTC day).
+  const barsSinceOpen = Math.max(0, Math.ceil((Date.now() - dayStartMs) / 300_000));
+  const limit5 = Math.min(288, Math.max(60, barsSinceOpen + 8));
+  const bars5: Bar[] = closedBars(await client.futures.market.klines(symbol, '5m', { limit: limit5 }));
+  const bars15: Bar[] = closedBars(await client.futures.market.klines(symbol, '15m', { limit: 60 }));
   const last = bars5.at(-1);
   if (!last || bars15.length === 0) return null;
 

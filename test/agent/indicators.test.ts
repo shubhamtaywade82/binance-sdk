@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  atr, ema, percentile, sessionVwap, takerRatio, type Bar,
+  atr, closedBars, ema, percentile, sessionVwap, takerRatio, type Bar,
 } from '../../src/agent/indicators.js';
 
 function bar(over: Partial<Bar> & { openTime: number; close: number }): Bar {
@@ -48,15 +48,62 @@ describe('atr', () => {
   });
 });
 
-describe('percentile', () => {
-  it('ranks current within history as a fraction', () => {
-    expect(percentile(5, [1, 2, 3, 4, 5])).toBe(1);
+describe('percentile (midrank convention)', () => {
+  it('ranks current within history as a fraction, counting itself as half', () => {
+    // Midrank: (strictlyBelow + 0.5 x ties) / n — the observation counts as
+    // half of one sample, so inclusive data never pins the rank at 1.
+    expect(percentile(5, [1, 2, 3, 4, 5])).toBeCloseTo(0.9, 10);
     expect(percentile(0, [1, 2, 3])).toBeCloseTo(0, 10);
     expect(percentile(2.5, [1, 2, 3, 4])).toBeCloseTo(0.5, 10);
   });
 
+  it('both tails are reachable — the crowd-extreme gates can actually fire', () => {
+    // With n=6 the old (count <= current)/n convention floored every rank at
+    // 1/6 ≈ 0.167, so the scorer's posPct <= 0.1 / >= 0.9 gates were dead code.
+    // The scorer's current value IS the last history element, so the extremes
+    // are the history's own min/max.
+    const history = [1.2, 1.3, 1.4, 1.5, 1.6, 1.7];
+    expect(percentile(1.2, history)).toBeCloseTo(1 / 12, 10); // ≈ 0.083 ≤ 0.1 ✓
+    expect(percentile(1.7, history)).toBeCloseTo(11 / 12, 10); // ≈ 0.917 ≥ 0.9 ✓
+    // Values outside the history reach the full 0..1 range.
+    expect(percentile(1.1, history)).toBe(0);
+    expect(percentile(1.8, history)).toBe(1);
+  });
+
+  it('handles ties symmetrically', () => {
+    // below:1, ties:2 -> (1 + 0.5 x 2) / 4 = 0.5 — dead centre, as ties should be.
+    expect(percentile(2, [1, 2, 2, 3])).toBeCloseTo(0.5, 10);
+  });
+
   it('returns 0.5 for empty history', () => {
     expect(percentile(1, [])).toBe(0.5);
+  });
+});
+
+describe('closedBars', () => {
+  const base = { open: 1, high: 2, low: 0.5, close: 1.5, volume: 10, quoteAssetVolume: 15, takerBuyBaseVolume: 5 };
+
+  it('drops the trailing bar whose closeTime is still in the future', () => {
+    const bars = [
+      { ...base, openTime: 1, closeTime: 100 },
+      { ...base, openTime: 2, closeTime: 900 }, // forming: closes at 900, now = 500
+    ];
+    const closed = closedBars(bars as Bar[], 500);
+    expect(closed).toHaveLength(1);
+    expect(closed[0].openTime).toBe(1);
+  });
+
+  it('keeps every bar when the last one already closed', () => {
+    const bars = [
+      { ...base, openTime: 1, closeTime: 100 },
+      { ...base, openTime: 2, closeTime: 400 },
+    ];
+    expect(closedBars(bars as Bar[], 500)).toHaveLength(2);
+  });
+
+  it('keeps bars without closeTime (hand-built test data stays usable)', () => {
+    const bars = [{ ...base, openTime: 1 }, { ...base, openTime: 2 }] as Bar[];
+    expect(closedBars(bars, 500)).toHaveLength(2);
   });
 });
 

@@ -68,3 +68,7 @@ export {
   nextExitAction,
   applyExit,
 } from './exits.js';
+export {
+  type PositionSnapshot,
+  reconcilePositions,
+} from './reconcile.js';

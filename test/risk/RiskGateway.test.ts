@@ -205,3 +205,63 @@ describe('RiskGateway open-notional budget with reference prices', () => {
     ).toThrow(/maxOpenNotional/);
   });
 });
+
+describe('RiskGateway position-exposure cap (open positions, not resting orders)', () => {
+  it('denies exposure-extending orders that would breach the aggregate cap, allows reducing orders', () => {
+    const gateway = new RiskGateway({ maxPositionNotional: 1_000 });
+    gateway.setReferencePrice('BTCUSDT', 50);
+
+    // No positions held: a 20-unit MARKET order (20 x 50 = 1,000) is fine.
+    expect(() =>
+      gateway.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 20 }),
+    ).not.toThrow();
+
+    // The account now holds 900 notional across two symbols.
+    gateway.recordPositionNotional({ BTCUSDT: 400, ETHUSDT: 500 });
+    expect(gateway.positionNotionalTotal).toBe('900');
+
+    // A further 5 x 50 = 250 would project 1,150 > 1,000 -> denied.
+    expect(() =>
+      gateway.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 5 }),
+    ).toThrow(/maxPositionNotional/);
+
+    // Reduce-only and close-position orders can only lower exposure -> allowed.
+    expect(() =>
+      gateway.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'SELL', type: 'MARKET', quantity: 999, reduceOnly: true }),
+    ).not.toThrow();
+    expect(() =>
+      gateway.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'SELL', type: 'STOP_MARKET', closePosition: true }),
+    ).not.toThrow();
+
+    // Cancels never count either.
+    expect(() =>
+      gateway.check('DELETE', '/fapi/v1/order', { symbol: 'BTCUSDT', orderId: 1 }),
+    ).not.toThrow();
+  });
+
+  it('a fresh snapshot REPLACES the previous one — closed positions free their budget', () => {
+    const gateway = new RiskGateway({ maxPositionNotional: 1_000 });
+    gateway.setReferencePrice('BTCUSDT', 50);
+    gateway.recordPositionNotional({ BTCUSDT: 950 });
+    expect(() =>
+      gateway.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 5 }),
+    ).toThrow(/maxPositionNotional/);
+
+    // Position closed on the exchange: the next snapshot shrinks the map.
+    gateway.recordPositionNotional({ BTCUSDT: 0 }); // zero entries are dropped entirely
+    expect(gateway.positionNotionalTotal).toBe('0');
+    expect(() =>
+      gateway.check('POST', '/fapi/v1/order', { symbol: 'BTCUSDT', side: 'BUY', type: 'MARKET', quantity: 5 }),
+    ).not.toThrow();
+  });
+
+  it('short exposure counts as absolute notional', () => {
+    const gateway = new RiskGateway({ maxPositionNotional: 1_000 });
+    gateway.setReferencePrice('SOLUSDT', 20);
+    gateway.recordPositionNotional({ SOLUSDT: -950 }); // negative notional (short)
+    expect(gateway.positionNotionalTotal).toBe('950');
+    expect(() =>
+      gateway.check('POST', '/fapi/v1/order', { symbol: 'SOLUSDT', side: 'SELL', type: 'MARKET', quantity: 5 }),
+    ).toThrow(/maxPositionNotional/);
+  });
+});

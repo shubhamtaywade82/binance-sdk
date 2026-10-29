@@ -19,6 +19,15 @@ export interface RiskGatewayOptions extends TradingPolicyOptions {
    */
   maxOpenNotional?: number;
   /**
+   * Cap on the aggregate OPEN-POSITION notional (exposure actually held, as
+   * opposed to `maxOpenNotional`, which budgets *orders resting on the book*).
+   * The execution/agent layer feeds authoritative position sizes via
+   * `recordPositionNotional` (exchange `positionRisk` or the paper engine);
+   * every exposure-extending order is then checked against the cap at the
+   * gate. Reducing orders (`reduceOnly` / `closePosition`) never count.
+   */
+  maxPositionNotional?: number;
+  /**
    * Quote-currency daily realized-loss limit. When `recordRealizedPnl` pushes
    * the day's PnL at or below `-maxDailyLoss`, the circuit breaker trips and
    * every mutating request is refused until the daily window resets or the
@@ -103,6 +112,8 @@ export class RiskGateway extends TradingPolicy {
   private consecutiveFailures = 0;
   private day = utcDay();
   private breaker: CircuitBreakerState = { tripped: false };
+  /** Open-position notional per symbol, from the latest authoritative snapshot. */
+  private positionNotional = new Map<string, Decimal>();
   private readonly events?: EventBus;
 
   constructor(options: RiskGatewayOptions = {}, events?: EventBus) {
@@ -127,6 +138,7 @@ export class RiskGateway extends TradingPolicy {
 
     this.checkLeverageCap(method, path, params);
     this.checkOpenNotionalBudget(method, path, params);
+    this.checkPositionNotionalBudget(method, path, params);
   }
 
   private assertBreakerNotTripped(method: HttpMethod, path: string): void {
@@ -194,6 +206,79 @@ export class RiskGateway extends TradingPolicy {
         path,
         `projected open notional ${projected} exceeds cap ${max}`,
         { currentOpenNotional: this.openNotional.toString(), orderNotional: notional.toString() },
+      );
+    }
+  }
+
+  /**
+   * Authoritative snapshot of open-position notionals per symbol (quote
+   * currency), from exchange `positionRisk` records or the paper engine's
+   * positions. REPLACES the previous snapshot — positions close, so the map
+   * must shrink too. Feed it once per agent cycle.
+   */
+  recordPositionNotional(positions: Record<string, string | number>): void {
+    const next = new Map<string, Decimal>();
+    for (const [symbol, value] of Object.entries(positions)) {
+      const dec = toDecimal(value);
+      if (dec && !dec.isZero()) next.set(symbol.toUpperCase(), dec.abs());
+    }
+    this.positionNotional = next;
+    this.emitEvent('risk.position.snapshot', {
+      symbols: [...next.keys()],
+      aggregate: [...next.values()].reduce((s, v) => s.add(v), Decimal.ZERO).toString(),
+    });
+  }
+
+  /** Aggregate open-position notional from the latest snapshot (exact decimal string). */
+  get positionNotionalTotal(): string {
+    let sum = Decimal.ZERO;
+    for (const v of this.positionNotional.values()) sum = sum.add(v);
+    return sum.toString();
+  }
+
+  /**
+   * Position-exposure cap. Worst-case accounting: a new exposure-extending
+   * order is projected on top of the current aggregate, because whether an
+   * opposing order merely reduces or flips a position cannot be resolved from
+   * request parameters alone. Reduce-only and close-position orders never
+   * count (they can only lower exposure).
+   */
+  private checkPositionNotionalBudget(
+    method: HttpMethod,
+    path: string,
+    params: Record<string, unknown>,
+  ): void {
+    const max = toDecimal(this.gatewayOptions.maxPositionNotional);
+    if (max === undefined) return;
+    if (method === 'DELETE' || path.toLowerCase().includes('cancel')) return;
+    if (!ORDER_PATH.test(path)) return;
+    if (params.reduceOnly === true || params.reduceOnly === 'true') return;
+    if (params.closePosition === true || params.closePosition === 'true') return;
+
+    const quantity = toDecimal(params.quantity);
+    const quoteOrderQty = toDecimal(params.quoteOrderQty);
+    if (quantity === undefined && quoteOrderQty === undefined) return;
+
+    const price = toDecimal(params.price);
+    const reference = toDecimal(this.freshReferencePrice(params.symbol));
+    const notional =
+      quoteOrderQty ??
+      (price !== undefined && quantity !== undefined ? price.mul(quantity) : undefined) ??
+      (reference !== undefined && quantity !== undefined ? reference.mul(quantity) : undefined);
+    if (notional === undefined) return; // undeterminable — the per-order cap stays fail-closed
+
+    const projected = Decimal.from(this.positionNotionalTotal).add(notional);
+    if (projected.gt(max)) {
+      this.deny(
+        'maxPositionNotional',
+        method,
+        path,
+        `projected open-position notional ${projected} exceeds cap ${max}`,
+        {
+          currentPositionNotional: this.positionNotionalTotal,
+          orderNotional: notional.toString(),
+          maxPositionNotional: max.toString(),
+        },
       );
     }
   }
