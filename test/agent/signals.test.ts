@@ -127,3 +127,49 @@ describe('scoreSymbol', () => {
     expect(sig!.score).toBe(85);
   });
 });
+
+describe('scoreSymbol closed-candle policy', () => {
+  it('drops the still-forming candle — signals come from closed bars only', async () => {
+    const kline = (openTime: number, close: number, closeTime: number): unknown[] => [
+      openTime, String(close - 1), String(close + 1), String(close - 1),
+      String(close), '100', closeTime, '10000', 10, '60', '40', '0',
+    ];
+    server.use(
+      http.get('https://fapi.binance.com/fapi/v1/klines', ({ request }) => {
+        const interval = new URL(request.url).searchParams.get('interval');
+        if (interval === '5m') {
+          // Last bar closes far in the future -> forming, must be dropped.
+          return HttpResponse.json([
+            kline(1, 100, Date.now() - 10_000),
+            kline(2, 101, Date.now() - 5_000),
+            kline(3, 200, Date.now() + 300_000), // forming, close 200 is a fakeout
+          ]);
+        }
+        return HttpResponse.json([kline(1, 100, 1), kline(2, 101, 2)]);
+      }),
+      http.get('https://fapi.binance.com/fapi/v1/depth', () =>
+        HttpResponse.json({
+          lastUpdateId: 1,
+          bids: [['100', '30'], ['99', '30']],
+          asks: [['101', '20'], ['102', '20']],
+        })),
+      http.get('https://fapi.binance.com/futures/data/openInterestHist', () =>
+        HttpResponse.json([
+          { symbol: 'BTCUSDT', sumOpenInterest: '1000', sumOpenInterestValue: '105000', timestamp: 1 },
+          { symbol: 'BTCUSDT', sumOpenInterest: '1100', sumOpenInterestValue: '115500', timestamp: 2 },
+        ])),
+      http.get('https://fapi.binance.com/futures/data/topLongShortPositionRatio', () =>
+        HttpResponse.json([
+          { symbol: 'BTCUSDT', longShortRatio: '1.1', longAccount: '0.52', shortAccount: '0.48', timestamp: 1 },
+        ])),
+      http.get('https://fapi.binance.com/fapi/v1/fundingRate', () =>
+        HttpResponse.json([{ symbol: 'BTCUSDT', fundingTime: 1, fundingRate: '0.0001' }])),
+    );
+
+    const client = new BinanceClient();
+    const sig = await scoreSymbol(client, 'BTCUSDT', 'TREND_UP', 0);
+    expect(sig).not.toBeNull();
+    // Entry hint must be the last CLOSED close (101), never the forming 200.
+    expect(sig!.entryHint).toBe(101);
+  });
+});

@@ -53,6 +53,7 @@ import {
   updateHighWater,
   nextExitAction,
   applyExit,
+  reconcilePositions,
   type Signal,
   type ExecutionGateway,
   type ManagedPosition,
@@ -288,11 +289,27 @@ async function main(): Promise<void> {
       await refreshDeadman(session, watch.map((w) => w.symbol), PROFILE, PAPER);
       if (PAPER) await managePaperExits();
 
-      // 3. Entries — within caps, on the allowlist, one per symbol.
+      // 3. Reconcile against the account's actual exposure: feed the position
+      //    snapshot to the exposure cap, and surface positions this loop does
+      //    not manage (previous process, manual trade, another bot on the key).
+      //    Fresh entries on untracked symbols are refused — the agent never
+      //    pyramids onto exposure whose protective orders it cannot see.
+      const snapshot = await reconcilePositions(session, gateway, open);
+      risk?.recordPositionNotional(snapshot.notional);
+      if (snapshot.untracked.length > 0) {
+        log('reconcile.untracked', {
+          symbols: snapshot.untracked,
+          note: 'unmanaged exchange-side exposure present; entries on these symbols are refused',
+        });
+      }
+
+      // 4. Entries — within caps, on the allowlist, one per symbol, never on
+      //    symbols with unmanaged exposure.
       for (const cand of watch) {
         if (open.size >= PROFILE.maxIntradayPositions) break;
         if (open.has(cand.symbol)) continue;
         if (LIVE && !LIVE_SYMBOLS.includes(cand.symbol)) continue;
+        if (snapshot.notional[cand.symbol] !== undefined) continue; // untracked exposure — refuse
         const inCluster = [...open.keys()].filter((s) => clusterOf(s) === cand.cluster).length;
         if (inCluster >= PROFILE.maxPerCluster) continue;
 
