@@ -72,8 +72,12 @@ export interface OrderRecord {
   status: OrderStatus;
   /** Requested quantity when a source reported it, else null. */
   originalQuantity: string | null;
-  /** Cumulative executed quantity — decimal string. */
-  executedQuantity: string;
+  /**
+   * Cumulative executed quantity — decimal string, or null when no source
+   * has supplied one yet (e.g. an ACK-only observation). null means
+   * *unknown*, never "zero executed".
+   */
+  executedQuantity: string | null;
   /**
    * Cumulative quote volume — decimal string. USDⓈ-M execution reports do not
    * carry it; the fold computes `executedQuantity × averagePrice` as an
@@ -106,7 +110,8 @@ export interface OrderUpdate {
   type: string;
   status: string;
   originalQuantity: string | null;
-  executedQuantity: string;
+  /** Cumulative executed quantity — decimal string, or null when the source did not supply it. */
+  executedQuantity: string | null;
   cumulativeQuoteQuantity: string | null;
   averagePrice: string | null;
   /** The trade this update carries, when it reports one (fill quantity > 0). */
@@ -144,6 +149,8 @@ export interface PositionRecord {
   marginType: string | null;
   /** Isolated-position wallet balance when reported, else null. */
   isolatedWallet: string | null;
+  /** Breakeven price when reported (ACCOUNT_UPDATE `bep`, positionRisk V3), else null. */
+  breakEvenPrice?: string | null;
   /** Epoch ms of the last applied event. */
   updatedAt: number;
 }
@@ -160,6 +167,8 @@ export interface PositionUpdate {
   unrealizedPnl: string | null;
   marginType: string | null;
   isolatedWallet: string | null;
+  /** Breakeven price when the source reports it, else null. */
+  breakEvenPrice?: string | null;
   updateTime: number;
   /** The raw `a.P` entry this was normalized from. */
   raw: Record<string, unknown>;

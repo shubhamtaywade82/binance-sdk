@@ -22,7 +22,9 @@ import type { ReconciliationSummary } from './types.js';
  *
  *   - `GET /fapi/v1/openOrders` (USDⓈ-M, one call) / per-symbol Spot
  *     `GET /api/v3/openOrders` → `OrderTracker.applyOrderShape`
- *   - `GET /fapi/v2/positionRisk` (USDⓈ-M) → `PositionTracker.applyUpdate`
+ *   - `GET /fapi/v3/positionRisk` (USDⓈ-M, v3.5.1 — V3 is the current
+ *     position reconciliation source; V2 remains available on
+ *     `account.positionRiskV2` for comparison) → `PositionTracker.applyUpdate`
  *
  * Paper mode reconciles against the simulator's own book instead — the same
  * fold, the same events, zero network. Every fold emits the identical
@@ -91,7 +93,7 @@ export async function reconcileExecutionPlatform(
       ordersFolded += 1;
     }
     const positionRisk = (await fapiRoot.get(
-      '/fapi/v2/positionRisk',
+      '/fapi/v3/positionRisk',
       {},
       'signed',
     )) as Record<string, unknown>[];
@@ -164,7 +166,7 @@ export function orderShapeFromUsdmOpenOrder(raw: Record<string, unknown>): Order
 }
 
 /**
- * `GET /fapi/v2/positionRisk` row → {@link PositionUpdate}. Binance reports
+ * `GET /fapi/v3/positionRisk` row → {@link PositionUpdate}. Binance reports
  * one row per symbol × positionSide, including zero-size rows — folding a
  * zero row is the correct "authoritative flat" semantics.
  */
@@ -180,6 +182,7 @@ export function positionUpdatesFromPositionRisk(
       positionSide: String(raw.positionSide ?? 'BOTH'),
       positionAmount: toDecimalString(raw.positionAmt),
       entryPrice: toDecimalString(raw.entryPrice),
+      breakEvenPrice: raw.breakEvenPrice !== undefined ? toDecimalString(raw.breakEvenPrice) : null,
       unrealizedPnl: nonZeroish(toDecimalString(raw.unRealizedProfit)),
       marginType: String(raw.marginType ?? 'cross') || null,
       isolatedWallet: raw.isolatedMargin !== undefined ? toDecimalString(raw.isolatedMargin) : null,

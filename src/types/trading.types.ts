@@ -144,21 +144,37 @@ export const CountdownCancelAllSchema = z.object({
 });
 export type CountdownCancelAll = z.infer<typeof CountdownCancelAllSchema>;
 
+/**
+ * New order ACK response (`newOrderRespType: 'ACK'`).
+ *
+ * Binance's ACK contract does NOT carry execution fields: `avgPrice`,
+ * `executedQty` and `cumQuote` are RESULT-only fields (and `reduceOnly` is
+ * not part of the ACK payload either). They are optional here so a true ACK
+ * response parses; when absent the execution envelope reports *unknown*,
+ * never a silent zero (see v3.5.1 release notes). For a MARKET/LIMIT order
+ * without an explicit `newOrderRespType` Binance defaults to RESULT, which
+ * also parses against this schema.
+ */
 export const NewOrderAckSchema = z.object({
   orderId: z.number(),
   symbol: z.string(),
   status: z.string(),
   clientOrderId: z.string(),
   price: z.string(),
-  avgPrice: z.string(),
+  /** RESULT-only; absent from ACK responses. */
+  avgPrice: z.string().optional(),
   origQty: z.string(),
-  executedQty: z.string(),
-  cumQuote: z.string(),
+  /** RESULT-only; absent from ACK responses. */
+  executedQty: z.string().optional(),
+  /** RESULT-only; absent from ACK responses. */
+  cumQuote: z.string().optional(),
   type: z.string(),
-  reduceOnly: z.boolean(),
+  /** RESULT-only; absent from ACK responses. */
+  reduceOnly: z.boolean().optional(),
   side: z.string(),
   positionSide: z.string(),
   timeInForce: z.string().optional(),
+  selfTradePreventionMode: z.string().optional(),
   time: z.number(),
   updateTime: z.number(),
   workingType: z.string().optional(),
@@ -166,3 +182,32 @@ export const NewOrderAckSchema = z.object({
   closePosition: z.boolean().optional(),
 });
 export type NewOrderAck = z.infer<typeof NewOrderAckSchema>;
+
+/**
+ * Cancel order response (`DELETE /fapi/v1/order`). Its contract differs from
+ * the query-order shape: it carries `cumQty` (the cumulative *quantity*,
+ * distinct from `cumQuote`) and omits `avgPrice`, `origQty` and `reduceOnly`.
+ * Parsing it with the full {@link OrderSchema} fails against real Binance
+ * responses — this dedicated (tolerant) schema is the v3.5.1 fix.
+ */
+export const CancelOrderResultSchema = z.object({
+  clientOrderId: z.string(),
+  cumQty: z.string().optional(),
+  cumQuote: z.string().optional(),
+  executedQty: z.string().optional(),
+  orderId: z.number(),
+  origClientOrderId: z.string().optional(),
+  price: z.string().optional(),
+  side: z.string(),
+  status: z.string(),
+  stopPrice: z.string().optional(),
+  symbol: z.string(),
+  timeInForce: z.string().optional(),
+  type: z.string(),
+  updateTime: z.number().optional(),
+  workingType: z.string().optional(),
+  positionSide: z.string().optional(),
+  priceProtect: z.boolean().optional(),
+  selfTradePreventionMode: z.string().optional(),
+});
+export type CancelOrderResult = z.infer<typeof CancelOrderResultSchema>;

@@ -34,6 +34,8 @@ export class USDMClient implements ProductClient {
   private readonly surface: UsdmSurface;
   private listenKeyValue: string | null = null;
   private keepAliveInterval: ReturnType<typeof setInterval> | null = null;
+  private keepAliveFailures = 0;
+  private rotatingKey = false;
   private executionPlatformValue: ExecutionPlatform | undefined;
   private bookEngineValue: BookEngine | undefined;
   private closed = false;
@@ -134,23 +136,66 @@ export class USDMClient implements ProductClient {
    * Start the listen-key user-data stream: creates the key, schedules the
    * 30-minute keep-alive, and opens the user WS. Scoped to this product —
    * unlike the multi-product facade, no other product's sockets are touched.
+   *
+   * Keep-alive failures are never silent (v3.5.1): they surface on the
+   * observability bus, and after three consecutive failures the key is
+   * treated as expired — a fresh key is created and the connection is
+   * re-established on it. For the fully managed lifecycle (key rotation on
+   * reconnect storms, flap detection, 24-hour-safe rotation) prefer
+   * `executionPlatform.startUserSession()`.
    */
   async startUserStream(): Promise<string> {
     const { listenKey } = await this.surface.userStream.createListenKey();
+    if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
     this.listenKeyValue = listenKey;
+    this.keepAliveFailures = 0;
     this.keepAliveInterval = setInterval(() => {
-      this.surface.userStream.keepAliveListenKey().catch(() => {
-        /* retried on the next tick */
-      });
+      void this.keepAliveTick();
     }, 30 * 60 * 1000);
     this.surface.wsUser.connect();
     return listenKey;
+  }
+
+  /** One keep-alive tick: extend the key, or replace a dead one. */
+  private async keepAliveTick(): Promise<void> {
+    if (!this.listenKeyValue || this.closed) return;
+    try {
+      await this.surface.userStream.keepAliveListenKey();
+      this.keepAliveFailures = 0;
+      this.core.events.scoped('execution').emit('session.keepalive', {
+        product: 'usdm',
+        ok: true,
+      });
+    } catch (err) {
+      this.keepAliveFailures += 1;
+      this.core.events.scoped('execution').emit('session.keepalive', {
+        product: 'usdm',
+        ok: false,
+        failures: this.keepAliveFailures,
+        message: err instanceof Error ? err.message : String(err),
+      });
+      if (this.keepAliveFailures >= 3 && !this.rotatingKey) {
+        this.rotatingKey = true;
+        try {
+          const { listenKey } = await this.surface.userStream.createListenKey();
+          this.listenKeyValue = listenKey;
+          this.keepAliveFailures = 0;
+          // Rebuild the private URL with the new key (query-parameter form).
+          this.surface.wsUser.reconnect();
+        } catch {
+          /* key recreation failed too — retried on the next tick */
+        } finally {
+          this.rotatingKey = false;
+        }
+      }
+    }
   }
 
   /** Close the user stream (timer, socket, and listen-key deletion). */
   closeUserStream(): void {
     if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
     this.keepAliveInterval = null;
+    this.keepAliveFailures = 0;
     this.surface.wsUser.close();
     this.surface.userStream.closeListenKey().catch(() => {
       /* best-effort cleanup */

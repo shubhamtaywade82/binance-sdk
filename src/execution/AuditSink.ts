@@ -59,9 +59,12 @@ export interface AuditRecord {
   /** Exact decimal string, or null when the order is quote-sized only. */
   readonly requestedQuantity: string | null;
   readonly requestedPrice: string | null;
-  /** Exact decimal string of executed quantity at the time of the record. */
-  readonly executedQuantity: string;
-  readonly cumulativeQuoteQuantity: string;
+  /**
+   * Executed quantity at the time of the record — exact decimal string, or
+   * null when the exchange did not supply it / the outcome was unknown.
+   */
+  readonly executedQuantity: string | null;
+  readonly cumulativeQuoteQuantity: string | null;
   readonly averagePrice: string | null;
   readonly reconciliationState: ReconciliationState;
   /**

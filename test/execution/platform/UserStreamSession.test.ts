@@ -55,7 +55,7 @@ describe('UserStreamSession', () => {
     });
   }
 
-  it('starts: creates the key, connects on /<key>, goes live', async () => {
+  it('starts: creates the key, connects on the listen-key route, goes live', async () => {
     const session = makeSession();
     const key = await session.start();
     await session.waitForOpen(2000);
@@ -63,7 +63,48 @@ describe('UserStreamSession', () => {
     expect(key).toBe('key-1');
     expect(session.listenKey).toBe('key-1');
     expect(session.sessionState).toBe('live');
-    expect(server.connectionPaths).toEqual(['/key-1']);
+    // Default (path) style on a bare host: key under /ws/<key>.
+    expect(server.connectionPaths).toEqual(['/ws/key-1']);
+    session.close();
+  });
+
+  it('query style (USDⓈ-M /private route): listen key and events are query parameters', async () => {
+    const session = makeSession({ userStreamUrlStyle: 'query' });
+    await session.start();
+    await session.waitForOpen(2000);
+    expect(server.connectionPaths).toEqual(['/ws?listenKey=key-1']);
+    session.close();
+  });
+
+  it('query style with an event subscription: events joined by slash, key encoded', async () => {
+    const session = makeSession({
+      userStreamUrlStyle: 'query',
+      privateEvents: ['ORDER_TRADE_UPDATE', 'ACCOUNT_UPDATE'],
+    });
+    await session.start();
+    await session.waitForOpen(2000);
+    expect(server.connectionPaths).toEqual([
+      '/ws?listenKey=key-1&events=ORDER_TRADE_UPDATE/ACCOUNT_UPDATE',
+    ]);
+    session.close();
+  });
+
+  it('rotates the listen key when the stream pushes listenKeyExpired', async () => {
+    const session = makeSession();
+    await session.start();
+    await session.waitForOpen(2000);
+
+    const expired: unknown[] = [];
+    session.on('listenKeyExpired', (event: unknown) => expired.push(event));
+    server.send({ e: 'listenKeyExpired', E: Date.now(), listenKey: 'key-1' });
+
+    await vi.waitFor(() => {
+      expect(session.listenKey).toBe('key-2');
+    });
+    expect(expired).toHaveLength(1);
+    await vi.waitFor(() => {
+      expect(server.connectionPaths).toContain('/ws/key-2');
+    });
     session.close();
   });
 
@@ -166,7 +207,7 @@ describe('UserStreamSession', () => {
     expect(session.sessionState).toBe('live');
     expect(states).toContain('reconnecting');
     // Same listen key on the replacement connection.
-    expect(server.connectionPaths.filter((p) => p === '/key-1').length).toBeGreaterThanOrEqual(2);
+    expect(server.connectionPaths.filter((p) => p === '/ws/key-1').length).toBeGreaterThanOrEqual(2);
     session.close();
   });
 
@@ -196,7 +237,7 @@ describe('UserStreamSession', () => {
     expect(rotated[0]).toMatch(/keep-alive-failure-3/);
     // The connection re-established on the new key.
     await vi.waitFor(() => {
-      expect(server.connectionPaths).toContain('/key-2');
+      expect(server.connectionPaths).toContain('/ws/key-2');
     });
     session.close();
   });
@@ -261,20 +302,24 @@ describe('UserStreamSession', () => {
     vi.useRealTimers();
   });
 
-  it('publishes session lifecycle events to the observability bus', async () => {
+  it('publishes session lifecycle events to the observability bus — never the raw listen key', async () => {
     const events = new EventBus();
     const bus: string[] = [];
+    let startedPayload: Record<string, unknown> = {};
     events
       .scoped('execution')
       .on('session.started', (event: { payload: Record<string, unknown> }) => {
-        bus.push(`started:${String(event.payload.listenKey)}`);
+        startedPayload = event.payload;
+        bus.push(`started:${String(event.payload.listenKeyFingerprint)}`);
       });
     events.scoped('execution').on('session.closed', () => bus.push('closed'));
 
     const session = makeSession({ events });
     await session.start();
     session.close();
-    expect(bus).toEqual(['started:key-1', 'closed']);
+    expect(bus).toEqual(['started:<5 chars>', 'closed']);
+    // The full key must never reach the observability bus.
+    expect(JSON.stringify(startedPayload)).not.toContain('key-1');
   });
 
   it('satisfies the execution manager user-stream contract (userData on/off)', async () => {

@@ -20,7 +20,15 @@ import type { ExecutionFill } from './types.js';
  * ```
  */
 
-/** Normalized order shape: every price/quantity an exact decimal string. */
+/**
+ * Normalized order shape: every price/quantity an exact decimal string.
+ *
+ * v3.5.1: `executedQty`, `cumQuote` and `avgPrice` are **nullable**. A missing
+ * field means the response did not supply it (e.g. an ACK acknowledgement
+ * carries no execution data) — null, never a fabricated `'0'`, which would
+ * assert "no execution happened" without evidence. Consumers must treat
+ * null as unknown and reconcile when they need the value.
+ */
 export interface OrderShape {
   orderId?: number;
   clientOrderId: string;
@@ -28,9 +36,9 @@ export interface OrderShape {
   side: string;
   type: string;
   status: string;
-  executedQty: string;
-  cumQuote: string;
-  avgPrice: string;
+  executedQty: string | null;
+  cumQuote: string | null;
+  avgPrice: string | null;
   updateTime: number;
   fills: ExecutionFill[];
 }
@@ -99,8 +107,12 @@ export interface ExecutionAdapter {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function str(value: unknown): string {
-  if (value === undefined || value === null) return '0';
+/**
+ * Decimal-string coercion that preserves absence: undefined/null/'' stay
+ * null ("not supplied") and are never fabricated as '0'.
+ */
+function nullableStr(value: unknown): string | null {
+  if (value === undefined || value === null || value === '') return null;
   return String(value);
 }
 
@@ -213,9 +225,9 @@ export class FuturesExecutionAdapter implements ExecutionAdapter {
       side: String(raw.side ?? ''),
       type: String(raw.type ?? ''),
       status: String(raw.status ?? ''),
-      executedQty: str(raw.executedQty),
-      cumQuote: str(raw.cumQuote),
-      avgPrice: str(raw.avgPrice),
+      executedQty: nullableStr(raw.executedQty),
+      cumQuote: nullableStr(raw.cumQuote),
+      avgPrice: nullableStr(raw.avgPrice),
       updateTime: raw.updateTime !== undefined ? numOr(raw.updateTime, Date.now()) : Date.now(),
       fills: rawFills(raw),
     };
@@ -304,12 +316,15 @@ export class SpotExecutionAdapter implements ExecutionAdapter {
   toOrderShape(raw: Record<string, unknown>): OrderShape {
     // Spot orders carry cummulativeQuoteQty (not cumQuote) and may omit
     // avgPrice entirely (computed as quote/qty when filled).
-    const executedQty = str(raw.executedQty);
-    const cumQuote = raw.cummulativeQuoteQty !== undefined ? str(raw.cummulativeQuoteQty) : str(raw.cumQuote);
-    let avgPrice = str(raw.avgPrice);
-    if (raw.avgPrice === undefined) {
+    const executedQty = nullableStr(raw.executedQty);
+    const cumQuote =
+      raw.cummulativeQuoteQty !== undefined
+        ? nullableStr(raw.cummulativeQuoteQty)
+        : nullableStr(raw.cumQuote);
+    let avgPrice = nullableStr(raw.avgPrice);
+    if (avgPrice === null && executedQty !== null && cumQuote !== null) {
       const qty = Decimal.from(executedQty);
-      if (!qty.isZero() && raw.cummulativeQuoteQty !== undefined) {
+      if (!qty.isZero()) {
         avgPrice = Decimal.from(cumQuote).div(qty).toString();
       }
     }

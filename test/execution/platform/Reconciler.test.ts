@@ -21,7 +21,7 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 const OPEN_ORDERS = 'https://fapi.binance.com/fapi/v1/openOrders';
-const POSITION_RISK = 'https://fapi.binance.com/fapi/v2/positionRisk';
+const POSITION_RISK = 'https://fapi.binance.com/fapi/v3/positionRisk';
 const SPOT_OPEN_ORDERS = 'https://api.binance.com/api/v3/openOrders';
 const TICKER = 'https://fapi.binance.com/fapi/v1/ticker/price';
 

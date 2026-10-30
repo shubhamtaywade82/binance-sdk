@@ -121,7 +121,7 @@ describe('ExecutionPlatform (v3 milestone 3)', () => {
 
     expect(platform.userSession).toBe(session);
     expect(session.listenKey).toBe('rest-key-1');
-    expect(ws.connectionPaths.at(-1)).toBe('/rest-key-1');
+    expect(ws.connectionPaths.at(-1)).toBe('/ws?listenKey=rest-key-1');
     expect(core.hasHttp('fapiRoot')).toBe(true); // shared transport, built on demand
 
     ws.send(

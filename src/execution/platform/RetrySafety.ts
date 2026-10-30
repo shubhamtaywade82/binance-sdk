@@ -1,4 +1,5 @@
 import { BinanceApiError, BinanceUnknownExecutionError, NetworkError } from '../../errors/index.js';
+import { RpcOutcomeUnknownError } from '../../errors/RpcOutcomeUnknownError.js';
 import { ExecutionUnknownError } from '../types.js';
 import type { RetryClassification, RetrySafety } from './types.js';
 
@@ -48,6 +49,17 @@ export function classifyRetrySafety(error: unknown): RetryClassification {
     return {
       safety: 'reconciliation-required',
       reason: `HTTP 5XX / transport failure left the order outcome unknown (symbol=${error.symbol}, clientOrderId=${error.clientOrderId}); reconcile before any retry`,
+    };
+  }
+
+  // WebSocket API order writes whose response never arrived: the exchange may
+  // have processed the frame. Same policy as the REST UNKNOWN trap.
+  if (error instanceof RpcOutcomeUnknownError) {
+    return {
+      safety: 'reconciliation-required',
+      reason: `WS API ${error.metadata.method} was dispatched but its outcome is unknown ` +
+        `(requestId=${error.metadata.requestId}, clientOrderId=${error.metadata.clientOrderId ?? 'n/a'}, ` +
+        `cause=${error.metadata.cause}); reconcile the order before any retry`,
     };
   }
 

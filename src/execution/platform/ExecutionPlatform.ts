@@ -174,6 +174,10 @@ export class ExecutionPlatform {
         : {
             listenKeyApi: createListenKeyApi(this.core),
             userStreamUrl: this.core.endpoints.wsUser,
+            // USDⓈ-M user data lives on the routed `/private` base: the listen
+            // key is a query parameter (2026-03 routing migration), not a path
+            // segment. Spot keeps its legacy path-style listen-key routes.
+            userStreamUrlStyle: 'query' as const,
           }),
       events: this.core.events,
       parseEvent: createUserEventParser(this.product),
