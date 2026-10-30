@@ -55,6 +55,22 @@ describe('buildPrivateStreamUrl (USDⓈ-M /private routing)', () => {
     ).toBe('wss://fstream.binance.com/private/ws?listenKey=lk');
   });
 
+  it('strips an arbitrary run of trailing slashes without polynomial blowup', () => {
+    // Regression guard for CodeQL js/polynomial-redos on the trailing-slash
+    // stripper. The previous `replace(/\/+$/, '')` regex was flagged as a
+    // potential ReDoS vector on uncontrolled `baseUrl` input; the current
+    // implementation uses plain string ops and must remain O(n) regardless
+    // of how many trailing slashes the caller supplies.
+    const manySlashes = 'wss://fstream.binance.com/private' + '/'.repeat(50_000);
+    const start = Date.now();
+    const url = buildPrivateStreamUrl({ baseUrl: manySlashes, listenKey: 'lk' });
+    const elapsed = Date.now() - start;
+    expect(url).toBe('wss://fstream.binance.com/private/ws?listenKey=lk');
+    // 50k trailing slashes must finish well under a second — a polynomial
+    // regex would take minutes on this input.
+    expect(elapsed).toBeLessThan(1000);
+  });
+
   it('supports the path-style escape hatch (user-data-streams page form)', () => {
     expect(
       buildPrivateStreamUrl({

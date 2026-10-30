@@ -82,7 +82,16 @@ export function buildPrivateStreamUrl(options: PrivateStreamUrlOptions): string 
   const { baseUrl, listenKey, events, style = 'query' } = options;
   if (typeof listenKey !== 'string' || listenKey === '') return null;
 
-  const base = baseUrl.replace(/\/+$/, '').replace(/\/ws$/i, '');
+  // Strip trailing slashes and any trailing `/ws` segment (case-insensitive).
+  // Plain string ops avoid the `+$` quantifier on a regex applied to
+  // uncontrolled `baseUrl` input, which CodeQL's js/polynomial-redos rule
+  // flags as a potential ReDoS vector. The loop is O(n) in the trailing-slash
+  // count and never rescans earlier characters.
+  let base = baseUrl;
+  while (base.endsWith('/')) base = base.slice(0, -1);
+  if (base.length >= 3 && base.toLowerCase().endsWith('/ws')) {
+    base = base.slice(0, -3);
+  }
   const eventNames = (events ?? []).filter((name) => {
     if (!EVENT_NAME_PATTERN.test(name)) {
       throw new Error(`Invalid user-data event name: ${JSON.stringify(name)}`);
