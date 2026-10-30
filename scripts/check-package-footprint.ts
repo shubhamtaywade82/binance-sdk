@@ -46,11 +46,38 @@ function main(): void {
     console.error(`[footprint] npm pack failed (${res.status}):\n${res.stderr}`);
     process.exit(2);
   }
-  let summary: PackSummary;
+  let summary: PackSummary | undefined;
   try {
-    summary = JSON.parse(res.stdout)[0] as PackSummary;
+    const parsed: unknown = JSON.parse(res.stdout);
+    // npm changed the `pack --json` container shape across majors; the
+    // per-tarball summary fields (files, entryCount, unpackedSize) are
+    // unchanged, but the wrapper is not:
+    //
+    //   npm <= 11: [ { id, name, version, files: [...], ... } ]   (array)
+    //   npm >= 12: { "<pkg name>": { id, name, files: [...], ... } } (map)
+    //
+    // Node `latest` (v27 alpha) ships npm 12, where indexing `[0]` into the
+    // map yields undefined and crashed this gate with a TypeError (PR #86 CI).
+    // Normalize both shapes before reading the summary.
+    if (Array.isArray(parsed)) {
+      summary = parsed[0] as PackSummary | undefined;
+    } else if (parsed !== null && typeof parsed === 'object') {
+      const first = Object.values(parsed)[0];
+      if (first !== null && typeof first === 'object') {
+        summary = first as PackSummary;
+      }
+    }
   } catch {
     console.error(`[footprint] could not parse npm pack --json output:\n${res.stdout.slice(0, 500)}`);
+    process.exit(2);
+  }
+  // Unknown shape (or an empty manifest): fail as a tool error with a clear
+  // message instead of crashing on `summary.files` downstream.
+  if (!summary || !Array.isArray(summary.files) || typeof summary.unpackedSize !== 'number') {
+    console.error(
+      '[footprint] unexpected npm pack --json output shape — expected a summary with `files` and `unpackedSize`.\n' +
+        `Got: ${res.stdout.slice(0, 500)}`,
+    );
     process.exit(2);
   }
 
