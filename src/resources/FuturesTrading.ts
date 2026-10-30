@@ -20,6 +20,8 @@ import {
   OrderModifyHistorySchema,
   OrderResponseSchema,
   OrdersResponseSchema,
+  CancelOrderResult,
+  CancelOrderResultSchema,
   PositionMarginChange,
   PositionMarginChangeSchema,
 } from '../types/trading.types.js';
@@ -35,9 +37,11 @@ export class FuturesTrading {
 
   /**
    * Place an order. The response schema depends on `newOrderRespType`:
-   * `ACK` (the default) yields {@link NewOrderAck}; `RESULT` yields the full
-   * {@link Order} shape. Parsing follows the requested mode so RESULT
-   * responses are not silently truncated into the ACK schema.
+   * `ACK` (the default for non-MARKET/LIMIT types) yields {@link NewOrderAck};
+   * `RESULT` yields the full {@link Order} shape. Parsing follows the
+   * requested mode so RESULT responses are not silently truncated into the
+   * ACK schema. A default-mode MARKET/LIMIT order returns the RESULT shape,
+   * which also satisfies the (looser) ACK schema.
    */
   async createOrder(params: CreateOrderParams): Promise<NewOrderAck | Order> {
     const raw = await this.http.post('/fapi/v1/order', params, 'signed');
@@ -60,11 +64,17 @@ export class FuturesTrading {
     );
   }
 
+  /**
+   * Cancel an order. The cancel response has its own contract (v3.5.1): it
+   * carries `cumQty` and omits `avgPrice`/`origQty`/`reduceOnly`, so it is
+   * parsed with the dedicated {@link CancelOrderResultSchema} rather than the
+   * full query-order schema, which rejects real cancel payloads.
+   */
   async cancelOrder(
     symbol: string,
     options?: { orderId?: number; origClientOrderId?: string },
-  ): Promise<Order> {
-    return OrderResponseSchema.parse(
+  ): Promise<CancelOrderResult> {
+    return CancelOrderResultSchema.parse(
       await this.http.delete('/fapi/v1/order', { symbol, ...options }, 'signed'),
     );
   }

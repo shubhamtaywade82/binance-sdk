@@ -5,7 +5,138 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [3.5.1] - 2026-10-30
+
+**v3.5.1 is a protocol-correctness and execution-safety remediation release.**
+It closes the P0 gaps from the 2026 Binance WebSocket routing migration and
+the order-response contract audit. See `docs/migration-v3.5.1.md` for the
+protocol verification table and `docs/migration-v3.5.1.md#breaking-changes`
+for consumer migration notes.
+
 ### Fixed
+
+**USDⓈ-M user-data stream routes over `/private` (P0).** The 2026-03-06
+WebSocket routing migration moved user data off the legacy `/ws` paths —
+decommissioned 2026-04-23 — to the routed `/private` base, with the listen
+key and event subscription as **query parameters** on the `/ws` route
+(`wss://fstream.binance.com/private/ws?listenKey=<key>&events=A/B`).
+Since that shutdown a user stream on the legacy path silently carries no
+events at all.
+
+- **Fixed:** `endpoints.wsUser` pointed at the legacy
+  `wss://fstream.binance.com/public/ws` base and `FuturesUserWS`/
+  `UserStreamSession` appended the listen key as a path segment. Both now
+  build the documented query form through one shared builder
+  (`src/ws/privateUrl.ts`): live `wss://fstream.binance.com/private`,
+  testnet `wss://fstream.binancefuture.com/private`, demo
+  `wss://demo-fstream.binance.com/private`. The `events` parameter is
+  optional (`privateEvents`); multiple names join with `/` exactly as
+  documented.
+- **Added:** `endpoints.wsPrivate`; `wsUser` is now a deprecated alias of
+  it. `resolveEnvironment` accepts `wsPrivateBase` (alias of `wsUserBase`).
+- **Note:** Binance's own pages conflict on the key placement — the routing
+  migration notice shows the query form (used as the default), the
+  user-data-streams page shows `…/private/ws/<listenKey>`. The path form
+  remains available as `privateUrlStyle: 'path'` for consumers whose gateway
+  rejects the query form.
+- **Fixed:** listen keys never reach logs or events: `WsConnection`'s URL
+  redaction now covers query parameters (`listenKey`, `signature`,
+  `apiKey`), and `UserStreamSession` publishes a fingerprint
+  (`listenKeyFingerprint`) instead of the full key in `session.started` /
+  `session.rotated` (it previously published the raw key to the event bus).
+- **Unchanged:** COIN-M, Spot, Options and Portfolio Margin endpoints keep
+  their existing routing (each product was verified independently; no
+  unverified `/private` behavior was introduced for COIN-M).
+
+**Private user-data stream lifecycle (P0).**
+
+- **Added:** `ACCOUNT_CONFIG_UPDATE` (leverage `ac` / multi-assets `ai`) and
+  `listenKeyExpired` event schemas; both were previously rejected by the
+  parser as `Unknown user-data event type`.
+- **Fixed:** unknown-but-typed upstream events (`ALGO_UPDATE`,
+  `STRATEGY_UPDATE`, `GRID_UPDATE`, `TRADE_LITE`, `CONDITIONAL_ORDER_TRIGGER_REJECT`,
+  or anything new) no longer surface as `error`: they pass through as
+  `unknownEvent` + `userData` frames, so a new Binance event type can never
+  break the stream processor.
+- **Added:** `ORDER_TRADE_UPDATE` optional fields `M` (modifyId, 2026-07-21),
+  `V` (STP mode, 2026-03-11), `pP`, `pm`, `gtd`, `er`; `ACCOUNT_UPDATE`
+  positions carry `bep` (breakeven) and the event carries `S` (funding-fee
+  symbol).
+- **Fixed:** `UserStreamSession` rotates the listen key immediately when the
+  stream pushes `listenKeyExpired` (previously the session went quiet until
+  the keep-alive rotation noticed).
+- **Fixed:** `USDMClient.startUserStream()` no longer swallows keep-alive
+  failures: they surface as `execution.session.keepalive` events, and after
+  three consecutive failures the key is treated as expired — recreated and
+  the connection re-established on it. (For the fully managed lifecycle
+  prefer `usdm.executionPlatform.startUserSession()`, which already handles
+  keep-alive failures, reconnect storms, flapping connections and 24-hour
+  rotation.)
+
+**WebSocket API RPC lifecycle and ambiguous order outcomes (P0).**
+
+- **Added:** `WsApiClient` now runs an explicit RPC state machine —
+  `IDLE → CONNECTING → (AUTHENTICATING →) READY / OPEN → RECONNECTING →
+  (REAUTHENTICATING →) …`, with `FAILED` terminal on authentication
+  rejection. Without a configured session the legacy `OPEN` behavior is
+  preserved unchanged.
+- **Added:** session authentication is actually wired: `new WsApiClient({
+  session })` authenticates every connection with Ed25519 `session.logon`
+  (via the existing `WsSession`, previously exported but never used), only
+  reaches `READY` after Binance confirms, re-authenticates after reconnects,
+  ignores stale authentication callbacks from retired connections, and
+  deduplicates concurrent logon attempts. Authentication failure is terminal
+  (no reconnect storm on a rejected credential).
+- **Added:** `useSessionAuth` opt-in — when set and the session is
+  authenticated, signed requests omit per-request credentials. Default
+  **off**: per-request HMAC/Ed25519 signing is preserved exactly as before.
+- **Added:** `RpcOutcomeUnknownError`. A dispatched order write
+  (`order.place` / `order.cancel` / `order.modify` / algo and order-list
+  variants) whose response is lost — connection drop *or* request timeout —
+  now rejects with a typed error carrying safe metadata (request id, method,
+  client order id, symbol, connection generation, timestamps; never
+  credentials). Reads and never-sent requests stay retryable `NetworkError`s.
+  `classifyRetrySafety` maps it to `reconciliation-required`.
+- **Fixed:** there is no reconnect replay: in-flight requests are failed with
+  classified errors and never re-sent automatically (an order write must be
+  reconciled — e.g. `ExecutionManager.reconcile(intentId)` or
+  `GET /fapi/v1/order` — before any resubmission).
+- **Added:** typed `PendingRequest` bookkeeping (id, method, params,
+  category, timeout, connection generation, submitted/sent timestamps), a
+  bounded pending queue (`maxPendingRequests`, default 500), late/duplicate
+  response protection, and `ws.api.unknown_outcome` / `ws.api.late_response`
+  observability events.
+
+**Order response contracts (P0).**
+
+- **Fixed:** `NewOrderAckSchema` required `avgPrice`, `executedQty`,
+  `cumQuote` and `reduceOnly` — all RESULT-only or absent fields — so a real
+  ACK response (default for non-MARKET/LIMIT order types) failed validation.
+  They are optional now.
+- **Fixed:** `FuturesTrading.cancelOrder()` parsed `DELETE /fapi/v1/order`
+  with the full query-order schema, which real cancel payloads violate
+  (`cumQty` instead of `cumQuote`, no `avgPrice`/`origQty`/`reduceOnly`). It
+  now returns a dedicated `CancelOrderResult` parsed with
+  `CancelOrderResultSchema`.
+- **Fixed:** missing execution data is never fabricated as `'0'`:
+  `OrderShape.executedQty/cumQuote/avgPrice`, the `Execution` envelope's
+  `executedQuantity/cumulativeQuoteQuantity` and the platform's
+  `OrderRecord`/`OrderUpdate` are now `string | null` — null means *unknown /
+  not supplied*. Unresolved ambiguous placements record `null`, not zero.
+  A definitive rejection still records `'0'` (provably no execution).
+- **Fixed:** duplicate `ORDER_TRADE_UPDATE` frames (duplicate delivery or
+  buffered replay) no longer double-count fills in the `ExecutionManager`
+  ledger — fills deduplicate by trade id.
+
+**V3 account reconciliation (P0).**
+
+- **Fixed:** the execution platform `Reconciler` folds position risk from
+  `GET /fapi/v3/positionRisk` (was V2); `PositionTracker` records carry
+  `breakEvenPrice` from both the V3 rows and `ACCOUNT_UPDATE`'s `bep`.
+  Balance reconciliation uses `FuturesAccount.balanceV3()`
+  (`GET /fapi/v3/balance`) per the V3 migration.
+
+### Fixed (carried from the pre-3.5.1 queue)
 
 - **MCP tool `fiat_orders_history`** called `walletWave6.systemStatusSystem()`
   (`GET /sapi/v1/system/status`) and ignored its arguments. It now calls
@@ -19,7 +150,24 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 
-- **ESLint added** (`@eslint/js` + `typescript-eslint` recommended).
+**Breaking (consumer migration notes in
+`docs/migration-v3.5.1.md#breaking-changes`):**
+
+- `Execution.executedQuantity` / `cumulativeQuoteQuantity` and the platform
+  `OrderRecord` / `OrderUpdate` `executedQuantity` are now `string | null`.
+  Null means the exchange did not supply the value — handle it as unknown
+  and reconcile (e.g. REST fold) when you need the number.
+- `FuturesTrading.cancelOrder()` returns `CancelOrderResult` (the documented
+  cancel contract with `cumQty`), not the full `Order`.
+- `endpoints.wsUser` now carries the `/private` base (was the legacy
+  `/public/ws` listen-key base). Consumers that built URLs by appending a
+  path segment must use `buildPrivateStreamUrl` instead.
+- `UserStreamSession` accepts `userStreamUrlStyle` (`'query'` for the
+  USDⓈ-M `/private` route; `'path'` default preserved for Spot/legacy
+  bases). USDⓈ-M wiring inside `ExecutionPlatform` uses `'query'`.
+- `session.started` / `session.rotated` events carry
+  `listenKeyFingerprint`, never the raw listen key.
+- ESLint added (`@eslint/js` + `typescript-eslint` recommended).
   `npm run lint` fails on any warning, in CI and in the pre-commit hook. It
   found 60 issues: unused imports and variables, dead helpers in the one-off
   wave scripts, statement-only expressions in tests, and one useless regex

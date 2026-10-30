@@ -270,6 +270,15 @@ export { FuturesMarketWS } from './ws/FuturesMarketWS.js';
 export type { ContractType, MarkPriceSpeed } from './ws/FuturesMarketWS.js';
 export { FuturesUserWS } from './ws/FuturesUserWS.js';
 export type { FuturesUserWSOptions } from './ws/FuturesUserWS.js';
+// v3.5.1 — USDⓈ-M /private stream URL construction (2026 routing migration).
+export {
+  buildPrivateStreamUrl,
+  redactPrivateUrl,
+  fingerprintKey,
+  isKnownUserDataEvent,
+  USER_DATA_EVENTS,
+} from './ws/privateUrl.js';
+export type { PrivateUrlStyle, PrivateStreamUrlOptions, UserDataEventName } from './ws/privateUrl.js';
 export { CoinMMarketWS } from './ws/CoinMMarketWS.js';
 export type { CoinMContractType, CoinMMarkPriceSpeed } from './ws/CoinMMarketWS.js';
 export { CoinMUserWS } from './ws/CoinMUserWS.js';
@@ -300,7 +309,12 @@ export type { RenewalControllerOptions, RenewableConnection } from './ws/platfor
 export { exponentialBackoff, fixedBackoff, linearBackoff } from './ws/platform/ReconnectPolicy.js';
 export type { ExponentialBackoffOptions } from './ws/platform/ReconnectPolicy.js';
 export { WsApiClient } from './ws/platform/WsApiClient.js';
-export type { WsApiClientOptions, WsApiClientState, WsRequestOptions } from './ws/platform/WsApiClient.js';
+export type {
+  WsApiClientOptions,
+  WsApiClientState,
+  WsRequestOptions,
+  PendingRequest,
+} from './ws/platform/WsApiClient.js';
 export { FuturesWsApiClient, SpotWsApiClient } from './ws/platform/ProductWsApi.js';
 export {
   WS_FAMILY_LIMITS,

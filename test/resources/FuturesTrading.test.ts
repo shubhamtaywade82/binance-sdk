@@ -137,3 +137,66 @@ describe('FuturesTrading', () => {
     expect(accepted.orderId).toBe('o1');
   });
 });
+
+// ---------------------------------------------------------------------------
+// v3.5.1: endpoint-specific response contracts
+// ---------------------------------------------------------------------------
+
+describe('FuturesTrading (v3.5.1 ACK / cancel response contracts)', () => {
+  it('parses a true ACK response — no avgPrice, executedQty, cumQuote or reduceOnly', async () => {
+    // Binance's documented ACK payload: order identity only. v3.5.0's schema
+    // required the RESULT-only fields and would reject this response.
+    const TRUE_ACK = {
+      symbol: 'BTCUSDT',
+      orderId: 987654321,
+      clientOrderId: 'nbsdk-ack',
+      price: '0',
+      origQty: '0.001',
+      type: 'STOP_MARKET',
+      side: 'SELL',
+      positionSide: 'SHORT',
+      status: 'NEW',
+      stopPrice: '9300',
+      workingType: 'CONTRACT_PRICE',
+      origType: 'TRAILING_STOP_MARKET',
+      time: 1566816477111,
+      updateTime: 1566816477118,
+    };
+    server.use(http.post('https://fapi.binance.com/fapi/v1/order', () => HttpResponse.json(TRUE_ACK)));
+
+    const ack = await trading().createOrder({
+      symbol: 'BTCUSDT', side: 'SELL', type: 'STOP_MARKET',
+      quantity: 0.001, stopPrice: 9300, newOrderRespType: 'ACK',
+    });
+    expect(ack.orderId).toBe(987654321);
+    expect(ack.status).toBe('NEW');
+  });
+
+  it('parses a real cancel payload (cumQty present, no avgPrice/origQty/reduceOnly)', async () => {
+    // The documented DELETE /fapi/v1/order response. v3.5.0 parsed this with
+    // the full query-order schema and rejected it.
+    const CANCEL_RESULT = {
+      clientOrderId: 'myOrder1',
+      cumQty: '0',
+      cumQuote: '0',
+      executedQty: '0',
+      orderId: 22542179,
+      origClientOrderId: 'myOrder1',
+      price: '9300',
+      side: 'SELL',
+      status: 'CANCELED',
+      stopPrice: '9300',
+      symbol: 'BTCUSDT',
+      timeInForce: 'GTC',
+      type: 'TRAILING_STOP_MARKET',
+      updateTime: 1566816545898,
+      workingType: 'CONTRACT_PRICE',
+    };
+    server.use(http.delete('https://fapi.binance.com/fapi/v1/order', () => HttpResponse.json(CANCEL_RESULT)));
+
+    const canceled = await trading().cancelOrder('BTCUSDT', { orderId: 22542179 });
+    expect(canceled.status).toBe('CANCELED');
+    expect(canceled.cumQty).toBe('0');
+    expect(canceled.orderId).toBe(22542179);
+  });
+});

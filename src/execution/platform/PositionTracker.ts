@@ -61,6 +61,7 @@ export class PositionTracker extends EventEmitter {
       positionSide: update.positionSide,
       positionAmount: update.positionAmount,
       entryPrice: update.entryPrice,
+      breakEvenPrice: update.breakEvenPrice ?? null,
       unrealizedPnl: update.unrealizedPnl,
       marginType: update.marginType,
       isolatedWallet: update.isolatedWallet,

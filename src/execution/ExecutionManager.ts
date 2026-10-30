@@ -318,6 +318,8 @@ export class ExecutionManager {
           },
           this.options.reconcileMaxAttempts,
         );
+        // Unknown outcome ⇒ unknown fill state: executed quantity is null
+        // ("no evidence"), never a fabricated '0'.
         this.record({
           intentId,
           clientOrderId: submission.newClientOrderId as string,
@@ -327,8 +329,8 @@ export class ExecutionManager {
           status: 'UNKNOWN',
           requestedQuantity: decimalOrNull(submission.quantity),
           requestedPrice: decimalOrNull(submission.price),
-          executedQuantity: '0',
-          cumulativeQuoteQuantity: '0',
+          executedQuantity: null,
+          cumulativeQuoteQuantity: null,
           averagePrice: null,
           fills: [],
           reconciliationState: 'unknown',
@@ -395,7 +397,8 @@ export class ExecutionManager {
       }
     }
     // Could not determine existence either way — the ambiguous case the
-    // caller must never auto-resubmit through. Record and surface it.
+    // caller must never auto-resubmit through. Record and surface it; the
+    // execution quantities are unknown, not zero.
     this.record({
       intentId,
       clientOrderId,
@@ -405,8 +408,8 @@ export class ExecutionManager {
       status: 'UNKNOWN',
       requestedQuantity: decimalOrNull(submission.quantity),
       requestedPrice: decimalOrNull(submission.price),
-      executedQuantity: '0',
-      cumulativeQuoteQuantity: '0',
+      executedQuantity: null,
+      cumulativeQuoteQuantity: null,
       averagePrice: null,
       fills: [],
       reconciliationState: 'unknown',
@@ -437,8 +440,10 @@ export class ExecutionManager {
     state: ReconciliationState,
   ): Execution {
     const shape = this.adapter.toOrderShape(response);
-    const executedQty = Decimal.from(shape.executedQty);
-    const cumQuote = Decimal.from(shape.cumQuote);
+    // Null-safe accounting: an ACK acknowledgement carries no execution data —
+    // the envelope reports null (unknown), never a fabricated '0'.
+    const executedQty = shape.executedQty !== null ? Decimal.from(shape.executedQty) : null;
+    const cumQuote = shape.cumQuote !== null ? Decimal.from(shape.cumQuote) : null;
     return {
       intentId,
       clientOrderId: shape.clientOrderId || (submission.newClientOrderId as string),
@@ -449,8 +454,8 @@ export class ExecutionManager {
       status: shape.status,
       requestedQuantity: decimalOrNull(submission.quantity),
       requestedPrice: decimalOrNull(submission.price),
-      executedQuantity: shape.executedQty,
-      cumulativeQuoteQuantity: shape.cumQuote,
+      executedQuantity: executedQty !== null ? executedQty.toString() : null,
+      cumulativeQuoteQuantity: cumQuote !== null ? cumQuote.toString() : null,
       averagePrice: averagePrice(executedQty, cumQuote, shape.avgPrice),
       fills: shape.fills,
       reconciliationState: state,
@@ -468,8 +473,8 @@ export class ExecutionManager {
     submittedAt = Date.now(),
   ): Execution {
     const shape = this.adapter.toOrderShape(raw);
-    const executedQty = Decimal.from(shape.executedQty);
-    const cumQuote = Decimal.from(shape.cumQuote);
+    const executedQty = shape.executedQty !== null ? Decimal.from(shape.executedQty) : null;
+    const cumQuote = shape.cumQuote !== null ? Decimal.from(shape.cumQuote) : null;
     const execution: Execution = {
       intentId,
       clientOrderId: shape.clientOrderId,
@@ -480,8 +485,8 @@ export class ExecutionManager {
       status: shape.status,
       requestedQuantity: requested.requestedQuantity,
       requestedPrice: requested.requestedPrice,
-      executedQuantity: shape.executedQty,
-      cumulativeQuoteQuantity: shape.cumQuote,
+      executedQuantity: executedQty !== null ? executedQty.toString() : null,
+      cumulativeQuoteQuantity: cumQuote !== null ? cumQuote.toString() : null,
       averagePrice: averagePrice(executedQty, cumQuote, shape.avgPrice),
       fills: shape.fills,
       reconciliationState: state,
@@ -543,27 +548,53 @@ export class ExecutionManager {
 
     const lastQty = report.lastQty;
     if (lastQty !== undefined && lastQty !== '0' && lastQty !== '') {
-      execution.fills.push({
-        price: report.lastPrice ?? '0',
-        quantity: lastQty,
-        commission:
-          report.commission !== undefined && report.commission !== '0'
-            ? report.commission
-            : undefined,
-        commissionAsset: report.commissionAsset || undefined,
-        tradeId: report.tradeId,
-      });
+      // Idempotent fill application: the same trade may be delivered twice
+      // (duplicate ORDER_TRADE_UPDATE frames, buffered replays after
+      // reconnect). Deduplicate by trade id so no fill is ever counted twice.
+      const seenTrade =
+        report.tradeId !== undefined && report.tradeId > 0
+          ? execution.fills.some((fill) => fill.tradeId === report.tradeId)
+          : false;
+      if (!seenTrade) {
+        execution.fills.push({
+          price: report.lastPrice ?? '0',
+          quantity: lastQty,
+          commission:
+            report.commission !== undefined && report.commission !== '0'
+              ? report.commission
+              : undefined,
+          commissionAsset: report.commissionAsset || undefined,
+          tradeId: report.tradeId,
+        });
+      }
     }
 
-    const executedQty = Decimal.from(report.executedQty ?? execution.executedQuantity);
-    const cumQuote =
-      report.cumQuote !== undefined
-        ? Decimal.from(report.cumQuote)
-        : executedQty.mul(report.avgPrice ?? '0');
-    execution.executedQuantity = executedQty.toString();
+    // Cumulative quantities are authoritative when the report carries one;
+    // otherwise keep the last known value. Neither may be fabricated.
+    if (report.executedQty !== undefined) {
+      execution.executedQuantity = Decimal.from(report.executedQty).toString();
+    }
+    if (report.cumQuote !== undefined) {
+      execution.cumulativeQuoteQuantity = Decimal.from(report.cumQuote).toString();
+    } else if (
+      execution.cumulativeQuoteQuantity === null &&
+      execution.executedQuantity !== null
+    ) {
+      const qty = Decimal.from(execution.executedQuantity);
+      const avg = report.avgPrice ?? execution.averagePrice;
+      if (avg !== null && avg !== undefined) {
+        execution.cumulativeQuoteQuantity = qty.mul(avg).toString();
+      }
+    }
     if (!execution.fills.length) {
+      const qty = execution.executedQuantity !== null ? Decimal.from(execution.executedQuantity) : null;
+      const quote =
+        execution.cumulativeQuoteQuantity !== null
+          ? Decimal.from(execution.cumulativeQuoteQuantity)
+          : null;
       execution.averagePrice =
-        averagePrice(executedQty, cumQuote, report.avgPrice ?? '0') ?? execution.averagePrice;
+        averagePrice(qty, quote, report.avgPrice ?? shapeAvgOr(execution)) ??
+        execution.averagePrice;
     } else {
       execution.averagePrice = weightedAverage(execution.fills);
     }
@@ -594,16 +625,20 @@ function decimalOrNull(value: string | number | undefined): string | null {
   return Decimal.from(value).toString();
 }
 
+function shapeAvgOr(execution: Execution): string | undefined {
+  return execution.averagePrice ?? undefined;
+}
+
 function averagePrice(
-  executedQty: Decimal,
-  cumQuote: Decimal,
-  fallback: string | number | undefined,
+  executedQty: Decimal | null,
+  cumQuote: Decimal | null,
+  fallback: string | number | null | undefined,
 ): string | null {
-  if (!executedQty.isZero()) {
-    const computed = cumQuote.div(executedQty);
-    if (!computed.isZero()) return computed.toString();
+  if (executedQty !== null && !executedQty.isZero()) {
+    const computed = cumQuote !== null ? cumQuote.div(executedQty) : null;
+    if (computed !== null && !computed.isZero()) return computed.toString();
   }
-  if (fallback === undefined || fallback === '') return null;
+  if (fallback === undefined || fallback === null || fallback === '') return null;
   const parsed = Decimal.from(fallback);
   return parsed.isZero() ? null : parsed.toString();
 }
@@ -635,8 +670,10 @@ function isTerminal(status: string): boolean {
 
 /** Notional estimate: executed quote value, falling back to requested. */
 function notionalOf(execution: Execution): string | null {
-  const cumQuote = Decimal.from(execution.cumulativeQuoteQuantity);
-  if (!cumQuote.isZero()) return cumQuote.toString();
+  if (execution.cumulativeQuoteQuantity !== null) {
+    const cumQuote = Decimal.from(execution.cumulativeQuoteQuantity);
+    if (!cumQuote.isZero()) return cumQuote.toString();
+  }
   if (execution.requestedPrice !== null && execution.requestedQuantity !== null) {
     return Decimal.from(execution.requestedPrice).mul(execution.requestedQuantity).toString();
   }

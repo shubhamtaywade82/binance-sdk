@@ -46,8 +46,15 @@ export interface Execution {
   /** Exact decimal string, or null when the order is quote-sized only. */
   requestedQuantity: string | null;
   requestedPrice: string | null;
-  executedQuantity: string;
-  cumulativeQuoteQuantity: string;
+  /**
+   * Cumulative executed quantity — exact decimal string, or null when the
+   * exchange did not supply it (e.g. an ACK acknowledgement) or the outcome
+   * is still unknown. null is "unknown", never "zero": a rejection is the
+   * only path where '0' is provable.
+   */
+  executedQuantity: string | null;
+  /** Cumulative quote volume — exact decimal string or null (not supplied). */
+  cumulativeQuoteQuantity: string | null;
   /** Volume-weighted average fill price (exact decimal string) or null. */
   averagePrice: string | null;
   fills: ExecutionFill[];

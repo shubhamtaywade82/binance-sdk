@@ -8,3 +8,11 @@ export { PolicyViolationError } from './PolicyViolationError.js';
 export type { PolicyRule } from './PolicyViolationError.js';
 export { DryRunError } from './DryRunError.js';
 export { BinanceUnknownExecutionError, classifyUnknownExecution } from './BinanceUnknownExecutionError.js';
+export {
+  RpcOutcomeUnknownError,
+  classifyRpcMethod,
+  isOrderWriteCategory,
+  type RpcOutcomeUnknownMetadata,
+  type RpcRequestCategory,
+  type RpcUnknownCause,
+} from './RpcOutcomeUnknownError.js';

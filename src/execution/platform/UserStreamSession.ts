@@ -6,6 +6,11 @@ import {
   unwrapSpotUserFrame,
   type SpotUserDataSigner,
 } from '../../ws/SpotUserWS.js';
+import {
+  buildPrivateStreamUrl,
+  fingerprintKey,
+  type PrivateUrlStyle,
+} from '../../ws/privateUrl.js';
 import { createUserEventParser, type UserEventParser } from './normalize.js';
 import {
   EXECUTION_PLATFORM_DEFAULTS,
@@ -25,8 +30,21 @@ export interface UserStreamSessionOptions {
    * on every open and rotation.
    */
   wsApiSubscription?: SpotUserDataSigner;
-  /** User-data stream base URL (the listen key is appended as the path in listen-key mode). */
+  /**
+   * User-data stream base URL. With `userStreamUrlStyle: 'query'` (the
+   * USDⓈ-M `/private` route) the listen key and event subscription are
+   * attached as query parameters; with `'path'` (default — Spot and legacy
+   * listen-key routes) the key is a path segment.
+   */
   userStreamUrl: string;
+  /** Listen-key placement on the user-data URL. Default `'path'`. */
+  userStreamUrlStyle?: PrivateUrlStyle;
+  /**
+   * Event names to subscribe on query-style URLs (USDⓈ-M `/private`),
+   * e.g. `['ORDER_TRADE_UPDATE', 'ACCOUNT_UPDATE']`. Omit to receive every
+   * event type for the listen key.
+   */
+  privateEvents?: readonly string[];
   /** Observability bus; `execution.session.*` events are published to it. */
   events?: EventBus;
   /** Connection label; defaults to `userSession:<product>`. */
@@ -97,6 +115,7 @@ export class UserStreamSession extends WsConnection {
   private readonly wsApiSubscription?: SpotUserDataSigner;
   private subscription: Promise<number> | null = null;
   private readonly userStreamUrl: string;
+  private readonly userStreamUrlStyle: PrivateUrlStyle;
   private readonly parse: UserEventParser;
   private readonly sessionProduct: string;
   private readonly keepAliveIntervalMs: number;
@@ -112,6 +131,7 @@ export class UserStreamSession extends WsConnection {
   private sessionStateValue: UserSessionState = 'idle';
   private startPromise: Promise<string> | null = null;
   private readonly onClose?: () => void;
+  private sessionEventsList?: readonly string[];
   /** Epoch ms of the last 'open'; flap detection. */
   private openedAtMs = 0;
   /** Inbound frames since the last 'open'; flap detection. */
@@ -127,8 +147,12 @@ export class UserStreamSession extends WsConnection {
       ...options.connection,
       buildUrl: () => {
         if (this.wsApiSubscription) return this.isClosed() ? null : this.userStreamUrl;
-        const key = this.listenKeyValue;
-        return key ? `${this.userStreamUrl}/${key}` : null;
+        return buildPrivateStreamUrl({
+          baseUrl: this.userStreamUrl,
+          listenKey: this.listenKeyValue,
+          events: this.sessionEventsList,
+          style: this.userStreamUrlStyle,
+        });
       },
     });
     if (!options.listenKeyApi === !options.wsApiSubscription) {
@@ -137,6 +161,8 @@ export class UserStreamSession extends WsConnection {
     this.api = options.listenKeyApi;
     this.wsApiSubscription = options.wsApiSubscription;
     this.userStreamUrl = options.userStreamUrl;
+    this.userStreamUrlStyle = options.userStreamUrlStyle ?? 'path';
+    this.sessionEventsList = options.privateEvents;
     this.sessionProduct = options.product;
     this.onClose = options.onClose;
     this.sessionEvents = options.events;
@@ -256,7 +282,7 @@ export class UserStreamSession extends WsConnection {
         this.keepAliveFailures = 0;
         this.connect();
         this.scheduleNextKeepAlive();
-        this.emitSessionEvent('started', { listenKey: key });
+        this.emitSessionEvent('started', { listenKeyFingerprint: fingerprintKey(key) });
         return key;
       });
   }
@@ -307,6 +333,12 @@ export class UserStreamSession extends WsConnection {
         this.emit(type, event);
       }
       this.emit('userData', event);
+      // Binance pushes `listenKeyExpired` when the stream's key died; rotate
+      // onto a fresh key immediately instead of silently going quiet.
+      if (type === 'listenKeyExpired') {
+        this.emitSessionEvent('listenKeyExpired', {});
+        void this.rotateListenKey('listenKeyExpired');
+      }
     } catch (err) {
       // Parse failures are per-frame: emit and keep the stream alive.
       this.emit('error', err instanceof Error ? err : new Error(String(err)));
@@ -369,7 +401,7 @@ export class UserStreamSession extends WsConnection {
       }
       this.listenKeyValue = key;
       this.keepAliveFailures = 0;
-      this.emitSessionEvent('rotated', { reason, listenKey: key });
+      this.emitSessionEvent('rotated', { reason, listenKeyFingerprint: fingerprintKey(key) });
       // Swap the connection onto the new key. `reconnect()` is safe from any
       // live state; a healthy connection is briefly re-established, an
       // unhealthy one is already failing anyway.

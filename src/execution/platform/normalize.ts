@@ -42,7 +42,9 @@ export function orderUpdateFromOrderTradeUpdate(raw: Record<string, unknown>): O
     type: str(order.ot) || str(order.o),
     status: str(order.X),
     originalQuantity: decOf(order.q),
-    executedQuantity: decOf(order.z) ?? '0',
+    // `z` is guaranteed by the event contract; when a (non-contract) frame
+    // lacks it the quantity stays unknown — null, never a silent zero.
+    executedQuantity: decOf(order.z),
     // ORDER_TRADE_UPDATE carries no cumulative quote; the fold estimates it.
     cumulativeQuoteQuantity: null,
     averagePrice: nonZero(decOf(order.ap)),
@@ -82,7 +84,7 @@ export function orderUpdateFromSpotExecutionReport(
     type: str(raw.o),
     status: str(raw.X),
     originalQuantity: decOf(raw.q),
-    executedQuantity: executedQty ?? '0',
+    executedQuantity: executedQty,
     // Spot reports cumulative quote natively (`Z`).
     cumulativeQuoteQuantity: nonZero(cumQuote),
     // Spot has no `ap`; compute Z/z exactly like the spot execution adapter.
@@ -127,6 +129,7 @@ export function positionUpdatesFromAccountUpdate(raw: Record<string, unknown>): 
       positionSide: str(p.ps) || 'BOTH',
       positionAmount: decOf(p.pa) ?? '0',
       entryPrice: decOf(p.ep) ?? '0',
+      breakEvenPrice: decOf(p.bep),
       unrealizedPnl: nonZero(decOf(p.up)),
       marginType: str(p.mt) || null,
       isolatedWallet: decOf(p.iw),
@@ -139,8 +142,8 @@ export function positionUpdatesFromAccountUpdate(raw: Record<string, unknown>): 
 
 /** REST order view (create ack / query / cancel result) → OrderUpdate. */
 export function orderUpdateFromOrderShape(shape: OrderShape): OrderUpdate {
-  const executedQty = Decimal.from(shape.executedQty);
-  const cumQuote = Decimal.from(shape.cumQuote);
+  const executedQty = shape.executedQty !== null ? Decimal.from(shape.executedQty) : null;
+  const cumQuote = shape.cumQuote !== null ? Decimal.from(shape.cumQuote) : null;
   return {
     clientOrderId: shape.clientOrderId,
     exchangeOrderId: shape.orderId,
@@ -183,11 +186,13 @@ export function foldOrderUpdate(record: OrderRecord, update: OrderUpdate): void 
     record.timeInForce = update.timeInForce;
   }
   if (update.originalQuantity !== null) record.originalQuantity = update.originalQuantity;
-  record.executedQuantity = update.executedQuantity;
+  // Unknown executed quantity (null) never overwrites a known one: the update
+  // simply does not carry the field (e.g. an ACK view).
+  if (update.executedQuantity !== null) record.executedQuantity = update.executedQuantity;
   if (update.averagePrice !== null) record.averagePrice = update.averagePrice;
   if (update.cumulativeQuoteQuantity !== null) {
     record.cumulativeQuoteQuantity = update.cumulativeQuoteQuantity;
-  } else if (record.cumulativeQuoteQuantity === null) {
+  } else if (record.cumulativeQuoteQuantity === null && update.executedQuantity !== null) {
     // USDⓈ-M streams report no cumulative quote: estimate z × ap, the same
     // approximation the execution ledger makes.
     const qty = Decimal.from(update.executedQuantity);
@@ -268,9 +273,9 @@ function appendFill(fills: ExecutionFill[], fill: ExecutionFill): void {
   fills.push(fill);
 }
 
-function estimateQuote(executedQty: Decimal, cumQuote: Decimal, avgPrice: string): string | null {
-  if (!cumQuote.isZero()) return cumQuote.toString();
-  if (!executedQty.isZero() && avgPrice && !Decimal.from(avgPrice).isZero()) {
+function estimateQuote(executedQty: Decimal | null, cumQuote: Decimal | null, avgPrice: string | null): string | null {
+  if (cumQuote !== null && !cumQuote.isZero()) return cumQuote.toString();
+  if (executedQty !== null && !executedQty.isZero() && avgPrice && !Decimal.from(avgPrice).isZero()) {
     return executedQty.mul(avgPrice).toString();
   }
   return null;

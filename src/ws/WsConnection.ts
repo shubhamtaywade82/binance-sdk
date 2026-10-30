@@ -2,6 +2,7 @@ import { EventEmitter } from 'node:events';
 import WebSocket from 'ws';
 import type { EventBus } from '../core/events.js';
 import { parseJsonLossless } from '../core/json.js';
+import { redactPrivateUrl } from './privateUrl.js';
 
 /**
  * WebSocket connection lifecycle with an explicit state machine.
@@ -634,6 +635,8 @@ function removeAllListeners(socket: WebSocket): void {
 }
 
 function redactUrl(url: string): string {
-  // Hide listenKey path segments from logs/events.
-  return url.replace(/\/[0-9a-f-]{20,}/i, '/<redacted>');
+  // Hide credentials from logs/events: listenKeys (query parameter on the
+  // post-2026 /private route, path segment on legacy/products' routes) and
+  // any signing material.
+  return redactPrivateUrl(url);
 }

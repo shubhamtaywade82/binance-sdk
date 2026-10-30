@@ -278,3 +278,106 @@ describe('ExecutionManager', () => {
     expect(gateway.riskStatus().openNotional).toBe('0');
   });
 });
+
+// ---------------------------------------------------------------------------
+// v3.5.1: idempotent stream fills and unknown ≠ zero
+// ---------------------------------------------------------------------------
+
+describe('ExecutionManager (v3.5.1 fill idempotency and unknown≠zero)', () => {
+  function makeStream() {
+    const listeners: Array<(event: unknown) => void> = [];
+    const fakeUserStream = {
+      on: vi.fn((_event: string, handler: (event: unknown) => void) => {
+        listeners.push(handler);
+      }),
+      off: vi.fn(),
+    };
+    return { fakeUserStream, listeners };
+  }
+
+  it('duplicate ORDER_TRADE_UPDATE frames (same trade id) never double-count a fill', async () => {
+    const trading = mockTrading();
+    vi.mocked(trading.createOrder).mockResolvedValue(ackResponse() as never);
+    const manager = new ExecutionManager(trading);
+    const { fakeUserStream, listeners } = makeStream();
+    const execution = await manager.placeOrder({ ...BASE, intentId: 'dup' });
+    manager.setUserStream(fakeUserStream as never);
+
+    const fillReport = {
+      e: 'ORDER_TRADE_UPDATE',
+      o: {
+        s: 'BTCUSDT', c: execution.clientOrderId, i: 12345, X: 'PARTIALLY_FILLED',
+        z: '0.5', ap: '50100', l: '0.5', L: '50100', n: '0.02', N: 'USDT', t: 424242,
+      },
+    };
+    // The same fill delivered twice — duplicated user-data frame or replayed
+    // buffered event after reconnect.
+    for (const listener of listeners) listener(fillReport);
+    for (const listener of listeners) listener(fillReport);
+
+    const updated = manager.getExecution('dup');
+    expect(updated?.fills).toHaveLength(1);
+    expect(updated?.executedQuantity).toBe('0.5');
+  });
+
+  it('distinct trades still both land (dedup is by trade id, not by frame)', async () => {
+    const trading = mockTrading();
+    vi.mocked(trading.createOrder).mockResolvedValue(ackResponse() as never);
+    const manager = new ExecutionManager(trading);
+    const { fakeUserStream, listeners } = makeStream();
+    const execution = await manager.placeOrder({ ...BASE, intentId: 'two-fills' });
+    manager.setUserStream(fakeUserStream as never);
+
+    for (const listener of listeners) {
+      listener({
+        e: 'ORDER_TRADE_UPDATE',
+        o: { s: 'BTCUSDT', c: execution.clientOrderId, i: 12345, X: 'PARTIALLY_FILLED', z: '0.5', ap: '50100', l: '0.5', L: '50100', n: '0', N: 'USDT', t: 1 },
+      });
+      listener({
+        e: 'ORDER_TRADE_UPDATE',
+        o: { s: 'BTCUSDT', c: execution.clientOrderId, i: 12345, X: 'FILLED', z: '1', ap: '50100', l: '0.5', L: '50150', n: '0', N: 'USDT', t: 2 },
+      });
+    }
+
+    const updated = manager.getExecution('two-fills');
+    expect(updated?.fills).toHaveLength(2);
+    expect(updated?.executedQuantity).toBe('1');
+  });
+
+  it('an unresolved ambiguous outcome records executedQuantity null, never "0"', async () => {
+    const trading = mockTrading();
+    // Submission fails ambiguously, and reconciliation cannot determine
+    // existence either way (query keeps failing, not -2013).
+    vi.mocked(trading.createOrder).mockRejectedValue(new NetworkError('socket hang up'));
+    vi.mocked(trading.getOrder).mockRejectedValue(new NetworkError('still down'));
+    const manager = new ExecutionManager(trading, { reconcilePollDelayMs: 1, reconcileMaxAttempts: 2 });
+
+    await expect(manager.placeOrder({ ...BASE, intentId: 'unknown-qty' })).rejects.toBeInstanceOf(
+      ExecutionUnknownError,
+    );
+    const recorded = manager.getExecution('unknown-qty');
+    expect(recorded?.status).toBe('UNKNOWN');
+    // Unknown means unknown — never a fabricated zero that asserts "no fills".
+    expect(recorded?.executedQuantity).toBeNull();
+    expect(recorded?.cumulativeQuoteQuantity).toBeNull();
+  });
+
+  it('an ACK acknowledgement without execution fields reports null, not zero', async () => {
+    const trading = mockTrading();
+    // True ACK contract: no avgPrice / executedQty / cumQuote / reduceOnly.
+    vi.mocked(trading.createOrder).mockResolvedValue(
+      ackResponse({
+        avgPrice: undefined,
+        executedQty: undefined,
+        cumQuote: undefined,
+        reduceOnly: undefined,
+      }) as never,
+    );
+    const manager = new ExecutionManager(trading);
+    const execution = await manager.placeOrder({ ...BASE, intentId: 'ack-only' });
+    expect(execution.status).toBe('NEW');
+    expect(execution.executedQuantity).toBeNull();
+    expect(execution.cumulativeQuoteQuantity).toBeNull();
+    expect(execution.averagePrice).toBeNull();
+  });
+});

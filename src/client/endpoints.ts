@@ -18,6 +18,23 @@ export interface Endpoints {
   wsMarket: string;
   /** USDⓈ-M `/public` combined-stream URL (book tickers, depth, RPI depth). */
   wsMarketPublic: string;
+  /**
+   * USDⓈ-M `/private` base URL — user-data streams (v3.5.1). The listen key
+   * and event subscriptions are attached as query parameters by the shared
+   * builder in `src/ws/privateUrl.ts`:
+   * `wss://fstream.binance.com/private/ws?listenKey=<listenKey>&events=…`.
+   */
+  wsPrivate: string;
+  /**
+   * Deprecated alias of {@link wsPrivate} since v3.5.1 — kept so consumers
+   * reading `endpoints.wsUser` keep compiling. Historically this carried the
+   * legacy `/public/ws` listenKey base, which the 2026-04-23 WebSocket
+   * routing migration decommissioned; it now points at `/private` and must
+   * be combined with `buildPrivateStreamUrl`, never by appending the key as
+   * a raw path segment.
+   *
+   * @deprecated use `wsPrivate` (and the private URL builder) instead.
+   */
   wsUser: string;
   wsApi: string;
   wsSpotMarket: string;
@@ -53,7 +70,14 @@ export function resolveEnvironment(options?: {
   wsBase?: string;
   /** Override for the USDⓈ-M `/public` stream URL (defaults to `wsBase` with `/market/` swapped for `/public/`). */
   wsMarketPublicBase?: string;
+  /**
+   * Override for the USDⓈ-M `/private` base URL. Since v3.5.1 this is a
+   * *private base* (e.g. `wss://fstream.binance.com/private`), not the legacy
+   * full `/public/ws` path.
+   */
   wsUserBase?: string;
+  /** Alias of `wsUserBase` (they configure the same `/private` base). */
+  wsPrivateBase?: string;
   wsApiBase?: string;
   dapiBase?: string;
   wsSpotApiBase?: string;
@@ -84,13 +108,18 @@ export function resolveEnvironment(options?: {
     options?.wsMarketPublicBase ??
     (options?.wsBase ? options.wsBase.replace(/\/market(\/|$)/, '/public$1') : `${wsFuturesRoot}/public/stream`);
 
-  const wsUserHost =
+  // USDⓈ-M user data moved to the routed `/private` base in the 2026-03
+  // WebSocket migration; the legacy `/public/ws/<listenKey>` form was
+  // decommissioned 2026-04-23. Testnet/demo hosts mirror the live routing
+  // structure — see docs/migration notes for validation status.
+  const wsPrivateHost =
     options?.wsUserBase ??
+    options?.wsPrivateBase ??
     (env === 'demo'
-      ? 'wss://demo-fstream.binance.com/public/ws'
+      ? 'wss://demo-fstream.binance.com/private'
       : env === 'testnet'
-        ? 'wss://fstream.binancefuture.com/public/ws'
-        : 'wss://fstream.binance.com/public/ws');
+        ? 'wss://fstream.binancefuture.com/private'
+        : 'wss://fstream.binance.com/private');
 
   const wsApiHost =
     options?.wsApiBase ??
@@ -161,7 +190,8 @@ export function resolveEnvironment(options?: {
       restBapi: 'https://www.binance.com',
       wsMarket: wsMarketHost,
       wsMarketPublic: wsMarketPublicHost,
-      wsUser: wsUserHost,
+      wsPrivate: wsPrivateHost,
+      wsUser: wsPrivateHost,
       wsApi: wsApiHost,
       wsSpotMarket: wsSpotMarketHost,
       wsSpotUser: wsSpotUserHost,
