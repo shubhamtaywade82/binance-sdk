@@ -16,6 +16,7 @@ export type PreflightRule =
   | 'POSITION_MODE_UNKNOWN'
   | 'POSITION_SIDE_MISMATCH'
   | 'BATCH_SIZE'
+  | 'PEGGED_ORDER'
   | 'INVALID_INPUT';
 
 /**

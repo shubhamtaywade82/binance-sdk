@@ -13,9 +13,21 @@ export {
 } from './goodTillDate.js';
 export {
   TRAILING_CALLBACK_RATE_MAX,
+  TRAILING_CALLBACK_RATE_MAX_ORDER_ENDPOINT,
   TRAILING_CALLBACK_RATE_MIN,
   validateTrailingCallbackRate,
+  type CallbackRoute,
 } from './callbackRate.js';
+export {
+  PEG_OFFSET_VALUE_MAX,
+  PEG_OFFSET_TYPES,
+  PEG_PRICE_TYPES,
+  validatePeggedOrder,
+  type PegOffsetType,
+  type PegPriceType,
+  type PeggedOrderParams,
+  type PeggedOrderResult,
+} from './pegged.js';
 export {
   PositionModeGuard,
   type PositionModeGuardOptions,

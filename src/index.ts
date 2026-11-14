@@ -435,7 +435,47 @@ export {
   type DeadMansSwitchSignalSource,
   type DeadMansSwitchState,
   type DeadMansSwitchTimers,
+  PEG_OFFSET_VALUE_MAX,
+  PEG_OFFSET_TYPES,
+  PEG_PRICE_TYPES,
+  validatePeggedOrder,
+  type PegOffsetType,
+  type PegPriceType,
+  type PeggedOrderParams,
+  type PeggedOrderResult,
+  TRAILING_CALLBACK_RATE_MAX_ORDER_ENDPOINT,
+  type CallbackRoute,
 } from './preflight/index.js';
+
+export {
+  DualBucketRateSentinel,
+  windowWaitMs,
+  type RateSentinelLimits,
+  type RateSentinelOptions,
+  type RateSentinelRequest,
+  type RateSentinelResponse,
+  type RateSentinelSnapshot,
+} from './client/DualBucketRateSentinel.js';
+
+export {
+  ServerTimeSynchronizer,
+  RECV_WINDOW_DEFAULT_MS,
+  RECV_WINDOW_MAX_MS,
+  TIMESTAMP_ERROR_CODE,
+  resolveRecvWindow,
+  isTimestampError,
+  withTimestampRetry,
+  type ServerTimeSynchronizerOptions,
+  type TimeSample,
+} from './client/ServerTimeSynchronizer.js';
+
+export {
+  CLIENT_ORDER_ID_MAX_LENGTH,
+  CLIENT_ORDER_ID_PATTERN,
+  encodeClientOrderId,
+  decodeClientOrderId,
+  type ClientOrderIdParts,
+} from './client/ClientOrderIdEncoder.js';
 
 export {
   createFuturesToolkit,
