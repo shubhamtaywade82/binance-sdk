@@ -1,5 +1,6 @@
 import { BinanceApiError, BinanceUnknownExecutionError } from '../errors/index.js';
 import type { FuturesTrading } from '../resources/FuturesTrading.js';
+import { routeFuturesOrderType } from '../preflight/orderRouting.js';
 import type { SpotTrading } from '../resources/SpotTrading.js';
 import type { PaperTradingEngine } from '../paper/PaperTradingEngine.js';
 import type { CreateOrderParams } from '../types/trading.types.js';
@@ -59,7 +60,11 @@ export class LiveBinanceTransport implements IExecutionTransport {
     if (params.trailingDelta !== undefined) submission.trailingDelta = params.trailingDelta;
     if (params.icebergQty !== undefined) submission.icebergQty = params.icebergQty;
     try {
-      const raw = await this.trading.createOrder(submission as unknown as CreateOrderParams);
+      const order = submission as unknown as CreateOrderParams;
+      const conditional = routeFuturesOrderType(order.type) === 'algo' && 'createConditionalOrder' in this.trading;
+      const raw = await (conditional
+        ? (this.trading as FuturesTrading).createConditionalOrder(order)
+        : this.trading.createOrder(order as never));
       return normalizeResult(raw, params);
     } catch (err) {
       throw wrapUnknown(err, params);

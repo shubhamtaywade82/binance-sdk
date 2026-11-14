@@ -1,10 +1,12 @@
 import { HttpClient } from '../client/HttpClient.js';
 import { BatchOrdersPartialError } from '../errors/BatchOrdersPartialError.js';
+import { PreflightValidationError } from '../errors/PreflightValidationError.js';
 import { PositionModeGuard, type PositionSide } from '../preflight/positionMode.js';
 import { executeBatchOrders, toBatchElementResults, type BatchElementResult } from '../preflight/batch.js';
 import { resolveGoodTillDate } from '../preflight/goodTillDate.js';
 import { routeFuturesOrderType } from '../preflight/orderRouting.js';
 import { validateTrailingCallbackRate } from '../preflight/callbackRate.js';
+import { toAlgoOrderParams } from '../preflight/algoOrderMapping.js';
 import {
   AlgoOrder,
   AlgoOrderResponseSchema,
@@ -164,6 +166,24 @@ export class FuturesTrading {
   }
 
   /**
+   * Conditional orders (STOP, STOP_MARKET, TAKE_PROFIT, TAKE_PROFIT_MARKET,
+   * TRAILING_STOP_MARKET) are sent to POST /fapi/v1/algoOrder. The fields are mapped to the
+   * algo schema (stopPrice → triggerPrice, newClientOrderId → clientAlgoId), and any field the
+   * algo endpoint does not accept is rejected before sending.
+   */
+  async createConditionalOrder(params: CreateOrderParams): Promise<AlgoOrder> {
+    if (routeFuturesOrderType(params.type) !== 'algo') {
+      throw new PreflightValidationError(
+        'ORDER_TYPE_ROUTE',
+        `${params.type} is not a conditional order type; use createOrder`,
+        { type: params.type },
+      );
+    }
+    const prepared = this.prepareCommon(params);
+    return this.createAlgoOrder(toAlgoOrderParams(prepared as Record<string, unknown>));
+  }
+
+  /**
    * Place orders, auto-chunked to the 5-order exchange limit and sent one chunk at a
    * time. Returns one result per input, in input order. A rejected or unknown-outcome
    * order does not stop the remaining chunks.
@@ -221,6 +241,18 @@ export class FuturesTrading {
    * - positionSide: validated against the cached mode when a guard is attached.
    */
   private prepare(params: CreateOrderParams): CreateOrderParams {
+    if (routeFuturesOrderType(params.type) === 'algo') {
+      throw new PreflightValidationError(
+        'ORDER_TYPE_ROUTE',
+        `${params.type} is a conditional order type; send it with createConditionalOrder (POST /fapi/v1/algoOrder)`,
+        { type: params.type, endpoint: 'algo' },
+      );
+    }
+    return this.prepareCommon(params);
+  }
+
+  /** Checks shared by plain and conditional orders: GTD, callbackRate for the route, and positionSide. */
+  private prepareCommon(params: CreateOrderParams): CreateOrderParams {
     const prepared: CreateOrderParams = { ...params };
 
     const goodTillDate = resolveGoodTillDate({

@@ -46,11 +46,20 @@ describe('FuturesTrading.createOrder preflight', () => {
     expect(http.post.mock.calls[0]?.[1]).not.toHaveProperty('goodTillDate');
   });
 
-  it('bounds TRAILING_STOP_MARKET callbackRate for the route the order takes', async () => {
+  it('rejects conditional types on createOrder before anything is sent', async () => {
     const http = stubHttp();
-    // Algo route (TRAILING_STOP_MARKET) allows up to 20, so 15 passes preflight.
-    await trading(http).createOrder({ ...base, type: 'TRAILING_STOP_MARKET', callbackRate: '15' }).catch(() => undefined);
-    expect(http.post.mock.calls[0]?.[1]).toMatchObject({ callbackRate: '15' });
+    await expect(trading(http).createOrder({ ...base, type: 'STOP_MARKET', stopPrice: '59000' })).rejects.toMatchObject({
+      rule: 'ORDER_TYPE_ROUTE',
+    });
+    expect(http.post).not.toHaveBeenCalled();
+  });
+
+  it('bounds TRAILING_STOP_MARKET callbackRate on the algo route via createConditionalOrder', async () => {
+    const http = stubHttp();
+    // Algo route (TRAILING_STOP_MARKET) allows up to 20, so 15 passes preflight and is mapped to the algo schema.
+    await trading(http).createConditionalOrder({ ...base, type: 'TRAILING_STOP_MARKET', callbackRate: '15' }).catch(() => undefined);
+    expect(http.post.mock.calls[0]?.[0]).toBe('/fapi/v1/algoOrder');
+    expect(http.post.mock.calls[0]?.[1]).toMatchObject({ algoType: 'CONDITIONAL', callbackRate: '15' });
     // A plain LIMIT order carrying a callbackRate is validated against the order route (max 10).
     await expect(
       trading(stubHttp()).createOrder({ ...base, type: 'LIMIT', callbackRate: '15' }),

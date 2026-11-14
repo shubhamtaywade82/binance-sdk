@@ -165,8 +165,8 @@ describe('FuturesTrading (v3.5.1 ACK / cancel response contracts)', () => {
     server.use(http.post('https://fapi.binance.com/fapi/v1/order', () => HttpResponse.json(TRUE_ACK)));
 
     const ack = await trading().createOrder({
-      symbol: 'BTCUSDT', side: 'SELL', type: 'STOP_MARKET',
-      quantity: 0.001, stopPrice: 9300, newOrderRespType: 'ACK',
+      symbol: 'BTCUSDT', side: 'SELL', type: 'MARKET',
+      quantity: 0.001, newOrderRespType: 'ACK',
     });
     expect(ack.orderId).toBe(987654321);
     expect(ack.status).toBe('NEW');

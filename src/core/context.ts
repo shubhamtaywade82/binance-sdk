@@ -41,6 +41,24 @@ export interface CoreTransportOptions {
   proxy?: ConstructorParameters<typeof HttpClient>[0]['proxy'];
 }
 
+/**
+ * Server-time path per host, relative to that host's baseURL (verified in the vendored Postman
+ * spec). Null means no verified time endpoint, so -1021 is not auto-resynced for that host.
+ */
+const TIME_PATH: Record<RestHost, string | null> = {
+  fapiRoot: '/fapi/v1/time',
+  fapi: '/time',
+  spot: '/time',
+  apiRoot: '/api/v3/time',
+  dapiRoot: '/dapi/v1/time',
+  dapi: '/time',
+  eapi: '/time',
+  eapiRoot: '/eapi/v1/time',
+  papi: null,
+  papiRoot: null,
+  bapi: null,
+};
+
 const HOST_URL: Record<RestHost, (e: Endpoints) => string> = {
   fapiRoot: (e) => e.restRoot,
   fapi: (e) => e.restFapi,
@@ -155,6 +173,7 @@ export class CoreContext {
     if (!client) {
       client = new HttpClient({
         baseURL: HOST_URL[host](this.endpoints),
+        timePath: TIME_PATH[host],
         apiKey: this.credentials.apiKey,
         apiSecret: this.credentials.apiSecret,
         privateKey: this.credentials.privateKey,

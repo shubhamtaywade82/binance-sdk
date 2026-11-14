@@ -17,6 +17,7 @@ export type PreflightRule =
   | 'POSITION_SIDE_MISMATCH'
   | 'BATCH_SIZE'
   | 'PEGGED_ORDER'
+  | 'ORDER_TYPE_ROUTE'
   | 'INVALID_INPUT';
 
 /**
