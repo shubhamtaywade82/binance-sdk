@@ -574,6 +574,29 @@ export {
   type FuturesOrderEndpoint,
 } from './preflight/orderRouting.js';
 
+export { attachWsRateLimits, type WsRateLimitEntry } from './client/RateLimitTracker.js';
+
+export {
+  subscribeUserDataStream,
+  unsubscribeUserDataStream,
+  type WsRpcClient,
+} from './ws/platform/userDataSubscription.js';
+
+export {
+  SubscribeThrottle,
+  type SubscribeFrame,
+  type SubscribeMethod,
+  type SubscribeThrottleOptions,
+} from './ws/platform/SubscribeThrottle.js';
+
+export {
+  SERVER_BUSY_CODE,
+  isRiskReducingOrder,
+  serverBusyRetryDelayMs,
+  type ServerBusyOrder,
+  type ServerBusyPolicyOptions,
+} from './preflight/serverBusy.js';
+
 export {
   createFuturesToolkit,
   toolkitToFormats,
