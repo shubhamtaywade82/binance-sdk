@@ -93,8 +93,9 @@ export class FuturesTrading {
     return OrdersResponseSchema.parse(await this.http.get('/fapi/v1/openOrders', params, 'signed'));
   }
 
+  /** `symbol` is optional per the vendored Postman spec; omit it for an account-wide query. */
   async getAllOrders(
-    symbol: string,
+    symbol?: string,
     options?: { orderId?: number; startTime?: number; endTime?: number; limit?: number },
   ): Promise<Order[]> {
     return OrdersResponseSchema.parse(

@@ -528,6 +528,20 @@ export {
 } from './ws/platform/wsErrors.js';
 
 export {
+  routeUsdmStream,
+  streamChannel,
+  usdmUserDataFamily,
+  type UsdmStreamFamily,
+} from './ws/streamRouter.js';
+
+export {
+  FUTURES_ALGO_ORDER_TYPES,
+  routeFuturesOrderType,
+  type FuturesAlgoOrderType,
+  type FuturesOrderEndpoint,
+} from './preflight/orderRouting.js';
+
+export {
   createFuturesToolkit,
   toolkitToFormats,
   type FuturesToolkit,
