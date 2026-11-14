@@ -550,6 +550,17 @@ export {
 } from './execution/AckOrderReconciler.js';
 
 export {
+  DeterministicPositionAverager,
+  IcebergSliceMatcher,
+  commissionExact,
+  divideRounded,
+  fundingPaymentExact,
+  settleFunding,
+  type AveragerFill,
+  type AveragerPosition,
+} from './paper/exact.js';
+
+export {
   routeUsdmStream,
   streamChannel,
   usdmUserDataFamily,

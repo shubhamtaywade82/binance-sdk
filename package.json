@@ -46,6 +46,11 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./tracker": {
+      "types": "./dist/tracker/index.d.ts",
+      "import": "./dist/tracker/index.js",
+      "require": "./dist/tracker/index.cjs"
+    },
     "./tools": {
       "types": "./dist/tools/index.d.ts",
       "import": "./dist/tools/index.js",
