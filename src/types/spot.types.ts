@@ -94,7 +94,22 @@ export type SpotAccountInfo = z.infer<typeof SpotAccountSchema>;
 
 // ---- Spot user data stream events (listenKey stream) ----
 
-export const SpotExecutionReportSchema = z.object({ e: z.literal('executionReport') }).loose();
+/** Working floor of an allocation (maintainer digest; not in the vendored spec). */
+export type SpotWorkingFloor = 'SOR' | 'EXCHANGE' | (string & {});
+
+/** SOR allocation fields. tradeId -1 marks an allocation (maintainer digest). */
+export const SpotExecutionReportSchema = z
+  .object({
+    e: z.literal('executionReport'),
+    tradeId: z.number().optional(),
+    allocId: z.number().optional(),
+    matchType: z.string().optional(),
+    workingFloor: z
+      .string()
+      .transform((value) => value as SpotWorkingFloor)
+      .optional(),
+  })
+  .loose();
 export type SpotExecutionReport = z.infer<typeof SpotExecutionReportSchema>;
 
 export const SpotOutboundAccountPositionSchema = z

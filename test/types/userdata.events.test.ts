@@ -97,7 +97,7 @@ describe('classifyClientOrderOrigin', () => {
 
   it('does not guess for user ids or undocumented exchange prefixes', () => {
     expect(classifyClientOrderOrigin('web_abc')).toBe('OTHER');
-    expect(classifyClientOrderOrigin('settlement_autoclose-1')).toBe('OTHER');
+    expect(classifyClientOrderOrigin('settlement_autoclose-1')).toBe('SETTLEMENT');
     expect(classifyClientOrderOrigin('')).toBe('OTHER');
   });
 });
@@ -108,5 +108,11 @@ describe('parseUserDataEvent and typed event lookup', () => {
     expectTypeOf<UserDataEventOf<'ALGO_UPDATE'>>().toEqualTypeOf<UserDataUnknownEvent>();
     const parsed = parseUserDataEvent({ e: 'ALGO_UPDATE', E: 1, i: 'algo-1' });
     expect(parsed.e).toBe('ALGO_UPDATE');
+  });
+});
+
+describe('TRADE_PREVENTION execution type and SOR allocation fields', () => {
+  it('accepts TRADE_PREVENTION as a typed execution type', () => {
+    expect(UserDataOrderTradeUpdateSchema.parse(orderUpdate({ x: 'TRADE_PREVENTION' })).o.x).toBe('TRADE_PREVENTION');
   });
 });

@@ -47,7 +47,7 @@ describe('WsPlatform end-to-end (via BinanceClient.core.ws)', () => {
     sub.on('message', (payload) => ticks.push((payload as { p: number }).p));
     server.emitStream('btcusdt@aggTrade', aggTradeData('42000.5', '0.25'));
     await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(ticks).toEqual([42000.5]);
+    expect(ticks).toEqual(['42000.5']);
 
     sub.close();
     expect(sub.state).toBe('closed');

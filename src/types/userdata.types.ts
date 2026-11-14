@@ -154,7 +154,8 @@ export function formatOrderExpiryReason(code: number): string {
  * execution), EXPIRED, TRADE, AMENDMENT (order modified). `(string & {})` keeps
  * unknown future values parseable.
  */
-export const ORDER_EXECUTION_TYPES = ['NEW', 'CANCELED', 'CALCULATED', 'EXPIRED', 'TRADE', 'AMENDMENT'] as const;
+// TRADE_PREVENTION: maintainer-supplied digest; not present in the vendored spec.
+export const ORDER_EXECUTION_TYPES = ['NEW', 'CANCELED', 'CALCULATED', 'EXPIRED', 'TRADE', 'AMENDMENT', 'TRADE_PREVENTION'] as const;
 export type OrderExecutionType = (typeof ORDER_EXECUTION_TYPES)[number] | (string & {});
 
 /**
@@ -162,11 +163,13 @@ export type OrderExecutionType = (typeof ORDER_EXECUTION_TYPES)[number] | (strin
  * prefixes documented by Binance are recognized. Other exchange-generated ids
  * are reported as `OTHER`, not guessed.
  */
-export type ClientOrderOrigin = 'LIQUIDATION' | 'ADL' | 'OTHER';
+export type ClientOrderOrigin = 'LIQUIDATION' | 'ADL' | 'SETTLEMENT' | 'OTHER';
 
 export function classifyClientOrderOrigin(clientOrderId: string): ClientOrderOrigin {
   if (clientOrderId.startsWith('autoclose-')) return 'LIQUIDATION';
   if (clientOrderId.startsWith('adl_autoclose')) return 'ADL';
+  // settlement_autoclose-: maintainer-supplied digest (delivery / delisting); not in the vendored spec.
+  if (clientOrderId.startsWith('settlement_autoclose-')) return 'SETTLEMENT';
   return 'OTHER';
 }
 

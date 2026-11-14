@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DecimalStringSchema } from './userdata.types.js';
 
 export const WsKlinePayloadSchema = z.object({
   e: z.literal('kline'),
@@ -28,8 +29,12 @@ export const WsAggTradePayloadSchema = z.object({
   E: z.number(),
   s: z.string(),
   a: z.number(),
-  p: z.string().transform(Number),
-  q: z.string().transform(Number),
+  p: DecimalStringSchema,
+  q: DecimalStringSchema,
+  /** Lit-only normal quantity (maintainer digest; not in the vendored spec). */
+  nq: DecimalStringSchema.optional(),
+  /** Market type: 1 = USDⓈ-M, 2 = COIN-M (maintainer digest; not in the vendored spec). */
+  st: z.union([z.literal(1), z.literal(2)]).optional(),
   f: z.number(),
   l: z.number(),
   T: z.number(),

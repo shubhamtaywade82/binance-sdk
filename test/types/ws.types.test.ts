@@ -14,7 +14,7 @@ describe('ws.types', () => {
     const payload = parseWsPayload('ethusdt@aggTrade', {
       e: 'aggTrade', E: 1, s: 'ETHUSDT', a: 1, p: '2500', q: '1', f: 1, l: 1, T: 1, m: false,
     });
-    expect(payload).toMatchObject({ e: 'aggTrade', p: 2500 });
+    expect(payload).toMatchObject({ e: 'aggTrade', p: '2500' });
   });
 
   it('parses a markPrice stream payload (futures only)', () => {
