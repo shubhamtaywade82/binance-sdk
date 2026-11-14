@@ -36,8 +36,13 @@ export function streamChannel(stream: string): string {
 /** Base family for one stream name. Numeric suffixes (`depth5`, `kline_1m`, `markPrice@1s`) are normalized. */
 export function routeUsdmStream(stream: string): UsdmStreamFamily {
   const channel = streamChannel(stream);
-  // Split on underscore to drop interval suffixes like `_1m` without backtracking regexes.
-  const base = (channel.split('_')[0] ?? '').replace(/\d+$/, '');
+  // Scan backwards before any `_` suffix to strip trailing digits without regular expressions.
+  let end = channel.indexOf('_');
+  if (end === -1) end = channel.length;
+  while (end > 0 && channel.charCodeAt(end - 1) >= 48 && channel.charCodeAt(end - 1) <= 57) {
+    end--;
+  }
+  const base = channel.slice(0, end);
   const normalized = channel.startsWith('depth') ? 'depth' : channel.startsWith('rpiDepth') ? 'rpiDepth' : base;
   if (PUBLIC_CHANNELS.has(normalized)) return 'public';
   if (MARKET_CHANNELS.has(normalized)) return 'market';
