@@ -322,14 +322,21 @@ describe('FuturesOps.placeBracketOrder', () => {
       exchangeInfoRoute(),
       http.post('https://fapi.binance.com/fapi/v1/order', ({ request }) => {
         sent.push(request.url);
-        // Let the entry and the stop through, fail the take-profit.
-        if (request.url.includes('TAKE_PROFIT_MARKET')) {
-          return HttpResponse.json({ code: -2021, msg: 'Order would immediately trigger.' }, { status: 400 });
-        }
         return HttpResponse.json({
           orderId: sent.length, symbol: 'BTCUSDT', status: 'NEW', clientOrderId: 'c', price: '0',
           avgPrice: '0', origQty: '0.100', executedQty: '0', cumQuote: '0', type: 'LIMIT',
           reduceOnly: false, side: 'BUY', positionSide: 'BOTH', time: 1, updateTime: 1,
+        });
+      }),
+      // Protective legs are conditional orders, so they go to the algo endpoint. Fail the take-profit.
+      http.post('https://fapi.binance.com/fapi/v1/algoOrder', ({ request }) => {
+        sent.push(request.url);
+        if (request.url.includes('TAKE_PROFIT_MARKET')) {
+          return HttpResponse.json({ code: -2021, msg: 'Order would immediately trigger.' }, { status: 400 });
+        }
+        return HttpResponse.json({
+          algoId: sent.length, symbol: 'BTCUSDT', side: 'SELL', positionSide: 'BOTH',
+          algoType: 'CONDITIONAL', clientAlgoId: 'sl',
         });
       }),
     );
@@ -345,7 +352,8 @@ describe('FuturesOps.placeBracketOrder', () => {
 
     expect(res.quantity).toBe('0.103');
     expect(sent[0]).toContain('price=60000.0');
-    expect(sent[1]).toContain('stopPrice=59000.0');
+    expect(sent[1]).toContain('/fapi/v1/algoOrder');
+    expect(sent[1]).toContain('triggerPrice=59000.0');
     expect(res.protectionComplete).toBe(false);
     expect(res.takeProfit).toHaveProperty('error');
     expect(res.warning).toMatch(/may be.*unprotected/s);

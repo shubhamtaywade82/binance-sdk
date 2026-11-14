@@ -100,7 +100,7 @@ describe('resolveEnvironment', () => {
 
   it('resolves testnet hosts for Spot WS API and COIN-M WS', () => {
     const { endpoints } = resolveEnvironment({ testnet: true });
-    expect(endpoints.wsSpotApi).toBe('wss://testnet.binance.vision/ws-api/v3');
+    expect(endpoints.wsSpotApi).toBe('wss://ws-api.testnet.binance.vision/ws-api/v3');
     expect(endpoints.wsDapiMarket).toBe('wss://dstream.binancefuture.com/market/stream');
     expect(endpoints.wsDapiMarketPublic).toBe('wss://dstream.binancefuture.com/public/stream');
     expect(endpoints.wsDapiUser).toBe('wss://dstream.binancefuture.com/public/ws');

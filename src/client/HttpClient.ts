@@ -6,6 +6,13 @@ import { contractFor, type HttpContractMeta } from '../contracts/index.js';
 import { RateLimitTracker, type RateLimitUsage } from './RateLimitTracker.js';
 import { Signer, type SignatureAlgorithm } from './Signer.js';
 import type { TradingPolicy } from './TradingPolicy.js';
+import { TIMESTAMP_ERROR_CODE } from './ServerTimeSynchronizer.js';
+import {
+  SERVER_BUSY_CODE,
+  isRiskReducingOrder,
+  serverBusyRetryDelayMs,
+  type ServerBusyOrder,
+} from '../preflight/serverBusy.js';
 
 export type AuthMode = 'public' | 'apiKey' | 'signed';
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -35,6 +42,11 @@ export interface HttpClientOptions {
   recvWindow?: number;
   timeoutMs?: number;
   maxRetries?: number;
+  /**
+   * Server-time path, relative to baseURL, used to resync after -1021 (default '/time').
+   * null disables the automatic resync for hosts with no verified time endpoint.
+   */
+  timePath?: string | null;
   minTimeMs?: number;
   /** @deprecated unused; superseded by header-based tracking (rateLimitWeightPerMinute/rateLimitSafetyMargin). */
   rateLimitTokensPerSecond?: number;
@@ -91,6 +103,20 @@ function normalizeHeaders(headers: unknown): Record<string, string> {
   return result;
 }
 
+/** Order fields the -1008 policy reads, taken from the request parameters. */
+function orderFieldsOf(params: Record<string, unknown> | undefined): ServerBusyOrder {
+  if (!params) return {};
+  const side = params.side === 'BUY' || params.side === 'SELL' ? params.side : undefined;
+  const ps = params.positionSide;
+  const positionSide = ps === 'BOTH' || ps === 'LONG' || ps === 'SHORT' ? ps : undefined;
+  return {
+    closePosition: params.closePosition === true || params.closePosition === 'true',
+    reduceOnly: params.reduceOnly === true || params.reduceOnly === 'true',
+    positionSide,
+    side,
+  };
+}
+
 export class HttpClient {
   private readonly axios: AxiosInstance;
   private readonly baseURL: string;
@@ -104,6 +130,9 @@ export class HttpClient {
   private readonly idempotentPaths: string[];
   private readonly events?: EventBus;
   private maxRetries: number;
+  private timePath: string | null;
+  /** Epoch ms before which new requests wait after a 429/418 (cross-request cooldown). */
+  private cooldownUntil = 0;
   private minTimeMs: number;
   private retryBaseDelayMs: number;
   private retryMaxDelayMs: number;
@@ -120,6 +149,7 @@ export class HttpClient {
     this.recvWindow = options.recvWindow ?? 5000;
     this.timeoutMs = options.timeoutMs ?? 15_000;
     this.maxRetries = options.maxRetries ?? 3;
+    this.timePath = options.timePath === undefined ? '/time' : options.timePath;
     this.minTimeMs = options.minTimeMs ?? 50;
     this.retryBaseDelayMs = options.retryBaseDelayMs ?? 1000;
     this.retryMaxDelayMs = options.retryMaxDelayMs ?? 30_000;
@@ -214,8 +244,12 @@ export class HttpClient {
    * Mitigates `-1021` (timestamp outside recvWindow) errors caused by local clock drift.
    */
   async syncTime(timePath = '/time'): Promise<number> {
+    const sentAt = Date.now();
     const res = await this.axios.request<{ serverTime: number }>({ method: 'GET', url: timePath });
-    this.timeOffsetMs = res.data.serverTime - Date.now();
+    const receivedAt = Date.now();
+    // The server stamped its time somewhere inside the round trip. The midpoint is the
+    // unbiased estimate, which removes half the request latency from the offset.
+    this.timeOffsetMs = res.data.serverTime - (sentAt + Math.floor((receivedAt - sentAt) / 2));
     this.emitEvent('http.clock.synced', { timePath, offsetMs: this.timeOffsetMs });
     return this.timeOffsetMs;
   }
@@ -251,6 +285,8 @@ export class HttpClient {
       operation: contract?.operation,
     });
     return this.limiter.schedule(async () => {
+      const cooldownMs = this.cooldownUntil - Date.now();
+      if (cooldownMs > 0) await sleep(cooldownMs);
       const throttleMs = this.rateLimitTracker.getThrottleDelayMs();
       if (throttleMs > 0) await sleep(throttleMs);
       return this.requestWithRetry<T>(method, path, params, mode, 0, requestId, startedAt, contract);
@@ -346,6 +382,7 @@ export class HttpClient {
     requestId: number,
     startedAt: number,
     contract?: HttpContractMeta,
+    timestampRetried = false,
   ): Promise<T> {
     // Rebuilt per attempt: a retried SIGNED request must carry a fresh
     // timestamp+signature, otherwise the retry itself fails with -1021 once
@@ -390,10 +427,43 @@ export class HttpClient {
       const headers = normalizeHeaders(err.response?.headers);
       this.rateLimitTracker.update(headers);
 
+      if (status === 429 || status === 418) {
+        // Cross-request cooldown: new requests wait out Retry-After, or the base delay if absent.
+        const waitMs = this.parseRetryAfterMs(headers) ?? this.retryBaseDelayMs;
+        this.cooldownUntil = Math.max(this.cooldownUntil, Date.now() + waitMs);
+      }
+      if (body?.code === TIMESTAMP_ERROR_CODE && mode === 'signed' && !timestampRetried && this.timePath !== null) {
+        // -1021: local clock drifted outside recvWindow. Resync once, then retry with a fresh signature.
+        await this.syncTime(this.timePath);
+        return this.requestWithRetry<T>(method, path, params, mode, attempt, requestId, startedAt, contract, true);
+      }
+
+      // -1008 SERVER_BUSY: the policy decides the delay. Risk-reducing orders retry at once
+      // (maintainer digest). Exposure-increasing orders back off. The existing safety rule still
+      // applies, so a POST order is never replayed here.
+      const busyFields = orderFieldsOf(params);
+      const serverBusy = body?.code === SERVER_BUSY_CODE;
+      const busyDelay = serverBusy
+        ? serverBusyRetryDelayMs(busyFields, attempt, {
+            baseDelayMs: this.retryBaseDelayMs,
+            maxAttempts: this.maxRetries + 1,
+          })
+        : null;
+      if (serverBusy) {
+        this.emitEvent('http.request.server_busy', {
+          requestId,
+          method,
+          path,
+          attempt: attempt + 1,
+          riskReducing: isRiskReducingOrder(busyFields),
+        });
+      }
+      const busyRetry = busyDelay !== null && attempt < this.maxRetries && this.canRetry(method, path, err);
+
       // Retry only when (a) the failure is transient (5xx/429/418 or a network
       // error) AND (b) resubmitting cannot duplicate a side effect.
-      if (attempt < this.maxRetries && this.shouldRetry(err) && this.canRetry(method, path, err)) {
-        const delay = this.calculateDelay(attempt);
+      if (busyRetry || (attempt < this.maxRetries && this.shouldRetry(err) && this.canRetry(method, path, err))) {
+        const delay = busyDelay !== null && busyRetry ? busyDelay : this.calculateDelay(attempt);
         this.emitEvent('http.request.retry', {
           requestId,
           method,

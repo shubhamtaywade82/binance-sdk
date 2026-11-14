@@ -8,6 +8,9 @@ import {
   isOrderWriteCategory,
   type RpcRequestCategory,
 } from '../../errors/RpcOutcomeUnknownError.js';
+import { RateLimitError } from '../../errors/RateLimitError.js';
+import { buildSignaturePayload } from '../signature.js';
+import { classifyWsApiFailure, wsRateLockMs } from './wsErrors.js';
 import type { WsApiResponse } from '../../types/userdata.types.js';
 import { Signer, type SignatureAlgorithm } from '../../client/Signer.js';
 import type { EventBus } from '../../core/events.js';
@@ -165,6 +168,9 @@ export class WsApiClient extends EventEmitter {
   private authInFlight: Promise<void> | null = null;
   private openWaiters: { resolve: () => void; reject: (err: Error) => void }[] = [];
   private readonly pending = new Map<string, PendingRequest>();
+  /** Epoch ms before which new requests are refused after a 418/429. */
+  private rateLockedUntil = 0;
+  private consecutiveBans = 0;
 
   constructor(options: WsApiClientOptions) {
     super();
@@ -314,6 +320,16 @@ export class WsApiClient extends EventEmitter {
     signed: boolean,
   ): Promise<WsApiResponse> {
     const timeoutMs = this.options.requestTimeoutMs ?? 15_000;
+    const lockRemainingMs = this.rateLockedUntil - Date.now();
+    if (lockRemainingMs > 0) {
+      throw new RateLimitError(
+        `[${this.label}] WS API rate-limited; refusing ${method} for ${lockRemainingMs}ms`,
+        -1003,
+        429,
+        lockRemainingMs,
+        { method },
+      );
+    }
 
     if (this.pending.size >= this.maxPendingRequests) {
       this.emitEvent('ws.api.queue.full', {
@@ -575,10 +591,24 @@ export class WsApiClient extends EventEmitter {
       this.emitEvent('ws.api.parse.error', { preview: text.slice(0, 80) });
       return;
     }
+    if (parsed !== null && typeof parsed === 'object' && 'event' in parsed) {
+      // Server-pushed event, e.g. serverShutdown or eventStreamTerminated.
+      const payload = (parsed as { event: unknown }).event;
+      const name =
+        payload !== null && typeof payload === 'object' ? (payload as { e?: unknown }).e : undefined;
+      if (typeof name === 'string' && name !== 'error') {
+        this.emitEvent('ws.api.event', { name, generation: this.connectionGeneration });
+        this.emit('event', { name, payload });
+        if (name === 'serverShutdown' || name === 'eventStreamTerminated') this.emit(name, payload);
+      }
+      return;
+    }
     if (parsed === null || typeof parsed !== 'object' || !('id' in parsed)) {
       return; // not a response envelope (WS API responses always carry id)
     }
     const response = parsed as WsApiResponse;
+    const limits = (parsed as { rateLimits?: unknown }).rateLimits;
+    if (Array.isArray(limits)) this.emit('rateLimits', limits);
     const entry = this.pending.get(String(response.id));
     if (!entry) {
       // Late or duplicate response: no pending request owns it. Dropped
@@ -601,9 +631,14 @@ export class WsApiClient extends EventEmitter {
         status: response.status,
         message,
       });
-      entry.reject(new Error(message));
+      if (response.status === 418 || response.status === 429) {
+        this.consecutiveBans = response.status === 418 ? this.consecutiveBans + 1 : 0;
+        this.rateLockedUntil = Date.now() + wsRateLockMs(response.status, this.consecutiveBans);
+      }
+      entry.reject(classifyWsApiFailure(response, entry, message));
       return;
     }
+    this.consecutiveBans = 0;
     this.emitEvent('ws.api.response', { method: entry.method, id: entry.id, status: response.status });
     entry.resolve(response);
   }
@@ -684,10 +719,5 @@ function stringOrUndefined(value: unknown): string | undefined {
 }
 
 function buildQueryString(data: Record<string, unknown>): string {
-  // WS API signatures cover the params sorted by name (plain code-unit order).
-  return Object.entries(data)
-    .filter(([, val]) => val !== undefined && val !== null)
-    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([key, val]) => `${key}=${encodeURIComponent(String(val))}`)
-    .join('&');
+  return buildSignaturePayload(data);
 }

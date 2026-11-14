@@ -38,7 +38,7 @@ export type RpcRequestCategory =
   | 'read';
 
 /** Why the outcome became unknown. */
-export type RpcUnknownCause = 'connection-drop' | 'timeout';
+export type RpcUnknownCause = 'connection-drop' | 'timeout' | 'server-error';
 
 /** Safe diagnostic metadata — request identity only, never credentials. */
 export interface RpcOutcomeUnknownMetadata {

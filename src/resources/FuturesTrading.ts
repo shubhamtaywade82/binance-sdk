@@ -1,10 +1,20 @@
 import { HttpClient } from '../client/HttpClient.js';
+import { BatchOrdersPartialError } from '../errors/BatchOrdersPartialError.js';
+import { PreflightValidationError } from '../errors/PreflightValidationError.js';
+import { PositionModeGuard, type PositionSide } from '../preflight/positionMode.js';
+import { executeBatchOrders, toBatchElementResults, type BatchElementResult } from '../preflight/batch.js';
+import { resolveGoodTillDate } from '../preflight/goodTillDate.js';
+import { routeFuturesOrderType } from '../preflight/orderRouting.js';
+import { validateTrailingCallbackRate } from '../preflight/callbackRate.js';
+import { toAlgoOrderParams } from '../preflight/algoOrderMapping.js';
 import {
   AlgoOrder,
   AlgoOrderResponseSchema,
   AlgoOrdersResponseSchema,
   BatchOrdersItem,
+  BatchOrdersItemSchema,
   BatchOrdersResponseSchema,
+  PositionModeResponseSchema,
   CountdownCancelAll,
   CountdownCancelAllSchema,
   CreateOrderParams,
@@ -27,6 +37,8 @@ import {
 } from '../types/trading.types.js';
 
 export class FuturesTrading {
+  private positionMode: PositionModeGuard | undefined;
+
   constructor(private readonly http: HttpClient) {}
 
   async setLeverage(symbol: string, leverage: number): Promise<LeverageChange> {
@@ -43,9 +55,13 @@ export class FuturesTrading {
    * ACK schema. A default-mode MARKET/LIMIT order returns the RESULT shape,
    * which also satisfies the (looser) ACK schema.
    */
+  createOrder(params: CreateOrderParams & { newOrderRespType: 'RESULT' }): Promise<Order>;
+  createOrder(params: CreateOrderParams & { newOrderRespType?: 'ACK' }): Promise<NewOrderAck>;
+  createOrder(params: CreateOrderParams): Promise<NewOrderAck | Order>;
   async createOrder(params: CreateOrderParams): Promise<NewOrderAck | Order> {
-    const raw = await this.http.post('/fapi/v1/order', params, 'signed');
-    if (params.newOrderRespType === 'RESULT') {
+    const prepared = this.prepare(params);
+    const raw = await this.http.post('/fapi/v1/order', prepared, 'signed');
+    if (prepared.newOrderRespType === 'RESULT') {
       return OrderResponseSchema.parse(raw);
     }
     return NewOrderAckSchema.parse(raw);
@@ -93,8 +109,9 @@ export class FuturesTrading {
     return OrdersResponseSchema.parse(await this.http.get('/fapi/v1/openOrders', params, 'signed'));
   }
 
+  /** `symbol` is optional per the vendored Postman spec; omit it for an account-wide query. */
   async getAllOrders(
-    symbol: string,
+    symbol?: string,
     options?: { orderId?: number; startTime?: number; endTime?: number; limit?: number },
   ): Promise<Order[]> {
     return OrdersResponseSchema.parse(
@@ -148,10 +165,112 @@ export class FuturesTrading {
     );
   }
 
+  /**
+   * Conditional orders (STOP, STOP_MARKET, TAKE_PROFIT, TAKE_PROFIT_MARKET,
+   * TRAILING_STOP_MARKET) are sent to POST /fapi/v1/algoOrder. The fields are mapped to the
+   * algo schema (stopPrice → triggerPrice, newClientOrderId → clientAlgoId), and any field the
+   * algo endpoint does not accept is rejected before sending.
+   */
+  async createConditionalOrder(params: CreateOrderParams): Promise<AlgoOrder> {
+    if (routeFuturesOrderType(params.type) !== 'algo') {
+      throw new PreflightValidationError(
+        'ORDER_TYPE_ROUTE',
+        `${params.type} is not a conditional order type; use createOrder`,
+        { type: params.type },
+      );
+    }
+    const prepared = this.prepareCommon(params);
+    return this.createAlgoOrder(toAlgoOrderParams(prepared as Record<string, unknown>));
+  }
+
+  /**
+   * Place orders, auto-chunked to the 5-order exchange limit and sent one chunk at a
+   * time. Returns one result per input, in input order. A rejected or unknown-outcome
+   * order does not stop the remaining chunks.
+   */
+  async placeBatchOrders(batchOrders: CreateOrderParams[]): Promise<BatchElementResult<BatchOrdersItem>[]> {
+    const prepared = batchOrders.map((order) => this.prepare(order));
+    const outcomes = await executeBatchOrders<CreateOrderParams, unknown>(prepared, async (chunk) => {
+      const reply = await this.http.post('/fapi/v1/batchOrders', { batchOrders: JSON.stringify(chunk) }, 'signed');
+      if (!Array.isArray(reply)) throw new Error('batchOrders reply is not an array');
+      return reply;
+    });
+    return toBatchElementResults(outcomes, (raw) => {
+      const parsed = BatchOrdersItemSchema.safeParse(raw);
+      return parsed.success ? parsed.data : (raw as BatchOrdersItem);
+    });
+  }
+
+  /**
+   * Legacy batch placement. Returns the accepted orders only when every element was
+   * accepted. Otherwise it throws {@link BatchOrdersPartialError}, which carries the
+   * per-element results. Accepted orders are still placed. Use placeBatchOrders for
+   * per-element handling without an exception.
+   */
   async createBatchOrders(batchOrders: CreateOrderParams[]): Promise<BatchOrdersItem[]> {
-    return BatchOrdersResponseSchema.parse(
-      await this.http.post('/fapi/v1/batchOrders', { batchOrders: JSON.stringify(batchOrders) }, 'signed'),
+    const results = await this.placeBatchOrders(batchOrders);
+    if (results.some((r) => !r.success)) throw new BatchOrdersPartialError(results);
+    return results.flatMap((r) => (r.success ? [r.data] : []));
+  }
+
+  /**
+   * Attach a position-mode guard. Once attached, every order that carries positionSide
+   * is checked against the cached mode, and the check fails closed when the mode is
+   * unknown or stale. Call {@link syncPositionMode} to refresh it.
+   */
+  setPositionModeGuard(guard: PositionModeGuard): void {
+    this.positionMode = guard;
+  }
+
+  /** Read the account's position mode and cache it in the guard. Returns dualSidePosition. */
+  async syncPositionMode(): Promise<boolean> {
+    const { dualSidePosition } = PositionModeResponseSchema.parse(
+      await this.http.get('/fapi/v1/positionSide/dual', {}, 'signed'),
     );
+    this.positionMode?.setDualSidePosition(dualSidePosition);
+    return dualSidePosition;
+  }
+
+  /**
+   * Local checks applied to every order before it is sent. They make no extra request,
+   * except the position-mode guard's cached read:
+   * - goodTillDate: set only for GTD (required, > now + 600 s, second precision).
+   *   Other time-in-force values drop it.
+   * - callbackRate: bounded per endpoint. The algo route allows 0.1–20 and the order
+   *   route allows 0.1–10.
+   * - positionSide: validated against the cached mode when a guard is attached.
+   */
+  private prepare(params: CreateOrderParams): CreateOrderParams {
+    if (routeFuturesOrderType(params.type) === 'algo') {
+      throw new PreflightValidationError(
+        'ORDER_TYPE_ROUTE',
+        `${params.type} is a conditional order type; send it with createConditionalOrder (POST /fapi/v1/algoOrder)`,
+        { type: params.type, endpoint: 'algo' },
+      );
+    }
+    return this.prepareCommon(params);
+  }
+
+  /** Checks shared by plain and conditional orders: GTD, callbackRate for the route, and positionSide. */
+  private prepareCommon(params: CreateOrderParams): CreateOrderParams {
+    const prepared: CreateOrderParams = { ...params };
+
+    const goodTillDate = resolveGoodTillDate({
+      timeInForce: params.timeInForce ?? '',
+      goodTillDate: params.goodTillDate,
+      nowMs: Date.now(),
+    });
+    if (goodTillDate === undefined) delete prepared.goodTillDate;
+    else prepared.goodTillDate = goodTillDate;
+
+    if (params.callbackRate !== undefined) {
+      prepared.callbackRate = validateTrailingCallbackRate(params.callbackRate, routeFuturesOrderType(params.type));
+    }
+
+    if (this.positionMode && params.positionSide !== undefined) {
+      prepared.positionSide = this.positionMode.resolvePositionSide(params.positionSide as PositionSide);
+    }
+    return prepared;
   }
 
   async modifyBatchOrders(batchOrders: ModifyOrderParams[]): Promise<BatchOrdersItem[]> {

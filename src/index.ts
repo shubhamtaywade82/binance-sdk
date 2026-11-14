@@ -388,6 +388,232 @@ export * from './types/subaccount.types.js';
 export * from './errors/index.js';
 
 export {
+  parseFixed,
+  formatFixed,
+  normalizeFixed,
+  compareFixed,
+  compareDecimals,
+  multiplyFixed,
+  multiplyDecimals,
+  quantizeFloor,
+  quantizeRound,
+  ceilRatio,
+  floorToStepString,
+  roundToStepString,
+  isOnStep,
+  addFixed,
+  subtractFixed,
+  MAX_FIXED_SCALE,
+  type FixedDecimal,
+} from './core/fixedpoint.js';
+
+export {
+  PartialDepthBook,
+  partialDepthStreamName,
+  PARTIAL_DEPTH_LEVELS,
+  type PartialDepthApplyResult,
+  type PartialDepthFrame,
+  type PartialDepthLevel,
+  type PartialDepthLevels,
+  type PartialDepthSnapshot,
+  type PartialDepthUpdateSpeed,
+} from './state/PartialDepthBook.js';
+
+export {
+  iterateHistoricalKlines,
+  type HistoricalKlineOptions,
+  type KlinePageParams,
+  type KlineRow,
+} from './market/historicalKlines.js';
+
+export { AggTradeBarBuilder, type AggTradeInput, type Bar } from './market/AggTradeBarBuilder.js';
+
+export {
+  ExecutionLatencyMonitor,
+  type LatencyMetric,
+  type LatencySample,
+  type LatencyStats,
+} from './market/ExecutionLatencyMonitor.js';
+
+export {
+  percentPriceBandFor,
+  validatePercentPriceBySide,
+  type PercentPriceBand,
+  type PercentPriceBySideParams,
+  validateIcebergOrder,
+  type IcebergLotRules,
+  type IcebergOrderParams,
+  type IcebergOrderResult,
+  GTD_MAX_TIMESTAMP_MS,
+  GTD_MIN_LEAD_MS,
+  resolveGoodTillDate,
+  type GoodTillDateParams,
+  TRAILING_CALLBACK_RATE_MAX,
+  TRAILING_CALLBACK_RATE_MIN,
+  validateTrailingCallbackRate,
+  PositionModeGuard,
+  type PositionModeGuardOptions,
+  BATCH_ORDERS_MAX_SIZE,
+  chunkBatch,
+  executeBatchOrders,
+  isBatchErrorElement,
+  type BatchOutcome,
+  DeadMansSwitch,
+  DeadMansSwitchError,
+  type DeadMansSwitchHeartbeatResult,
+  type DeadMansSwitchOptions,
+  type DeadMansSwitchSignalSource,
+  type DeadMansSwitchState,
+  type DeadMansSwitchTimers,
+  PEG_OFFSET_VALUE_MAX,
+  PEG_OFFSET_TYPES,
+  PEG_PRICE_TYPES,
+  validatePeggedOrder,
+  type PegOffsetType,
+  type PegPriceType,
+  type PeggedOrderParams,
+  type PeggedOrderResult,
+  TRAILING_CALLBACK_RATE_MAX_ORDER_ENDPOINT,
+  type CallbackRoute,
+} from './preflight/index.js';
+
+export {
+  DualBucketRateSentinel,
+  windowWaitMs,
+  type RateSentinelLimits,
+  type RateSentinelOptions,
+  type RateSentinelRequest,
+  type RateSentinelResponse,
+  type RateSentinelSnapshot,
+} from './client/DualBucketRateSentinel.js';
+
+export {
+  ServerTimeSynchronizer,
+  RECV_WINDOW_DEFAULT_MS,
+  RECV_WINDOW_MAX_MS,
+  TIMESTAMP_ERROR_CODE,
+  resolveRecvWindow,
+  isTimestampError,
+  withTimestampRetry,
+  type ServerTimeSynchronizerOptions,
+  type TimeSample,
+} from './client/ServerTimeSynchronizer.js';
+
+export {
+  CLIENT_ORDER_ID_MAX_LENGTH,
+  CLIENT_ORDER_ID_PATTERN,
+  encodeClientOrderId,
+  decodeClientOrderId,
+  type ClientOrderIdParts,
+} from './client/ClientOrderIdEncoder.js';
+
+export { buildSignaturePayload } from './ws/signature.js';
+
+export {
+  RotatingWsApiClient,
+  withReturnRateLimits,
+  WS_API_LIFETIME_MS,
+  DEFAULT_ROTATE_AFTER_MS,
+  type RotatingWsApiOptions,
+  type RotatingTimers,
+  type RotationReason,
+} from './ws/platform/RotatingWsApiClient.js';
+
+export {
+  classifyWsApiFailure,
+  wsRateLockMs,
+  WS_418_BAN_BASE_MS,
+  WS_429_BACKOFF_MS,
+  type WsApiFailureResponse,
+} from './ws/platform/wsErrors.js';
+
+export {
+  toBatchElementResults,
+  type BatchElementResult,
+} from './preflight/batch.js';
+
+export {
+  IsolatedMarginSupervisor,
+  MarginCallSentinel,
+  type IsolatedMarginRequest,
+  type IsolatedMarginPositionSide,
+  type MarginCallSentinelOptions,
+  type PostSigned,
+} from './risk/marginSafety.js';
+
+export {
+  AckOrderReconciler,
+  ORDER_TERMINAL_STATUSES,
+  type AckOrderReconcilerOptions,
+  type OrderTradeUpdateFrame,
+  type ReconcileResult,
+} from './execution/AckOrderReconciler.js';
+
+export {
+  DeterministicPositionAverager,
+  IcebergSliceMatcher,
+  commissionExact,
+  divideRounded,
+  fundingPaymentExact,
+  settleFunding,
+  type AveragerFill,
+  type AveragerPosition,
+} from './paper/exact.js';
+
+export {
+  routeUsdmStream,
+  streamChannel,
+  usdmUserDataFamily,
+  type UsdmStreamFamily,
+} from './ws/streamRouter.js';
+
+export {
+  FUTURES_ALGO_ORDER_TYPES,
+  routeFuturesOrderType,
+  type FuturesAlgoOrderType,
+  type FuturesOrderEndpoint,
+} from './preflight/orderRouting.js';
+
+export {
+  ALGO_ORDER_FIELDS,
+  toAlgoOrderParams,
+} from './preflight/algoOrderMapping.js';
+
+export {
+  ThrottledControl,
+  type ThrottledControlOptions,
+} from './ws/platform/SubscribeThrottle.js';
+
+export {
+  subscribeSpotUserDataSession,
+} from './ws/SpotUserWS.js';
+
+export { BinanceCancelRestrictionFailedError } from './errors/BinanceCancelRestrictionFailedError.js';
+
+export { attachWsRateLimits, type WsRateLimitEntry } from './client/RateLimitTracker.js';
+
+export {
+  subscribeUserDataStream,
+  unsubscribeUserDataStream,
+  type WsRpcClient,
+} from './ws/platform/userDataSubscription.js';
+
+export {
+  SubscribeThrottle,
+  type SubscribeFrame,
+  type SubscribeMethod,
+  type SubscribeThrottleOptions,
+} from './ws/platform/SubscribeThrottle.js';
+
+export {
+  SERVER_BUSY_CODE,
+  isRiskReducingOrder,
+  serverBusyRetryDelayMs,
+  type ServerBusyOrder,
+  type ServerBusyPolicyOptions,
+} from './preflight/serverBusy.js';
+
+export {
   createFuturesToolkit,
   toolkitToFormats,
   type FuturesToolkit,

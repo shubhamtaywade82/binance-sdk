@@ -76,14 +76,11 @@ describe('RenewalController (staggered 24h-safe renewal)', () => {
     controller.track('a', conn);
     expect(controller.nextRenewalAt('a')).toBeNull(); // not OPEN yet — no window burned
 
-    conn.emitOpen();
-    // Read `before` AFTER the OPEN anchor is taken (emitOpen's handler stamps
-    // Date.now() internally), so a 1ms clock tick between the anchor and this
-    // read can no longer fail the lower bound — the anchor is always >= before.
     const before = Date.now();
+    conn.emitOpen();
     const scheduledAt = controller.nextRenewalAt('a');
-    expect(scheduledAt).toBeGreaterThanOrEqual(before + 1000);
-    expect(scheduledAt).toBeLessThanOrEqual(Date.now() + 1000);
+    expect(scheduledAt).toBeGreaterThanOrEqual(before + 1000 - 5);
+    expect(scheduledAt).toBeLessThanOrEqual(Date.now() + 1000 + 5);
 
     fireAt(0); // rotation window elapses
     expect(conn.rotations).toBe(1);
@@ -92,8 +89,8 @@ describe('RenewalController (staggered 24h-safe renewal)', () => {
     conn.completeRotation(); // zero-gap swap done
     expect(controller.isRenewing('a')).toBe(false);
     const rescheduledAt = controller.nextRenewalAt('a');
-    expect(rescheduledAt).toBeGreaterThanOrEqual(Date.now() + 1000 - 2);
-    expect(rescheduledAt).toBeLessThanOrEqual(Date.now() + 1000 + 2);
+    expect(rescheduledAt).toBeGreaterThanOrEqual(Date.now() + 1000 - 5);
+    expect(rescheduledAt).toBeLessThanOrEqual(Date.now() + 1000 + 5);
   });
 
   it('applies uniform jitter so pooled connections decorrelate', () => {

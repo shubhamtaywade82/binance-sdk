@@ -19,7 +19,7 @@ export class FuturesMarket extends MarketDataBase {
 
   constructor(http?: HttpClient, restRoot?: string) {
     super(http ?? new HttpClient({ baseURL: 'https://fapi.binance.com/fapi/v1' }));
-    this.rootHttp = new HttpClient({ baseURL: restRoot ?? 'https://fapi.binance.com' });
+    this.rootHttp = new HttpClient({ baseURL: restRoot ?? 'https://fapi.binance.com', timePath: '/fapi/v1/time' });
   }
 
   async continuousKlines(

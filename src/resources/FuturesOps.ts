@@ -359,7 +359,7 @@ export class FuturesOps {
     });
 
     const protective = await Promise.allSettled([
-      this.trading.createOrder({
+      this.trading.createConditionalOrder({
         symbol,
         side: exitSide,
         type: 'STOP_MARKET',
@@ -371,7 +371,7 @@ export class FuturesOps {
       ...(params.takeProfitPrice === undefined
         ? []
         : [
-            this.trading.createOrder({
+            this.trading.createConditionalOrder({
               symbol,
               side: exitSide,
               type: 'TAKE_PROFIT_MARKET',

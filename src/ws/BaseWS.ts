@@ -1,5 +1,6 @@
 import { parseWsPayload, type WsStreamPayload } from '../types/ws.types.js';
 import { WsConnection, type WsConnectionOptions, type WsConnectionState } from './WsConnection.js';
+import { ThrottledControl } from './platform/SubscribeThrottle.js';
 
 export { type WsConnectionState };
 
@@ -48,6 +49,8 @@ export class BaseWS extends WsConnection {
   private readonly confirmed = new Set<string>();
   private resyncPromise: Promise<void> | null = null;
   private readonly confirmationWaiters: ConfirmationWaiter[] = [];
+  /** SUBSCRIBE / UNSUBSCRIBE frames, coalesced and held to the per-second budget. */
+  private readonly control = new ThrottledControl((frame) => this.request(frame.method, frame.params));
 
   constructor(options: BaseWSOptions) {
     const { baseStreamUrl, streams, ...connectionOptions } = options;
@@ -145,7 +148,7 @@ export class BaseWS extends WsConnection {
     }
     if (!this.isOpen()) return;
     try {
-      await this.request('UNSUBSCRIBE', streams);
+      await this.control.request('UNSUBSCRIBE', streams);
       this.emitEvent('ws.unsubscribed', { streams });
     } catch (err) {
       // Desired state is already updated (the source of truth for the next
@@ -198,7 +201,7 @@ export class BaseWS extends WsConnection {
 
     if (missing.length) {
       try {
-        await this.request('SUBSCRIBE', missing);
+        await this.control.request('SUBSCRIBE', missing);
         this.emitEvent('ws.subscribed', { streams: missing, via: 'resync' });
       } catch {
         /* waiters time out; resync is best-effort */
@@ -206,7 +209,7 @@ export class BaseWS extends WsConnection {
     }
     if (extra.length) {
       try {
-        await this.request('UNSUBSCRIBE', extra);
+        await this.control.request('UNSUBSCRIBE', extra);
         this.emitEvent('ws.unsubscribed', { streams: extra, via: 'resync' });
       } catch {
         /* best-effort */
@@ -228,7 +231,7 @@ export class BaseWS extends WsConnection {
   }
 
   private async sendSubscribe(streams: string[]): Promise<void> {
-    await this.request('SUBSCRIBE', streams);
+    await this.control.request('SUBSCRIBE', streams);
     for (const stream of streams) this.confirmed.add(stream);
     this.emitEvent('ws.subscribed', { streams });
     this.settleConfirmationWaiters();

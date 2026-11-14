@@ -1,6 +1,10 @@
 import type { WsConnectionOptions, WsConnectionState } from './WsConnection.js';
 import { WsConnection } from './WsConnection.js';
-import { parseUserDataEvent, type UserDataEvent } from '../types/userdata.types.js';
+import {
+  parseUserDataEvent,
+  type UserDataEvent,
+  type UserDataEventHandler,
+} from '../types/userdata.types.js';
 import {
   buildPrivateStreamUrl,
   isKnownUserDataEvent,
@@ -101,5 +105,14 @@ export class FuturesUserWS extends WsConnection {
   /** The user-data stream base URL this instance was configured with. */
   getUserStreamBase(): string {
     return this.baseUserUrl;
+  }
+
+  /**
+   * Typed listener for one user-data event name. Modelled names receive their
+   * strict type. Unmodelled names (e.g. `ALGO_UPDATE`) receive
+   * {@link UserDataUnknownEvent}. Same delivery as `on(type, …)`.
+   */
+  onUserEvent<T extends string>(type: T, handler: UserDataEventHandler<T>): this {
+    return this.on(type, handler as (event: UserDataEvent) => void);
   }
 }

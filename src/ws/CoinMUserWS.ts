@@ -3,6 +3,7 @@ import { WsConnection } from './WsConnection.js';
 import {
   parseUserDataEvent,
   type UserDataEvent,
+  type UserDataEventHandler,
 } from '../types/userdata.types.js';
 
 export { type WsConnectionState };
@@ -57,5 +58,14 @@ export class CoinMUserWS extends WsConnection {
     } catch (err) {
       this.emit('error', err);
     }
+  }
+
+  /**
+   * Typed listener for one COIN-M user-data event name; parity with
+   * `FuturesUserWS.onUserEvent`. Unmodelled names receive
+   * {@link UserDataUnknownEvent}.
+   */
+  onUserEvent<T extends string>(type: T, handler: UserDataEventHandler<T>): this {
+    return this.on(type, handler as (event: UserDataEvent) => void);
   }
 }

@@ -41,7 +41,7 @@ describe('FamilySubscriptionRegistry (subscriptions, fan-out, refcounts)', () =>
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(messages).toHaveLength(1);
-    expect((messages[0] as { p: number }).p).toBe(42000.5);
+    expect((messages[0] as { p: string }).p).toBe('42000.5');
     expect(raws).toHaveLength(1);
     expect((raws[0] as { p: string }).p).toBe('42000.5');
   });

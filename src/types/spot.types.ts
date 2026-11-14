@@ -95,6 +95,35 @@ export type SpotAccountInfo = z.infer<typeof SpotAccountSchema>;
 // ---- Spot user data stream events (listenKey stream) ----
 
 export const SpotExecutionReportSchema = z.object({ e: z.literal('executionReport') }).loose();
+
+/**
+ * Working floor of an allocation (verified in the SOR FAQ): `SOR` means other eligible order
+ * books were reached, `EXCHANGE` means only the submitted book was used.
+ */
+export type SpotWorkingFloor = 'SOR' | 'EXCHANGE' | (string & {});
+
+/**
+ * Allocation record (verified in the SOR FAQ and the vendored spec's myAllocations). A
+ * SOR-filled order is reported as allocations, not as direct trades, so tradeId is -1.
+ * matchType ONE_PARTY_TRADE_REPORT marks the fill as an allocation. The record is loose, so
+ * the fields the spec does not pin down pass through.
+ */
+export const SpotAllocationSchema = z
+  .object({
+    allocId: z.number(),
+    tradeId: z.number(),
+    symbol: z.string(),
+    orderId: z.number().optional(),
+    matchType: z.string().optional(),
+    workingFloor: z
+      .string()
+      .transform((value) => value as SpotWorkingFloor)
+      .optional(),
+    allocationType: z.string().optional(),
+  })
+  .loose();
+export type SpotAllocation = z.infer<typeof SpotAllocationSchema>;
+export const SpotAllocationsResponseSchema = z.array(SpotAllocationSchema);
 export type SpotExecutionReport = z.infer<typeof SpotExecutionReportSchema>;
 
 export const SpotOutboundAccountPositionSchema = z

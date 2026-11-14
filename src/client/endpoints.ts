@@ -148,7 +148,7 @@ export function resolveEnvironment(options?: {
 
   const wsSpotApiHost =
     options?.wsSpotApiBase ??
-    (env === 'testnet' ? 'wss://testnet.binance.vision/ws-api/v3' : 'wss://ws-api.binance.com:443/ws-api/v3');
+    (env === 'testnet' ? 'wss://ws-api.testnet.binance.vision/ws-api/v3' : 'wss://ws-api.binance.com:443/ws-api/v3');
 
   // Binance has no dedicated COIN-M demo WS host either, so demo mode falls back to testnet here too.
   // The COIN-M WS routing migration mirrors USDⓈ-M: per-symbol streams move to

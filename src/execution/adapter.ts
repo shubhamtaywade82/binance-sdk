@@ -1,6 +1,7 @@
 import { Decimal } from '../core/decimal.js';
 import type { CreateOrderParams } from '../types/trading.types.js';
 import type { FuturesTrading } from '../resources/FuturesTrading.js';
+import { routeFuturesOrderType } from '../preflight/orderRouting.js';
 import type { SpotTrading } from '../resources/SpotTrading.js';
 import type { ExecutionFill } from './types.js';
 
@@ -200,7 +201,10 @@ export class FuturesExecutionAdapter implements ExecutionAdapter {
   constructor(private readonly trading: FuturesTrading) {}
 
   async createOrder(submission: CreateOrderParams): Promise<Record<string, unknown>> {
-    return (await this.trading.createOrder(submission)) as unknown as Record<string, unknown>;
+    const order = routeFuturesOrderType(submission.type) === 'algo'
+      ? this.trading.createConditionalOrder(submission)
+      : this.trading.createOrder(submission);
+    return (await order) as unknown as Record<string, unknown>;
   }
 
   async fetchOrder(symbol: string, key: OrderKey): Promise<Record<string, unknown>> {

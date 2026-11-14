@@ -1,5 +1,6 @@
 import { sign, randomUUID } from 'node:crypto';
 import { BinanceError } from '../../errors/BinanceError.js';
+import { buildSignaturePayload } from '../signature.js';
 
 /**
  * WebSocket API v3 session manager — automated Ed25519 `session.logon`.
@@ -161,7 +162,7 @@ export class WsSession {
    */
   async logon(transport: WsSessionTransport): Promise<SessionLogonResponse> {
     const timestamp = Date.now();
-    const queryString = `apiKey=${encodeURIComponent(this.apiKey)}&timestamp=${timestamp}`;
+    const queryString = buildSignaturePayload({ apiKey: this.apiKey, timestamp });
     const signature = this.signPayload(queryString);
 
     const response = await transport.sendRpc<SessionLogonResponse>('session.logon', {
@@ -273,10 +274,5 @@ export function newSessionRequestId(): string {
 
 /** URL-encode a primitive value the way Binance's session API expects. */
 function buildQueryString(data: Record<string, unknown>): string {
-  // WS API signatures cover the params sorted by name (plain code-unit order).
-  return Object.entries(data)
-    .filter(([, val]) => val !== undefined && val !== null)
-    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([key, val]) => `${key}=${encodeURIComponent(String(val))}`)
-    .join('&');
+  return buildSignaturePayload(data);
 }

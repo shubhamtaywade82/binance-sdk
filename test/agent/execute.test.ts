@@ -24,6 +24,9 @@ function signal(over: Partial<Signal> = {}): Signal {
 
 function mockPublicData(): void {
   server.use(
+    // Conditional exits (stop-loss, trailing) are sent to the algo endpoint.
+    http.post('https://fapi.binance.com/fapi/v1/algoOrder', () =>
+      HttpResponse.json({ algoId: 1, symbol: 'BTCUSDT', side: 'SELL', positionSide: 'BOTH', algoType: 'CONDITIONAL' })),
     http.get('https://fapi.binance.com/fapi/v1/exchangeInfo', () =>
       HttpResponse.json({
         timezone: 'UTC', serverTime: 1,
@@ -78,6 +81,11 @@ describe('executeEntry (live gateway)', () => {
         bodies.push(params);
         return HttpResponse.json(orderAck());
       }),
+      // Conditional legs (stop-loss, trailing) land on the algo endpoint; record them with the rest.
+      http.post('https://fapi.binance.com/fapi/v1/algoOrder', ({ request }) => {
+        bodies.push(Object.fromEntries(new URL(request.url).searchParams));
+        return HttpResponse.json({ algoId: bodies.length, symbol: 'BTCUSDT', side: 'SELL', positionSide: 'BOTH', algoType: 'CONDITIONAL' });
+      }),
     );
 
     const client = new BinanceClient({ apiKey: 'test', apiSecret: 'test', maxRetries: 0 });
@@ -102,8 +110,9 @@ describe('executeEntry (live gateway)', () => {
     expect(entry).toMatchObject({ type: 'MARKET', side: 'BUY', quantity: '125.000' });
     // Signed POSTs serialize through the query string, so booleans/numbers
     // arrive as their string forms.
+    // Conditional legs go to the algo endpoint: stopPrice is mapped to triggerPrice.
     expect(sl).toMatchObject({
-      type: 'STOP_MARKET', side: 'SELL', stopPrice: '98.00',
+      algoType: 'CONDITIONAL', type: 'STOP_MARKET', side: 'SELL', triggerPrice: '98.00',
       closePosition: 'true', workingType: 'MARK_PRICE',
     });
     expect(tp1).toMatchObject({
@@ -115,7 +124,7 @@ describe('executeEntry (live gateway)', () => {
       timeInForce: 'GTC', reduceOnly: 'true',
     });
     expect(trail).toMatchObject({
-      type: 'TRAILING_STOP_MARKET', side: 'SELL', activationPrice: '105.00',
+      algoType: 'CONDITIONAL', type: 'TRAILING_STOP_MARKET', side: 'SELL', activatePrice: '105.00',
       callbackRate: '1', closePosition: 'true', workingType: 'MARK_PRICE',
     });
   });
