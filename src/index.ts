@@ -507,6 +507,26 @@ export {
   type ClientOrderIdParts,
 } from './client/ClientOrderIdEncoder.js';
 
+export { buildSignaturePayload } from './ws/signature.js';
+
+export {
+  RotatingWsApiClient,
+  withReturnRateLimits,
+  WS_API_LIFETIME_MS,
+  DEFAULT_ROTATE_AFTER_MS,
+  type RotatingWsApiOptions,
+  type RotatingTimers,
+  type RotationReason,
+} from './ws/platform/RotatingWsApiClient.js';
+
+export {
+  classifyWsApiFailure,
+  wsRateLockMs,
+  WS_418_BAN_BASE_MS,
+  WS_429_BACKOFF_MS,
+  type WsApiFailureResponse,
+} from './ws/platform/wsErrors.js';
+
 export {
   createFuturesToolkit,
   toolkitToFormats,

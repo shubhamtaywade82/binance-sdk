@@ -3,6 +3,7 @@ import WebSocket from 'ws';
 import { NetworkError } from '../errors/index.js';
 import type { WsApiResponse } from '../types/userdata.types.js';
 import { Signer, type SignatureAlgorithm } from '../client/Signer.js';
+import { buildSignaturePayload } from './signature.js';
 
 export interface SpotWsApiOptions {
   baseUrl: string;
@@ -22,12 +23,7 @@ interface WsApiRequestParams {
 }
 
 function buildQueryString(data: Record<string, unknown>): string {
-  // WS API signatures cover the params sorted by name (plain code-unit order).
-  return Object.entries(data)
-    .filter(([, val]) => val !== undefined && val !== null)
-    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([key, val]) => `${key}=${encodeURIComponent(String(val))}`)
-    .join('&');
+  return buildSignaturePayload(data);
 }
 
 /**

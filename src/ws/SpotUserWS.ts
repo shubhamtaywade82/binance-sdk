@@ -3,6 +3,7 @@ import { WsConnection } from './WsConnection.js';
 import { Signer } from '../client/Signer.js';
 import type { Credentials } from '../core/credentials.js';
 import { parseSpotUserDataEvent, type SpotUserDataEvent } from '../types/spot.types.js';
+import { buildSignaturePayload } from './signature.js';
 
 export { type WsConnectionState };
 
@@ -26,7 +27,7 @@ export function createSpotUserDataSigner(credentials: Credentials): SpotUserData
     if (!credentials.apiKey || !signer.canSign()) return null;
     // WS API signatures cover the params sorted by name.
     const params = { apiKey: credentials.apiKey, timestamp: Date.now() };
-    const payload = `apiKey=${encodeURIComponent(params.apiKey)}&timestamp=${params.timestamp}`;
+    const payload = buildSignaturePayload({ apiKey: params.apiKey, timestamp: params.timestamp });
     return { ...params, signature: signer.sign(payload) };
   };
 }
