@@ -53,6 +53,9 @@ export class FuturesTrading {
    * ACK schema. A default-mode MARKET/LIMIT order returns the RESULT shape,
    * which also satisfies the (looser) ACK schema.
    */
+  createOrder(params: CreateOrderParams & { newOrderRespType: 'RESULT' }): Promise<Order>;
+  createOrder(params: CreateOrderParams & { newOrderRespType?: 'ACK' }): Promise<NewOrderAck>;
+  createOrder(params: CreateOrderParams): Promise<NewOrderAck | Order>;
   async createOrder(params: CreateOrderParams): Promise<NewOrderAck | Order> {
     const prepared = this.prepare(params);
     const raw = await this.http.post('/fapi/v1/order', prepared, 'signed');

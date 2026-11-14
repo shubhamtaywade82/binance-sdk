@@ -11,6 +11,8 @@ import {
   SpotTrade,
   SpotTradesResponseSchema,
 } from '../types/spot.types.js';
+import { BinanceApiError } from '../errors/BinanceApiError.js';
+import { BinanceCancelRestrictionFailedError } from '../errors/BinanceCancelRestrictionFailedError.js';
 
 export class SpotTrading {
   constructor(private readonly http: HttpClient) {}
@@ -29,13 +31,34 @@ export class SpotTrading {
     );
   }
 
+  /**
+   * `cancelRestrictions` (verified: spot DELETE /api/v3/order) limits the cancel to
+   * ONLY_NEW or ONLY_PARTIALLY_FILLED. When both orderId and origClientOrderId are given,
+   * orderId is kept (maintainer digest). A -2011 reply is re-thrown as
+   * BinanceCancelRestrictionFailedError.
+   */
   async cancelOrder(
     symbol: string,
-    options?: { orderId?: number; origClientOrderId?: string; newClientOrderId?: string },
+    options?: {
+      orderId?: number;
+      origClientOrderId?: string;
+      newClientOrderId?: string;
+      cancelRestrictions?: 'ONLY_NEW' | 'ONLY_PARTIALLY_FILLED';
+    },
   ): Promise<SpotOrder> {
-    return SpotOrderSchema.parse(
-      await this.http.delete('/order', { symbol, ...options }, 'signed'),
-    );
+    const { origClientOrderId, ...rest } = options ?? {};
+    const params = rest.orderId !== undefined ? rest : { ...rest, origClientOrderId };
+    try {
+      return SpotOrderSchema.parse(await this.http.delete('/order', { symbol, ...params }, 'signed'));
+    } catch (err) {
+      if (err instanceof BinanceApiError && err.code === -2011) {
+        throw new BinanceCancelRestrictionFailedError(err.message, err.status, {
+          endpoint: err.endpoint,
+          method: err.method,
+        });
+      }
+      throw err;
+    }
   }
 
   async cancelOpenOrders(symbol: string): Promise<SpotOrder[]> {

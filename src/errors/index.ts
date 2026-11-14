@@ -9,6 +9,7 @@ export type { PolicyRule } from './PolicyViolationError.js';
 export { PreflightValidationError } from './PreflightValidationError.js';
 export type { PreflightRule } from './PreflightValidationError.js';
 export { BatchOrdersPartialError } from './BatchOrdersPartialError.js';
+export { BinanceCancelRestrictionFailedError } from './BinanceCancelRestrictionFailedError.js';
 export { DryRunError } from './DryRunError.js';
 export { BinanceUnknownExecutionError, classifyUnknownExecution } from './BinanceUnknownExecutionError.js';
 export {
