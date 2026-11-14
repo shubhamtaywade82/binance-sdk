@@ -109,7 +109,10 @@ export class SpotUserWS extends WsConnection {
     this.subscription = this.sessionAuthenticated?.()
       ? subscribeSpotUserDataSession(this)
       : subscribeSpotUserData(this, this.signSubscription);
-    this.subscription.catch((err: unknown) => this.emit('error', err));
+    this.subscription.catch((err: unknown) => {
+      if (this.getState() === 'CLOSED' || this.getState() === 'CLOSING') return;
+      this.emit('error', err);
+    });
   }
 
   protected override handleRawMessage(text: string): void {

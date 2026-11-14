@@ -240,6 +240,7 @@ export async function executeEntry(
       await emergencyFlatten(client, gateway, [symbol]);
       throw new Error(
         `hard stop rejected for ${symbol}; position flattened. cause: ${String(err)}`,
+        { cause: err },
       );
     }
   }
