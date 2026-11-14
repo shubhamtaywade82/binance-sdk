@@ -607,6 +607,8 @@ export class WsApiClient extends EventEmitter {
       return; // not a response envelope (WS API responses always carry id)
     }
     const response = parsed as WsApiResponse;
+    const limits = (parsed as { rateLimits?: unknown }).rateLimits;
+    if (Array.isArray(limits)) this.emit('rateLimits', limits);
     const entry = this.pending.get(String(response.id));
     if (!entry) {
       // Late or duplicate response: no pending request owns it. Dropped

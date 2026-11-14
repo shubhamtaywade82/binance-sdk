@@ -6,6 +6,7 @@ import { contractFor, type HttpContractMeta } from '../contracts/index.js';
 import { RateLimitTracker, type RateLimitUsage } from './RateLimitTracker.js';
 import { Signer, type SignatureAlgorithm } from './Signer.js';
 import type { TradingPolicy } from './TradingPolicy.js';
+import { TIMESTAMP_ERROR_CODE } from './ServerTimeSynchronizer.js';
 
 export type AuthMode = 'public' | 'apiKey' | 'signed';
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -35,6 +36,8 @@ export interface HttpClientOptions {
   recvWindow?: number;
   timeoutMs?: number;
   maxRetries?: number;
+  /** Path of the server-time endpoint used to resync after -1021 (default '/time'). */
+  timePath?: string;
   minTimeMs?: number;
   /** @deprecated unused; superseded by header-based tracking (rateLimitWeightPerMinute/rateLimitSafetyMargin). */
   rateLimitTokensPerSecond?: number;
@@ -104,6 +107,9 @@ export class HttpClient {
   private readonly idempotentPaths: string[];
   private readonly events?: EventBus;
   private maxRetries: number;
+  private timePath: string;
+  /** Epoch ms before which new requests wait after a 429/418 (cross-request cooldown). */
+  private cooldownUntil = 0;
   private minTimeMs: number;
   private retryBaseDelayMs: number;
   private retryMaxDelayMs: number;
@@ -120,6 +126,7 @@ export class HttpClient {
     this.recvWindow = options.recvWindow ?? 5000;
     this.timeoutMs = options.timeoutMs ?? 15_000;
     this.maxRetries = options.maxRetries ?? 3;
+    this.timePath = options.timePath ?? '/time';
     this.minTimeMs = options.minTimeMs ?? 50;
     this.retryBaseDelayMs = options.retryBaseDelayMs ?? 1000;
     this.retryMaxDelayMs = options.retryMaxDelayMs ?? 30_000;
@@ -255,6 +262,8 @@ export class HttpClient {
       operation: contract?.operation,
     });
     return this.limiter.schedule(async () => {
+      const cooldownMs = this.cooldownUntil - Date.now();
+      if (cooldownMs > 0) await sleep(cooldownMs);
       const throttleMs = this.rateLimitTracker.getThrottleDelayMs();
       if (throttleMs > 0) await sleep(throttleMs);
       return this.requestWithRetry<T>(method, path, params, mode, 0, requestId, startedAt, contract);
@@ -350,6 +359,7 @@ export class HttpClient {
     requestId: number,
     startedAt: number,
     contract?: HttpContractMeta,
+    timestampRetried = false,
   ): Promise<T> {
     // Rebuilt per attempt: a retried SIGNED request must carry a fresh
     // timestamp+signature, otherwise the retry itself fails with -1021 once
@@ -393,6 +403,17 @@ export class HttpClient {
       const body = err.response?.data as BinanceErrorBody | undefined;
       const headers = normalizeHeaders(err.response?.headers);
       this.rateLimitTracker.update(headers);
+
+      if (status === 429 || status === 418) {
+        // Cross-request cooldown: new requests wait out Retry-After, or the base delay if absent.
+        const waitMs = this.parseRetryAfterMs(headers) ?? this.retryBaseDelayMs;
+        this.cooldownUntil = Math.max(this.cooldownUntil, Date.now() + waitMs);
+      }
+      if (body?.code === TIMESTAMP_ERROR_CODE && mode === 'signed' && !timestampRetried) {
+        // -1021: local clock drifted outside recvWindow. Resync once, then retry with a fresh signature.
+        await this.syncTime(this.timePath);
+        return this.requestWithRetry<T>(method, path, params, mode, attempt, requestId, startedAt, contract, true);
+      }
 
       // Retry only when (a) the failure is transient (5xx/429/418 or a network
       // error) AND (b) resubmitting cannot duplicate a side effect.
