@@ -214,8 +214,12 @@ export class HttpClient {
    * Mitigates `-1021` (timestamp outside recvWindow) errors caused by local clock drift.
    */
   async syncTime(timePath = '/time'): Promise<number> {
+    const sentAt = Date.now();
     const res = await this.axios.request<{ serverTime: number }>({ method: 'GET', url: timePath });
-    this.timeOffsetMs = res.data.serverTime - Date.now();
+    const receivedAt = Date.now();
+    // The server stamped its time somewhere inside the round trip. The midpoint is the
+    // unbiased estimate, which removes half the request latency from the offset.
+    this.timeOffsetMs = res.data.serverTime - (sentAt + Math.floor((receivedAt - sentAt) / 2));
     this.emitEvent('http.clock.synced', { timePath, offsetMs: this.timeOffsetMs });
     return this.timeOffsetMs;
   }

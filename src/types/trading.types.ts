@@ -33,7 +33,7 @@ export const CreateOrderParamsSchema = z.object({
   type: z.string(),
   quantity: z.union([z.string(), z.number()]).optional(),
   price: z.union([z.string(), z.number()]).optional(),
-  timeInForce: z.enum(['GTC', 'IOC', 'FOK', 'GTX', 'GTD']).optional(),
+  timeInForce: z.enum(['GTC', 'IOC', 'FOK', 'GTX', 'GTD', 'RPI']).optional(),
   stopPrice: z.union([z.string(), z.number()]).optional(),
   reduceOnly: z.boolean().optional(),
   positionSide: z.enum(['BOTH', 'LONG', 'SHORT']).optional(),
@@ -95,6 +95,9 @@ export const BatchOrdersItemSchema = z.object({
 });
 export type BatchOrdersItem = z.infer<typeof BatchOrdersItemSchema>;
 export const BatchOrdersResponseSchema = z.array(BatchOrdersItemSchema);
+
+/** GET /fapi/v1/positionSide/dual response. The field name is taken from the POST parameter; the GET shape is not in the vendored spec, so this parser fails closed. */
+export const PositionModeResponseSchema = z.object({ dualSidePosition: z.boolean() });
 
 export const OrderModifyHistoryEntrySchema = z.object({
   orderId: z.number(),

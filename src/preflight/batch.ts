@@ -108,3 +108,34 @@ function pushChunkFailure<O>(
     }
   }
 }
+
+/**
+ * Per-element result for a batch placement. Each element is one of:
+ * - success: the exchange accepted it; `data` is the parsed order.
+ * - REJECTED: the exchange refused this one order; `code`/`msg` are its error.
+ * - UNKNOWN: the outcome is unknown (transport or 5xx); reconcile before retrying.
+ */
+export type BatchElementResult<T> =
+  | { index: number; success: true; data: T }
+  | { index: number; success: false; status: 'REJECTED'; code: number; msg: string }
+  | { index: number; success: false; status: 'UNKNOWN'; error: unknown };
+
+/**
+ * Map chunk outcomes to per-element results. `parse` validates accepted orders. If
+ * it fails, the raw object is kept, because the exchange has already accepted the
+ * order and the parse failure is only a schema disagreement.
+ */
+export function toBatchElementResults<T>(
+  outcomes: readonly BatchOutcome<unknown>[],
+  parse: (raw: unknown) => T,
+): BatchElementResult<T>[] {
+  return outcomes.map((outcome): BatchElementResult<T> => {
+    if (outcome.status === 'ACCEPTED') {
+      return { index: outcome.index, success: true, data: parse(outcome.data) };
+    }
+    if (outcome.status === 'REJECTED') {
+      return { index: outcome.index, success: false, status: 'REJECTED', code: outcome.code, msg: outcome.msg };
+    }
+    return { index: outcome.index, success: false, status: 'UNKNOWN', error: outcome.error };
+  });
+}

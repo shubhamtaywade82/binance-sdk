@@ -528,6 +528,28 @@ export {
 } from './ws/platform/wsErrors.js';
 
 export {
+  toBatchElementResults,
+  type BatchElementResult,
+} from './preflight/batch.js';
+
+export {
+  IsolatedMarginSupervisor,
+  MarginCallSentinel,
+  type IsolatedMarginRequest,
+  type IsolatedMarginPositionSide,
+  type MarginCallSentinelOptions,
+  type PostSigned,
+} from './risk/marginSafety.js';
+
+export {
+  AckOrderReconciler,
+  ORDER_TERMINAL_STATUSES,
+  type AckOrderReconcilerOptions,
+  type OrderTradeUpdateFrame,
+  type ReconcileResult,
+} from './execution/AckOrderReconciler.js';
+
+export {
   routeUsdmStream,
   streamChannel,
   usdmUserDataFamily,
