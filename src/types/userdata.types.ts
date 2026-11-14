@@ -1,4 +1,34 @@
 import { z } from 'zod';
+import { parseFixed } from '../core/fixedpoint.js';
+
+/**
+ * Exact decimal string as Binance sends it (e.g. "0.00100000"). Prices, quantities,
+ * balances, and PnL stay strings end to end. They are never parsed to a binary
+ * float, so no rounding drift can reach a tick/step check.
+ */
+export type DecimalString = string;
+
+/** Rejects anything `parseFixed` cannot represent exactly. */
+export const DecimalStringSchema = z.string().refine(
+  (value) => {
+    try {
+      parseFixed(value);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  { message: 'expected an exact decimal string' },
+);
+
+/**
+ * Optional decimal fields. An empty string means "no value" and is normalized to
+ * "0". The previous `Number("")` conversion also produced 0, so this keeps the
+ * semantics without accepting arbitrary text.
+ */
+const OptionalDecimalSchema = z
+  .union([z.literal(''), DecimalStringSchema])
+  .transform((value) => (value === '' ? '0' : value));
 
 export const ListenKeySchema = z.object({
   listenKey: z.string(),
@@ -10,26 +40,30 @@ export const UserDataAccountUpdateSchema = z.object({
   E: z.number(),
   T: z.number(),
   a: z.object({
-    m: z.string().transform(Number),
+    /**
+     * Event reason type (e.g. ORDER, FUNDING_FEE). This is a string, not a number.
+     * The previous `transform(Number)` turned every real reason into NaN.
+     */
+    m: z.string(),
     B: z.array(
       z.object({
         a: z.string(),
-        wb: z.string().transform(Number),
-        cw: z.string().transform(Number),
-        bc: z.string().transform(Number),
+        wb: DecimalStringSchema,
+        cw: DecimalStringSchema,
+        bc: DecimalStringSchema,
       }),
     ),
     P: z.array(
       z.object({
         s: z.string(),
-        pa: z.string().transform(Number),
-        ep: z.string().transform(Number),
+        pa: DecimalStringSchema,
+        ep: DecimalStringSchema,
         /** Breakeven price (added to the event contract by Binance; optional for older frames). */
-        bep: z.string().transform(Number).optional(),
-        cr: z.string().transform(Number),
-        up: z.string().transform(Number),
+        bep: OptionalDecimalSchema.optional(),
+        cr: DecimalStringSchema,
+        up: DecimalStringSchema,
         mt: z.string(),
-        iw: z.string().transform(Number).optional(),
+        iw: OptionalDecimalSchema.optional(),
         ps: z.string(),
       }),
     ),
@@ -55,6 +89,13 @@ export const PRICE_MATCH_MODES = [
   'QUEUE_20',
 ] as const;
 export type PriceMatchMode = (typeof PRICE_MATCH_MODES)[number] | (string & {});
+
+/**
+ * Time-in-force (`o.f`). Verified against Binance's common-definition enum, which
+ * includes RPI (retail price improvement, post-only, matched only with APP/Web orders).
+ */
+export const ORDER_TIME_IN_FORCE = ['GTC', 'IOC', 'FOK', 'GTX', 'GTD', 'RPI'] as const;
+export type OrderTimeInForce = (typeof ORDER_TIME_IN_FORCE)[number] | (string & {});
 
 /**
  * Order expiry reason (`o.er`), codes 0–9. Verified against the Binance
@@ -139,31 +180,31 @@ export const UserDataOrderTradeUpdateSchema = z.object({
     i: z.number(),
     S: z.string(),
     o: z.string(),
-    f: z.string(),
-    q: z.string().transform(Number),
-    p: z.string().transform(Number),
-    ap: z.string().transform(Number),
-    sp: z.string().transform(Number),
+    f: z.string().transform((value) => value as OrderTimeInForce),
+    q: DecimalStringSchema,
+    p: DecimalStringSchema,
+    ap: DecimalStringSchema,
+    sp: DecimalStringSchema,
     x: z.string().transform((value) => value as OrderExecutionType),
     X: z.string(),
-    l: z.string().transform(Number),
-    z: z.string().transform(Number),
-    L: z.string().transform(Number),
-    n: z.string().transform(Number),
+    l: DecimalStringSchema,
+    z: DecimalStringSchema,
+    L: DecimalStringSchema,
+    n: DecimalStringSchema,
     N: z.string(),
     T: z.number(),
     t: z.number(),
-    b: z.string().transform(Number),
-    a: z.string().transform(Number),
+    b: DecimalStringSchema,
+    a: DecimalStringSchema,
     m: z.boolean(),
     R: z.boolean(),
     wt: z.string(),
     ot: z.string(),
     ps: z.string(),
     cp: z.boolean().optional(),
-    AP: z.string().transform(Number).optional(),
-    cr: z.string().transform(Number).optional(),
-    rp: z.string().transform(Number).optional(),
+    AP: OptionalDecimalSchema.optional(),
+    cr: OptionalDecimalSchema.optional(),
+    rp: OptionalDecimalSchema.optional(),
     /** modifyId — only pushed for AMENDMENT events when the modify request carried one (2026-07-21). */
     M: z.union([z.number(), z.string()]).optional(),
     /** Whether price protection is enabled on this order. */
@@ -191,17 +232,17 @@ export type UserDataOrderTradeUpdate = z.infer<typeof UserDataOrderTradeUpdateSc
 export const UserDataMarginCallSchema = z.object({
   e: z.literal('MARGIN_CALL'),
   E: z.number(),
-  cw: z.string().transform(Number),
+  cw: DecimalStringSchema,
   p: z.array(
     z.object({
       s: z.string(),
       ps: z.string(),
-      pa: z.string().transform(Number),
+      pa: DecimalStringSchema,
       mt: z.string(),
-      iw: z.string().transform(Number),
-      mp: z.string().transform(Number),
-      up: z.string().transform(Number),
-      mm: z.string().transform(Number),
+      iw: DecimalStringSchema,
+      mp: DecimalStringSchema,
+      up: DecimalStringSchema,
+      mm: DecimalStringSchema,
     }),
   ),
 });
@@ -209,7 +250,8 @@ export type UserDataMarginCall = z.infer<typeof UserDataMarginCallSchema>;
 
 /**
  * `ACCOUNT_CONFIG_UPDATE` — leverage change (`ac`) or multi-assets mode
- * change (`ai`). Binance pushes exactly one of the two payloads.
+ * change (`ai`). Binance pushes exactly one of the two payloads. Leverage is an
+ * integer multiplier, not a price, so it stays numeric.
  */
 export const UserDataAccountConfigUpdateSchema = z
   .object({
