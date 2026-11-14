@@ -14,6 +14,11 @@ export interface SpotUserWSOptions extends Omit<WsConnectionOptions, 'buildUrl'>
   /** Spot WebSocket API URL (`wss://ws-api.binance.com:443/ws-api/v3`). */
   wsApiUrl: string;
   signSubscription: SpotUserDataSigner;
+  /**
+   * True when the connection is authenticated with session.logon (Ed25519). The subscription
+   * then uses unsigned userDataStream.subscribe, which the session authorizes.
+   */
+  sessionAuthenticated?: () => boolean;
 }
 
 /** Builds the signer for the Spot user-data subscription from shared credentials. */
@@ -45,6 +50,20 @@ export async function subscribeSpotUserData(
   return Number(result.subscriptionId);
 }
 
+/**
+ * Session-authenticated subscribe (verified): `userDataStream.subscribe` on a connection that
+ * completed session.logon. No signature is sent, because the session carries authorization.
+ */
+export async function subscribeSpotUserDataSession(connection: WsConnection): Promise<number> {
+  const result = (await connection.request('userDataStream.subscribe', {})) as
+    | { subscriptionId?: unknown }
+    | undefined;
+  if (typeof result?.subscriptionId !== 'number') {
+    throw new Error('userDataStream.subscribe returned no subscriptionId');
+  }
+  return result.subscriptionId;
+}
+
 /** Unwraps a WS API event frame `{subscriptionId, event}`; undefined for anything else. */
 export function unwrapSpotUserFrame(parsed: unknown): unknown {
   if (parsed === null || typeof parsed !== 'object' || !('event' in parsed)) return undefined;
@@ -60,23 +79,25 @@ export function unwrapSpotUserFrame(parsed: unknown): unknown {
  */
 export class SpotUserWS extends WsConnection {
   private readonly signSubscription: SpotUserDataSigner;
+  private readonly sessionAuthenticated: (() => boolean) | undefined;
   private subscription: Promise<number> | null = null;
 
   constructor(options: SpotUserWSOptions) {
-    const { wsApiUrl, signSubscription, ...connectionOptions } = options;
+    const { wsApiUrl, signSubscription, sessionAuthenticated, ...connectionOptions } = options;
     super({
       ...connectionOptions,
       name: connectionOptions.name ?? 'spotUser',
       buildUrl: () => wsApiUrl,
     });
     this.signSubscription = signSubscription;
+    this.sessionAuthenticated = sessionAuthenticated;
     this.on('open', () => this.resubscribe());
     this.on('rotated', () => this.resubscribe());
   }
 
   /** Connect and subscribe; resolves with the subscription id once Binance accepts it. */
   async start(): Promise<number> {
-    if (!this.signSubscription()) {
+    if (!this.sessionAuthenticated?.() && !this.signSubscription()) {
       throw new Error('Spot user data stream requires an API key and secret (or privateKey)');
     }
     this.connect();
@@ -85,7 +106,9 @@ export class SpotUserWS extends WsConnection {
   }
 
   private resubscribe(): void {
-    this.subscription = subscribeSpotUserData(this, this.signSubscription);
+    this.subscription = this.sessionAuthenticated?.()
+      ? subscribeSpotUserDataSession(this)
+      : subscribeSpotUserData(this, this.signSubscription);
     this.subscription.catch((err: unknown) => this.emit('error', err));
   }
 
@@ -94,6 +117,18 @@ export class SpotUserWS extends WsConnection {
     if (parsed === undefined || this.dispatchAck(parsed)) return;
     const frame = unwrapSpotUserFrame(parsed);
     if (frame === undefined) return;
+    const lifecycle = (frame as { e?: unknown }).e;
+    if (lifecycle === 'serverShutdown') {
+      // Preemptive rollover before the shutdown time T: 'rotated' triggers the resubscribe.
+      this.emit('serverShutdown', frame);
+      this.rotateNow();
+      return;
+    }
+    if (lifecycle === 'eventStreamTerminated') {
+      this.emit('eventStreamTerminated', frame);
+      this.resubscribe();
+      return;
+    }
     try {
       const event: SpotUserDataEvent = parseSpotUserDataEvent(frame);
       this.emit(event.e, event);

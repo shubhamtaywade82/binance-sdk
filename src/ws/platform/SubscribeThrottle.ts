@@ -53,6 +53,11 @@ export class SubscribeThrottle {
     return { subscribe: this.pendingSubscribe.size, unsubscribe: this.pendingUnsubscribe.size };
   }
 
+  /** Streams still waiting to be sent for one method. */
+  pendingStreams(method: SubscribeMethod): ReadonlySet<string> {
+    return method === 'SUBSCRIBE' ? this.pendingSubscribe : this.pendingUnsubscribe;
+  }
+
   /** Frames to send at `nowMs`, within the budget. Each method coalesces into one frame. */
   drain(nowMs: number): SubscribeFrame[] {
     this.prune(nowMs);
@@ -78,5 +83,110 @@ export class SubscribeThrottle {
 
   private prune(nowMs: number): void {
     while (this.sentAt.length > 0 && (this.sentAt[0] ?? 0) <= nowMs - WINDOW_MS) this.sentAt.shift();
+  }
+}
+
+export interface ThrottledControlOptions extends SubscribeThrottleOptions {
+  /** Clock injection. Default: Date.now. */
+  now?: () => number;
+  /** Sleep injection. Default: setTimeout. */
+  sleep?: (ms: number) => Promise<void>;
+}
+
+interface ControlWaiter {
+  method: SubscribeMethod;
+  streams: Set<string>;
+  resolve: () => void;
+  reject: (err: unknown) => void;
+}
+
+/**
+ * Sends SUBSCRIBE / UNSUBSCRIBE through a SubscribeThrottle. Each caller's promise settles
+ * when its own streams go out (or fail), or when a later request cancels them before they
+ * are sent. Several callers in one window share one frame.
+ */
+export class ThrottledControl {
+  private readonly throttle: SubscribeThrottle;
+  private readonly now: () => number;
+  private readonly sleep: (ms: number) => Promise<void>;
+  private waiters: ControlWaiter[] = [];
+  private pumping = false;
+
+  constructor(
+    private readonly send: (frame: SubscribeFrame) => Promise<unknown>,
+    options: ThrottledControlOptions = {},
+  ) {
+    this.throttle = new SubscribeThrottle(options);
+    this.now = options.now ?? Date.now;
+    this.sleep = options.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+  }
+
+  request(method: SubscribeMethod, streams: readonly string[]): Promise<void> {
+    if (streams.length === 0) return Promise.resolve();
+    return new Promise<void>((resolve, reject) => {
+      this.waiters.push({ method, streams: new Set(streams), resolve, reject });
+      this.throttle.request(method, streams);
+      this.dropSettledStreams();
+      void this.pump();
+    });
+  }
+
+  /** A waiter keeps only the streams still pending for its method. Cancelled or sent streams drop out. */
+  private dropSettledStreams(): void {
+    for (const waiter of this.waiters) {
+      const pending = this.throttle.pendingStreams(waiter.method);
+      for (const stream of [...waiter.streams]) if (!pending.has(stream)) waiter.streams.delete(stream);
+    }
+    this.settle();
+  }
+
+  private settle(): void {
+    const remaining: ControlWaiter[] = [];
+    for (const waiter of this.waiters) {
+      if (waiter.streams.size === 0) waiter.resolve();
+      else remaining.push(waiter);
+    }
+    this.waiters = remaining;
+  }
+
+  private async pump(): Promise<void> {
+    if (this.pumping) return;
+    this.pumping = true;
+    try {
+      while (this.waiters.length > 0) {
+        const at = this.now();
+        const frames = this.throttle.drain(at);
+        for (const frame of frames) {
+          const sent = new Set(frame.params);
+          try {
+            await this.send(frame);
+            this.complete(frame.method, sent, undefined);
+          } catch (err) {
+            this.complete(frame.method, sent, err);
+          }
+        }
+        this.dropSettledStreams();
+        if (this.waiters.length === 0) break;
+        if (frames.length === 0) await this.sleep(Math.max(1, this.throttle.nextAvailableInMs(at)));
+      }
+    } finally {
+      this.pumping = false;
+    }
+  }
+
+  /** Settle the waiters whose streams just went out (or failed). */
+  private complete(method: SubscribeMethod, sent: Set<string>, err: unknown): void {
+    for (const waiter of this.waiters) {
+      if (waiter.method !== method) continue;
+      const hit = [...waiter.streams].some((stream) => sent.has(stream));
+      if (!hit) continue;
+      if (err !== undefined) {
+        waiter.reject(err);
+        waiter.streams.clear();
+      } else {
+        for (const stream of [...waiter.streams]) if (sent.has(stream)) waiter.streams.delete(stream);
+      }
+    }
+    this.settle();
   }
 }
