@@ -48,3 +48,31 @@ describe('SpotTrading.cancelOrder', () => {
     expect(error).not.toBeInstanceOf(BinanceCancelRestrictionFailedError);
   });
 });
+
+describe('SpotTrading pegged validation and allocations', () => {
+  it('rejects an invalid pegPriceType before sending anything', async () => {
+    const http = { post: vi.fn(async () => ({})) };
+    await expect(
+      new SpotTrading(http as unknown as HttpClient).createOrder({ symbol: 'BTCUSDT', pegPriceType: 'LIMIT' }),
+    ).rejects.toMatchObject({ rule: 'PEGGED_ORDER' });
+    expect(http.post).not.toHaveBeenCalled();
+  });
+
+  it('sends a valid pegged order with the validated fields', async () => {
+    const http = { post: vi.fn(async (_path: string, _body: Record<string, unknown>): Promise<unknown> => ({})) };
+    await new SpotTrading(http as unknown as HttpClient)
+      .createOrder({ symbol: 'BTCUSDT', pegPriceType: 'PRIMARY_PEG', pegOffsetType: 'PRICE_LEVEL', pegOffsetValue: '5' })
+      .catch(() => undefined);
+    expect(http.post.mock.calls[0]?.[1]).toMatchObject({ pegPriceType: 'PRIMARY_PEG', pegOffsetType: 'PRICE_LEVEL', pegOffsetValue: 5 });
+  });
+
+  it('parses SOR allocation records and keeps tradeId -1', async () => {
+    const { SpotAllocationSchema } = await import('../../src/types/spot.types.js');
+    const parsed = SpotAllocationSchema.parse({
+      allocId: 1, tradeId: -1, symbol: 'BTCUSDT', orderId: 9, matchType: 'ONE_PARTY_TRADE_REPORT',
+      workingFloor: 'SOR', allocationType: 'SOR',
+    });
+    expect(parsed.tradeId).toBe(-1);
+    expect(parsed.workingFloor).toBe('SOR');
+  });
+});

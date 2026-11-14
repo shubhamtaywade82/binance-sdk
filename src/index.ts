@@ -574,6 +574,22 @@ export {
   type FuturesOrderEndpoint,
 } from './preflight/orderRouting.js';
 
+export {
+  ALGO_ORDER_FIELDS,
+  toAlgoOrderParams,
+} from './preflight/algoOrderMapping.js';
+
+export {
+  ThrottledControl,
+  type ThrottledControlOptions,
+} from './ws/platform/SubscribeThrottle.js';
+
+export {
+  subscribeSpotUserDataSession,
+} from './ws/SpotUserWS.js';
+
+export { BinanceCancelRestrictionFailedError } from './errors/BinanceCancelRestrictionFailedError.js';
+
 export { attachWsRateLimits, type WsRateLimitEntry } from './client/RateLimitTracker.js';
 
 export {

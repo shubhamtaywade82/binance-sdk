@@ -12,13 +12,37 @@ import {
   SpotTradesResponseSchema,
 } from '../types/spot.types.js';
 import { BinanceApiError } from '../errors/BinanceApiError.js';
+import { validatePeggedOrder } from '../preflight/pegged.js';
+import { SpotAllocationsResponseSchema, type SpotAllocation } from '../types/spot.types.js';
 import { BinanceCancelRestrictionFailedError } from '../errors/BinanceCancelRestrictionFailedError.js';
 
 export class SpotTrading {
   constructor(private readonly http: HttpClient) {}
 
   async createOrder(params: Record<string, unknown>): Promise<SpotOrder> {
-    return SpotOrderSchema.parse(await this.http.post('/order', params, 'signed'));
+    // Pegged fields are checked locally before the request: a bad pegPriceType, pegOffsetType,
+    // or pegOffsetValue is rejected rather than sent (vendored spec, Pegged Orders).
+    const optional = (value: unknown): string | undefined => (value === undefined ? undefined : String(value));
+    const pegged = validatePeggedOrder({
+      pegPriceType: optional(params.pegPriceType),
+      pegOffsetType: optional(params.pegOffsetType),
+      pegOffsetValue: params.pegOffsetValue === undefined ? undefined : Number(params.pegOffsetValue),
+    });
+    const body = { ...params, ...pegged };
+    return SpotOrderSchema.parse(await this.http.post('/order', body, 'signed'));
+  }
+
+  /**
+   * SOR allocations (verified: GET /api/v3/myAllocations). A SOR-filled order's fills are
+   * reported here, with tradeId -1, rather than as direct trades.
+   */
+  async myAllocations(
+    symbol: string,
+    options?: { startTime?: number; endTime?: number; fromAllocationId?: number; limit?: number; orderId?: number },
+  ): Promise<SpotAllocation[]> {
+    return SpotAllocationsResponseSchema.parse(
+      await this.http.get('/myAllocations', { symbol, ...options }, 'signed'),
+    );
   }
 
   async testOrder(params: Record<string, unknown>): Promise<Record<string, unknown>> {
