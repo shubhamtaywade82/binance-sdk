@@ -85,8 +85,20 @@ export class OrderBook {
   private synced = false;
   /** Set when a gap is detected; cleared by the next snapshot. */
   private desynced = false;
+  /** True until the bridging diff after a snapshot has been applied (usdm mode only). */
+  private firstAfterSnapshot = false;
 
-  constructor(readonly symbol: string) {}
+  /**
+   * `product: 'usdm'` applies the documented USDⓈ-M first-event rule: the first
+   * diff after a snapshot must satisfy `U <= lastUpdateId <= u`, and the `pu`
+   * continuity check starts with the second diff. The default keeps the historical
+   * behaviour, which the spot path still uses. The spot first-event rule has not
+   * been verified against the docs, so it is not changed here.
+   */
+  constructor(
+    readonly symbol: string,
+    private readonly options: { product?: 'usdm' } = {},
+  ) {}
 
   get isSynced(): boolean {
     return this.synced && !this.desynced;
@@ -108,6 +120,7 @@ export class OrderBook {
     this.lastUpdateId = snapshot.lastUpdateId;
     this.desynced = false;
     this.synced = true;
+    this.firstAfterSnapshot = true;
   }
 
   /**
@@ -116,6 +129,24 @@ export class OrderBook {
    */
   applyDiff(diff: DiffInput): boolean {
     if (!this.synced) return false;
+
+    if (this.options.product === 'usdm' && this.firstAfterSnapshot && this.lastUpdateId !== null) {
+      const snapshotId = this.lastUpdateId;
+      // Fully covered by the snapshot: ignore.
+      if (diff.u < snapshotId) return true;
+      // Missed events between the snapshot and this diff: resync.
+      if (diff.U > snapshotId) {
+        this.desynced = true;
+        return false;
+      }
+      // U <= snapshotId <= u: the bridging event. The pu rule does not apply to it.
+      // Absolute quantities make re-applying a diff already in the snapshot idempotent.
+      this.firstAfterSnapshot = false;
+      this.applySide(this.bids, diff.bids, /* descending= */ true);
+      this.applySide(this.asks, diff.asks, /* descending= */ false);
+      this.lastUpdateId = diff.u;
+      return true;
+    }
 
     // Futures: pu must equal our previous final update id.
     if (diff.pu !== undefined && this.lastUpdateId !== null && diff.pu !== this.lastUpdateId) {

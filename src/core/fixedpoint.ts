@@ -112,6 +112,18 @@ export function multiplyFixed(a: FixedDecimal, b: FixedDecimal): FixedDecimal {
   return { units: a.units * b.units, scale: a.scale + b.scale };
 }
 
+/** Exact sum. The result scale is the larger operand scale. */
+export function addFixed(a: FixedDecimal, b: FixedDecimal): FixedDecimal {
+  const scale = Math.max(a.scale, b.scale);
+  return { units: alignUnits(a, scale) + alignUnits(b, scale), scale };
+}
+
+/** Exact difference (a − b). The result scale is the larger operand scale. */
+export function subtractFixed(a: FixedDecimal, b: FixedDecimal): FixedDecimal {
+  const scale = Math.max(a.scale, b.scale);
+  return { units: alignUnits(a, scale) - alignUnits(b, scale), scale };
+}
+
 /** Floor division for a positive divisor (rounds toward negative infinity). */
 export function floorDiv(numerator: bigint, divisor: bigint): bigint {
   if (divisor <= 0n) throw new RangeError('floorDiv: divisor must be positive');

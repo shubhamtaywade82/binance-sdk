@@ -401,9 +401,39 @@ export {
   floorToStepString,
   roundToStepString,
   isOnStep,
+  addFixed,
+  subtractFixed,
   MAX_FIXED_SCALE,
   type FixedDecimal,
 } from './core/fixedpoint.js';
+
+export {
+  PartialDepthBook,
+  partialDepthStreamName,
+  PARTIAL_DEPTH_LEVELS,
+  type PartialDepthApplyResult,
+  type PartialDepthFrame,
+  type PartialDepthLevel,
+  type PartialDepthLevels,
+  type PartialDepthSnapshot,
+  type PartialDepthUpdateSpeed,
+} from './state/PartialDepthBook.js';
+
+export {
+  iterateHistoricalKlines,
+  type HistoricalKlineOptions,
+  type KlinePageParams,
+  type KlineRow,
+} from './market/historicalKlines.js';
+
+export { AggTradeBarBuilder, type AggTradeInput, type Bar } from './market/AggTradeBarBuilder.js';
+
+export {
+  ExecutionLatencyMonitor,
+  type LatencyMetric,
+  type LatencySample,
+  type LatencyStats,
+} from './market/ExecutionLatencyMonitor.js';
 
 export {
   percentPriceBandFor,
