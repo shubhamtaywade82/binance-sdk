@@ -1,4 +1,11 @@
 import type { ExchangeSymbol } from './market.types.js';
+import {
+  formatFixed,
+  normalizeFixed,
+  parseFixed,
+  quantizeFloor,
+  quantizeRound,
+} from '../core/fixedpoint.js';
 
 /**
  * Symbol trading rules, flattened out of the loose `filters` array that
@@ -25,8 +32,31 @@ export interface SymbolRules {
   marketStepDecimals: number;
   marketMinQty: number;
   marketMaxQty: number;
-  /** MIN_NOTIONAL — on USD-M futures the field is `notional`, not `minNotional`. */
+  /**
+   * Minimum order notional. Spot reports it as `MIN_NOTIONAL.minNotional` or
+   * `NOTIONAL.minNotional`; USD-M futures as `MIN_NOTIONAL.notional`. 0 when absent.
+   */
   minNotional: number;
+  /** `NOTIONAL.maxNotional` (spot). `Infinity` when absent. */
+  maxNotional: number;
+  /** `PERCENT_PRICE_BY_SIDE` multipliers as exact decimal strings (spot). */
+  percentPriceBySide?: PercentPriceBySideRules;
+  /** `ICEBERG_PARTS.limit` (spot): maximum slices per iceberg order. */
+  icebergPartsLimit?: number;
+}
+
+/**
+ * `PERCENT_PRICE_BY_SIDE`. BUY and SELL orders use different bands around a
+ * reference price, which is the average of previous trade prices over
+ * `avgPriceMins` minutes (or the last price when `avgPriceMins` is 0). Strings
+ * are kept verbatim so the validator can do exact arithmetic.
+ */
+export interface PercentPriceBySideRules {
+  bidMultiplierUp: string;
+  bidMultiplierDown: string;
+  askMultiplierUp: string;
+  askMultiplierDown: string;
+  avgPriceMins: number;
 }
 
 interface RawFilter {
@@ -75,21 +105,28 @@ export function formatToDecimals(value: number, decimals: number): string {
 }
 
 /**
- * Round down onto a step boundary. Used for quantities, where rounding up would
- * silently take on more risk than the caller asked for. The epsilon absorbs
- * binary-float error so that e.g. 0.3 / 0.1 = 2.9999999999999996 still floors to 3.
+ * Round DOWN onto a step boundary. Used for quantities, where rounding up would
+ * silently take on more risk than the caller asked for.
+ *
+ * Exact: the number is converted through its shortest round-trip string and the
+ * division runs on bigint (see core/fixedpoint). This replaces the former
+ * `Math.floor(value / step + 1e-9)`, which rounded 0.0999999999 up to 0.1.
+ * Non-finite inputs are returned unchanged, as before.
  */
 export function floorToStep(value: number, step: number, decimals = stepDecimals(step)): number {
-  if (!(step > 0)) return value;
-  const steps = Math.floor(value / step + 1e-9);
-  return Number((steps * step).toFixed(decimals));
+  if (!(step > 0) || !Number.isFinite(value) || !Number.isFinite(step)) return value;
+  const quantized = quantizeFloor(parseFixed(value), normalizeFixed(parseFixed(step)));
+  return Number(formatFixed(quantized, decimals));
 }
 
-/** Round to the nearest step boundary. Used for prices, where direction is not a risk. */
+/**
+ * Round to the nearest step boundary (ties away from zero). Used for prices,
+ * where direction is not a risk. Exact, like {@link floorToStep}.
+ */
 export function roundToStep(value: number, step: number, decimals = stepDecimals(step)): number {
-  if (!(step > 0)) return value;
-  const steps = Math.round(value / step);
-  return Number((steps * step).toFixed(decimals));
+  if (!(step > 0) || !Number.isFinite(value) || !Number.isFinite(step)) return value;
+  const quantized = quantizeRound(parseFixed(value), normalizeFixed(parseFixed(step)));
+  return Number(formatFixed(quantized, decimals));
 }
 
 /** Flatten one `exchangeInfo.symbols[]` entry into typed trading rules. */
@@ -98,13 +135,20 @@ export function symbolRulesFrom(symbol: ExchangeSymbol): SymbolRules {
   const price = filterOf(symbol, 'PRICE_FILTER');
   const lot = filterOf(symbol, 'LOT_SIZE');
   const marketLot = filterOf(symbol, 'MARKET_LOT_SIZE');
-  const notional = filterOf(symbol, 'MIN_NOTIONAL');
+  const minNotionalFilter = filterOf(symbol, 'MIN_NOTIONAL');
+  const notionalFilter = filterOf(symbol, 'NOTIONAL');
+  const percentBySide = filterOf(symbol, 'PERCENT_PRICE_BY_SIDE');
+  const icebergParts = filterOf(symbol, 'ICEBERG_PARTS');
 
   const tickSizeRaw = price?.tickSize ?? 10 ** -num(raw.pricePrecision, 2);
   const stepSizeRaw = lot?.stepSize ?? 10 ** -num(raw.quantityPrecision, 3);
   const marketStepRaw = marketLot?.stepSize ?? stepSizeRaw;
 
-  return {
+  // Spot MIN_NOTIONAL and NOTIONAL use `minNotional`; USD-M MIN_NOTIONAL uses `notional`.
+  const minNotionalRaw =
+    minNotionalFilter?.minNotional ?? minNotionalFilter?.notional ?? notionalFilter?.minNotional;
+
+  const rules: SymbolRules = {
     symbol: symbol.symbol,
     status: symbol.status,
     baseAsset: symbol.baseAsset,
@@ -119,6 +163,21 @@ export function symbolRulesFrom(symbol: ExchangeSymbol): SymbolRules {
     marketStepDecimals: stepDecimals(marketStepRaw as string | number),
     marketMinQty: num(marketLot?.minQty, num(lot?.minQty, 0)),
     marketMaxQty: num(marketLot?.maxQty, num(lot?.maxQty, Number.POSITIVE_INFINITY)),
-    minNotional: num(notional?.notional, 0),
+    minNotional: num(minNotionalRaw, 0),
+    maxNotional: num(notionalFilter?.maxNotional, Number.POSITIVE_INFINITY),
   };
+  if (percentBySide) {
+    rules.percentPriceBySide = {
+      bidMultiplierUp: String(percentBySide.bidMultiplierUp ?? ''),
+      bidMultiplierDown: String(percentBySide.bidMultiplierDown ?? ''),
+      askMultiplierUp: String(percentBySide.askMultiplierUp ?? ''),
+      askMultiplierDown: String(percentBySide.askMultiplierDown ?? ''),
+      avgPriceMins: num(percentBySide.avgPriceMins, 0),
+    };
+  }
+  const partsLimit = Number(icebergParts?.limit);
+  if (icebergParts && Number.isFinite(partsLimit) && partsLimit > 0) {
+    rules.icebergPartsLimit = partsLimit;
+  }
+  return rules;
 }
