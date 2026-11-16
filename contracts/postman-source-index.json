@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "sourceUrl": "https://github.com/binance/binance-api-postman",
   "officialDocsUrl": "https://developers.binance.com/en/docs/sdks-tools/postman/collections",
-  "pinnedSha": "2dbd378be100f170d859d56fcd0ec23457a72d30",
-  "pinnedAt": "2026-10-27",
+  "pinnedSha": "1856d66cecd544191a01d60cdfbd99900d310547",
+  "pinnedAt": "2026-11-12",
   "unmappedCollections": [
     "Binance Stocks API.json",
     "Binance W3W Prediction API.json"
