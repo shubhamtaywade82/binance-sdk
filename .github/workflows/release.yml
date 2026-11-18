@@ -1,10 +1,16 @@
 name: Release
 
+# Publishes via npm trusted publishing (OIDC). The trusted-publisher entry on
+# npmjs.com must name `release-please.yml`, the only caller of this workflow.
+# The direct `release` trigger was removed: it would make this file the caller.
 on:
-  release:
-    types: [published]
-  # Called by release-please.yml after it creates a release.
   workflow_call:
+    inputs:
+      tag:
+        description: 'npm dist-tag to publish under'
+        required: false
+        type: string
+        default: 'latest'
 
 jobs:
   publish:
@@ -22,8 +28,10 @@ jobs:
         with:
           node-version: 'lts/*'
           cache: npm
-          registry-url: https://registry.npmjs.org
-      - run: npm ci
+      # Trusted publishing needs npm >= 11.21.0 for dist-tag handling.
+      - name: Pin npm for trusted publishing
+        run: npm install -g npm@^11.21.0
+      - run: npm ci --ignore-scripts
       # The same quality gates main CI enforces, run on the release commit:
       # typecheck, lint, tests, contract drift, and the Postman coverage gate.
       - run: npm run typecheck
@@ -64,6 +72,7 @@ jobs:
       # maps or a package over the unpacked-size budget
       # (scripts/check-package-footprint.ts).
       - run: npm run package:check-footprint
-      - run: npm publish --provenance --access public
+      - name: Publish via trusted publishing (OIDC)
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_DIST_TAG: ${{ inputs.tag }}
+        run: npm publish --provenance --access public --tag "$NPM_DIST_TAG" --ignore-scripts
