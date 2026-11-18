@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "sourceUrl": "https://github.com/binance/binance-api-postman",
   "officialDocsUrl": "https://developers.binance.com/en/docs/sdks-tools/postman/collections",
-  "pinnedSha": "2dbd378be100f170d859d56fcd0ec23457a72d30",
-  "pinnedAt": "2026-10-27",
+  "pinnedSha": "1856d66cecd544191a01d60cdfbd99900d310547",
+  "pinnedAt": "2026-11-12",
   "totalEndpoints": 710,
   "totalCollections": 24,
   "endpoints": [
@@ -22940,6 +22940,12 @@
           "exampleValue": "PRICE_LEVEL"
         },
         {
+          "name": "quoteNotionalLimit",
+          "description": "For orders on the BUY side only. Maximum quote-asset notional the order may consume. See Quote Notional Limit.",
+          "required": false,
+          "exampleValue": "100"
+        },
+        {
           "name": "recvWindow",
           "description": "Supports up to three decimal places of precision (e.g., 6000.346) so that microseconds may be specified.",
           "required": false,
@@ -23171,6 +23177,12 @@
           "description": "Only `PRICE_LEVEL` is supported <br> See Pegged Orders.",
           "required": false,
           "exampleValue": "PRICE_LEVEL"
+        },
+        {
+          "name": "quoteNotionalLimit",
+          "description": "For replacement orders on the BUY side only. Maximum quote-asset notional the replacement order may consume. See Quote Notional Limit.",
+          "required": false,
+          "exampleValue": "100"
         },
         {
           "name": "recvWindow",
@@ -23460,6 +23472,12 @@
           "exampleValue": "PRICE_LEVEL"
         },
         {
+          "name": "quoteNotionalLimit",
+          "description": "For orders on the BUY side only. Maximum quote-asset notional the order may consume. See Quote Notional Limit.",
+          "required": false,
+          "exampleValue": "100"
+        },
+        {
           "name": "recvWindow",
           "description": "The value cannot be greater than `60000`. Supports up to three decimal places of precision (e.g., 6000.346) so that microseconds may be specified.",
           "required": false,
@@ -23726,6 +23744,18 @@
           "exampleValue": "NONE"
         },
         {
+          "name": "aboveQuoteNotionalLimit",
+          "description": "Quote notional limit for the above order (only for orders on the BUY side). See Quote Notional Limit.",
+          "required": false,
+          "exampleValue": "100"
+        },
+        {
+          "name": "belowQuoteNotionalLimit",
+          "description": "Quote notional limit for the below order (only for orders on the BUY side). See Quote Notional Limit.",
+          "required": false,
+          "exampleValue": "100"
+        },
+        {
           "name": "recvWindow",
           "description": "The value cannot be greater than `60000`. Supports up to three decimal places of precision (e.g., 6000.346) so that microseconds may be specified.",
           "required": false,
@@ -23934,6 +23964,12 @@
           "exampleValue": "1"
         },
         {
+          "name": "workingQuoteNotionalLimit",
+          "description": "Quote notional limit for the working LIMIT order on the BUY side. See Quote Notional Limit.",
+          "required": false,
+          "exampleValue": "100"
+        },
+        {
           "name": "recvWindow",
           "description": "Supports up to three decimal places of precision (e.g., 6000.346) so that microseconds may be specified.",
           "required": false,
@@ -23991,6 +24027,7 @@
         },
         {
           "name": "workingType",
+          "description": "Supported values: `LIMIT`, `LIMIT_MAKER`",
           "required": true,
           "defaultValue": "LIMIT",
           "exampleValue": "LIMIT"
@@ -24215,6 +24252,12 @@
           "exampleValue": "1"
         },
         {
+          "name": "workingQuoteNotionalLimit",
+          "description": "Quote notional limit for the working LIMIT order on the BUY side. See Quote Notional Limit.",
+          "required": false,
+          "exampleValue": "100"
+        },
+        {
           "name": "recvWindow",
           "description": "The value cannot be greater than `60000`. Supports up to three decimal places of precision (e.g., 6000.346) so that microseconds may be specified.",
           "required": false,
@@ -24424,6 +24467,18 @@
           "name": "pendingPegOffsetValue",
           "required": false,
           "exampleValue": "1"
+        },
+        {
+          "name": "workingQuoteNotionalLimit",
+          "description": "Quote notional limit for the working order (only for orders on the BUY side). See Quote Notional Limit.",
+          "required": false,
+          "exampleValue": "100"
+        },
+        {
+          "name": "pendingQuoteNotionalLimit",
+          "description": "Quote notional limit for the pending order (only for orders on the BUY side). See Quote Notional Limit.",
+          "required": false,
+          "exampleValue": "100"
         },
         {
           "name": "recvWindow",
@@ -24708,6 +24763,24 @@
           "name": "pendingBelowPegOffsetValue",
           "required": false,
           "exampleValue": "1"
+        },
+        {
+          "name": "workingQuoteNotionalLimit",
+          "description": "Quote notional limit for the working order (only for orders on the BUY side). See Quote Notional Limit.",
+          "required": false,
+          "exampleValue": "100"
+        },
+        {
+          "name": "pendingAboveQuoteNotionalLimit",
+          "description": "Quote notional limit for the pending above order (only for orders on the BUY side). See Quote Notional Limit.",
+          "required": false,
+          "exampleValue": "100"
+        },
+        {
+          "name": "pendingBelowQuoteNotionalLimit",
+          "description": "Quote notional limit for the pending below order (only for orders on the BUY side). See Quote Notional Limit.",
+          "required": false,
+          "exampleValue": "100"
         },
         {
           "name": "recvWindow",
