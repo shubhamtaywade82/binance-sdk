@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "sourceUrl": "https://github.com/binance/binance-api-postman",
   "officialDocsUrl": "https://developers.binance.com/en/docs/sdks-tools/postman/collections",
-  "pinnedSha": "1856d66cecd544191a01d60cdfbd99900d310547",
-  "pinnedAt": "2026-11-12",
-  "totalEndpoints": 710,
+  "pinnedSha": "8e32f5d68bf68cf3c890161c4aaee952cdbd6df8",
+  "pinnedAt": "2026-11-24",
+  "totalEndpoints": 717,
   "totalCollections": 24,
   "endpoints": [
     {
@@ -8884,7 +8884,7 @@
         },
         {
           "name": "callbackRate",
-          "description": "Used with `TRAILING_STOP_MARKET`, min 0.1, max 10 (1 = 1%)",
+          "description": "Used with `TRAILING_STOP_MARKET`, min 0.1, max 20 (1 = 1%)",
           "required": false,
           "exampleValue": "1"
         },
@@ -10059,6 +10059,89 @@
       "sourceFolder": [
         "Account"
       ],
+      "name": "Get Download Id For CM Futures Transaction History (USER_DATA)",
+      "product": "portfolio",
+      "hostKey": "papi",
+      "method": "GET",
+      "path": "/papi/v1/cm/income/asyn",
+      "auth": "signed",
+      "queryParams": [
+        {
+          "name": "startTime",
+          "description": "Timestamp in ms",
+          "required": true,
+          "defaultValue": "1623319461670",
+          "exampleValue": "1623319461670"
+        },
+        {
+          "name": "endTime",
+          "description": "Timestamp in ms",
+          "required": true,
+          "defaultValue": "1641782889000",
+          "exampleValue": "1641782889000"
+        },
+        {
+          "name": "recvWindow",
+          "required": false,
+          "exampleValue": "5000"
+        },
+        {
+          "name": "timestamp",
+          "description": "UTC timestamp in ms",
+          "required": true
+        },
+        {
+          "name": "signature",
+          "description": "Signature",
+          "required": true
+        }
+      ],
+      "bodyParams": [],
+      "docRef": "Portfolio Margin REST API → Account > Get Download Id For CM Futures Transaction History (USER_DATA)"
+    },
+    {
+      "sourceCollection": "Binance Derivatives Trading Portfolio Margin API.json",
+      "sourceFolder": [
+        "Account"
+      ],
+      "name": "Get CM Futures Transaction Download Link by Id (USER_DATA)",
+      "product": "portfolio",
+      "hostKey": "papi",
+      "method": "GET",
+      "path": "/papi/v1/cm/income/asyn/id",
+      "auth": "signed",
+      "queryParams": [
+        {
+          "name": "downloadId",
+          "description": "get by download id api",
+          "required": true,
+          "defaultValue": "545923594199212032",
+          "exampleValue": "545923594199212032"
+        },
+        {
+          "name": "recvWindow",
+          "required": false,
+          "exampleValue": "5000"
+        },
+        {
+          "name": "timestamp",
+          "description": "UTC timestamp in ms",
+          "required": true
+        },
+        {
+          "name": "signature",
+          "description": "Signature",
+          "required": true
+        }
+      ],
+      "bodyParams": [],
+      "docRef": "Portfolio Margin REST API → Account > Get CM Futures Transaction Download Link by Id (USER_DATA)"
+    },
+    {
+      "sourceCollection": "Binance Derivatives Trading Portfolio Margin API.json",
+      "sourceFolder": [
+        "Account"
+      ],
       "name": "Change CM Initial Leverage (TRADE)",
       "product": "portfolio",
       "hostKey": "papi",
@@ -10133,6 +10216,89 @@
       ],
       "bodyParams": [],
       "docRef": "Portfolio Margin REST API → Account > CM Notional and Leverage Brackets (USER_DATA)"
+    },
+    {
+      "sourceCollection": "Binance Derivatives Trading Portfolio Margin API.json",
+      "sourceFolder": [
+        "Account"
+      ],
+      "name": "Get Download Id For CM Futures Order History (USER_DATA)",
+      "product": "portfolio",
+      "hostKey": "papi",
+      "method": "GET",
+      "path": "/papi/v1/cm/order/asyn",
+      "auth": "signed",
+      "queryParams": [
+        {
+          "name": "startTime",
+          "description": "Timestamp in ms",
+          "required": true,
+          "defaultValue": "1623319461670",
+          "exampleValue": "1623319461670"
+        },
+        {
+          "name": "endTime",
+          "description": "Timestamp in ms",
+          "required": true,
+          "defaultValue": "1641782889000",
+          "exampleValue": "1641782889000"
+        },
+        {
+          "name": "recvWindow",
+          "required": false,
+          "exampleValue": "5000"
+        },
+        {
+          "name": "timestamp",
+          "description": "UTC timestamp in ms",
+          "required": true
+        },
+        {
+          "name": "signature",
+          "description": "Signature",
+          "required": true
+        }
+      ],
+      "bodyParams": [],
+      "docRef": "Portfolio Margin REST API → Account > Get Download Id For CM Futures Order History (USER_DATA)"
+    },
+    {
+      "sourceCollection": "Binance Derivatives Trading Portfolio Margin API.json",
+      "sourceFolder": [
+        "Account"
+      ],
+      "name": "Get CM Futures Order Download Link by Id (USER_DATA)",
+      "product": "portfolio",
+      "hostKey": "papi",
+      "method": "GET",
+      "path": "/papi/v1/cm/order/asyn/id",
+      "auth": "signed",
+      "queryParams": [
+        {
+          "name": "downloadId",
+          "description": "get by download id api",
+          "required": true,
+          "defaultValue": "545923594199212032",
+          "exampleValue": "545923594199212032"
+        },
+        {
+          "name": "recvWindow",
+          "required": false,
+          "exampleValue": "5000"
+        },
+        {
+          "name": "timestamp",
+          "description": "UTC timestamp in ms",
+          "required": true
+        },
+        {
+          "name": "signature",
+          "description": "Signature",
+          "required": true
+        }
+      ],
+      "bodyParams": [],
+      "docRef": "Portfolio Margin REST API → Account > Get CM Futures Order Download Link by Id (USER_DATA)"
     },
     {
       "sourceCollection": "Binance Derivatives Trading Portfolio Margin API.json",
@@ -10243,6 +10409,89 @@
       ],
       "bodyParams": [],
       "docRef": "Portfolio Margin REST API → Account > Get CM Current Position Mode (USER_DATA)"
+    },
+    {
+      "sourceCollection": "Binance Derivatives Trading Portfolio Margin API.json",
+      "sourceFolder": [
+        "Account"
+      ],
+      "name": "Get Download Id For CM Futures Trade History (USER_DATA)",
+      "product": "portfolio",
+      "hostKey": "papi",
+      "method": "GET",
+      "path": "/papi/v1/cm/trade/asyn",
+      "auth": "signed",
+      "queryParams": [
+        {
+          "name": "startTime",
+          "description": "Timestamp in ms",
+          "required": true,
+          "defaultValue": "1623319461670",
+          "exampleValue": "1623319461670"
+        },
+        {
+          "name": "endTime",
+          "description": "Timestamp in ms",
+          "required": true,
+          "defaultValue": "1641782889000",
+          "exampleValue": "1641782889000"
+        },
+        {
+          "name": "recvWindow",
+          "required": false,
+          "exampleValue": "5000"
+        },
+        {
+          "name": "timestamp",
+          "description": "UTC timestamp in ms",
+          "required": true
+        },
+        {
+          "name": "signature",
+          "description": "Signature",
+          "required": true
+        }
+      ],
+      "bodyParams": [],
+      "docRef": "Portfolio Margin REST API → Account > Get Download Id For CM Futures Trade History (USER_DATA)"
+    },
+    {
+      "sourceCollection": "Binance Derivatives Trading Portfolio Margin API.json",
+      "sourceFolder": [
+        "Account"
+      ],
+      "name": "Get CM Futures Trade Download Link by Id (USER_DATA)",
+      "product": "portfolio",
+      "hostKey": "papi",
+      "method": "GET",
+      "path": "/papi/v1/cm/trade/asyn/id",
+      "auth": "signed",
+      "queryParams": [
+        {
+          "name": "downloadId",
+          "description": "get by download id api",
+          "required": true,
+          "defaultValue": "545923594199212032",
+          "exampleValue": "545923594199212032"
+        },
+        {
+          "name": "recvWindow",
+          "required": false,
+          "exampleValue": "5000"
+        },
+        {
+          "name": "timestamp",
+          "description": "UTC timestamp in ms",
+          "required": true
+        },
+        {
+          "name": "signature",
+          "description": "Signature",
+          "required": true
+        }
+      ],
+      "bodyParams": [],
+      "docRef": "Portfolio Margin REST API → Account > Get CM Futures Trade Download Link by Id (USER_DATA)"
     },
     {
       "sourceCollection": "Binance Derivatives Trading Portfolio Margin API.json",
@@ -11551,6 +11800,21 @@
       ],
       "bodyParams": [],
       "docRef": "Portfolio Margin Pro REST API → Market Data > Portfolio Margin Pro Tiered Collateral Rate (USER_DATA)"
+    },
+    {
+      "sourceCollection": "Binance Derivatives Trading Portfolio Margin Pro API.json",
+      "sourceFolder": [
+        "Market Data"
+      ],
+      "name": "Get Portfolio Margin Tiered Collateral Rates (MARKET_DATA)",
+      "product": "portfolioPro",
+      "hostKey": "apiRoot",
+      "method": "GET",
+      "path": "/sapi/v2/portfolio/retail/collateralRate",
+      "auth": "apiKey",
+      "queryParams": [],
+      "bodyParams": [],
+      "docRef": "Portfolio Margin Pro REST API → Market Data > Get Portfolio Margin Tiered Collateral Rates (MARKET_DATA)"
     },
     {
       "sourceCollection": "Binance Derivatives Trading Portfolio Margin Pro API.json",
@@ -25861,7 +26125,7 @@
         },
         {
           "name": "limit",
-          "description": "If limit > 5000, only 5000 entries will be returned.",
+          "description": "If limit > 7500, only 7500 entries will be returned.",
           "required": false,
           "exampleValue": "1"
         },
