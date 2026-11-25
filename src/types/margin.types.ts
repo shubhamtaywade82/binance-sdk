@@ -232,3 +232,26 @@ export const MarginTradeSchema = z
   .loose();
 export type MarginTrade = z.infer<typeof MarginTradeSchema>;
 export const MarginTradesResponseSchema = z.array(MarginTradeSchema);
+
+/**
+ * Listen token for the margin user-data stream (Listen Token User Data Stream,
+ * docs: products/margin-trading/listen-token-data-stream). It is the verified
+ * successor to the deprecated listen-key-based margin stream: subscribe on the
+ * WebSocket API with `userDataStream.subscribe.listenToken`.
+ */
+export const ListenTokenSchema = z.object({
+  /** Opaque short-lived token (passed as `listenToken` to the WS API subscribe). */
+  token: z.string(),
+  /** Expiration epoch ms. Default and maximum validity are 24 hours. */
+  expirationTime: z.number(),
+});
+export type ListenToken = z.infer<typeof ListenTokenSchema>;
+
+export interface CreateListenTokenParams {
+  /** `true` for an isolated-margin token; default is cross margin. */
+  isIsolated?: boolean;
+  /** Required when `isIsolated` is `true` (e.g. `BNBUSDT`). */
+  symbol?: string;
+  /** Token validity in milliseconds. Default 24 hours; maximum 24 hours. */
+  validity?: number;
+}
