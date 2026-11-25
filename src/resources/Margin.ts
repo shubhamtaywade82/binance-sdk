@@ -5,11 +5,14 @@ import {
   BorrowRepayRecordResponseSchema,
   BorrowRepayResult,
   BorrowRepayResultSchema,
+  CreateListenTokenParams,
   CrossMarginAccount,
   CrossMarginAccountSchema,
   IsolatedMarginAccount,
   IsolatedMarginAccountSchema,
   IsolatedTransferParams,
+  ListenToken,
+  ListenTokenSchema,
   MarginCreateOrderParams,
   MarginForceLiquidationResponse,
   MarginForceLiquidationResponseSchema,
@@ -88,6 +91,25 @@ export class MarginAccount {
   ): Promise<BorrowRepayRecordResponse> {
     return BorrowRepayRecordResponseSchema.parse(
       await this.http.get('/sapi/v1/margin/borrow-repay', { type, ...options }, 'signed'),
+    );
+  }
+
+  /**
+   * Create a short-lived listen token for the margin user-data stream — the
+   * verified successor to the deprecated listen-key margin stream
+   * (docs: products/margin-trading/listen-token-data-stream). Default and
+   * maximum validity are 24 hours; an isolated token requires `symbol`.
+   * Subscribe on the WebSocket API (`wss://ws-api.binance.com:443/ws-api/v3`)
+   * with `userDataStream.subscribe.listenToken` — see {@link MarginUserWS}.
+   * Binance rejects an invalid token with error code `-1209`.
+   */
+  async createListenToken(params: CreateListenTokenParams = {}): Promise<ListenToken> {
+    const body: Record<string, unknown> = {};
+    if (params.isIsolated !== undefined) body.isIsolated = params.isIsolated;
+    if (params.symbol !== undefined) body.symbol = params.symbol;
+    if (params.validity !== undefined) body.validity = params.validity;
+    return ListenTokenSchema.parse(
+      await this.http.post('/sapi/v1/userListenToken', Object.keys(body).length ? body : undefined, 'signed'),
     );
   }
 
