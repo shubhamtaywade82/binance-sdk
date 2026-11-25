@@ -287,9 +287,93 @@ export const ListenKeyExpiredSchema = z.object({
 export type ListenKeyExpired = z.infer<typeof ListenKeyExpiredSchema>;
 
 /**
+ * `TRADE_LITE` — fast trade push, a reduced-field counterpart of
+ * `ORDER_TRADE_UPDATE` that only carries TRADE execution-type fills, with
+ * lower data latency. Schema verified against the Binance USDⓈ-M
+ * user-data-streams page and cross-checked against open-source connector
+ * models (nautilus_trader / typed-binance). Decimal fields stay strings.
+ */
+export const UserDataTradeLiteSchema = z.object({
+  e: z.literal('TRADE_LITE'),
+  E: z.number(),
+  /** Transaction time. */
+  T: z.number(),
+  s: z.string(),
+  /** Original order quantity. */
+  q: DecimalStringSchema,
+  /** Original order price. */
+  p: DecimalStringSchema,
+  /** Whether the buyer is the maker side. */
+  m: z.boolean(),
+  /** Client order id. */
+  c: z.string(),
+  S: z.string(),
+  /** Last filled price. */
+  L: DecimalStringSchema,
+  /** Order last filled quantity. */
+  l: DecimalStringSchema,
+  /** Trade id. */
+  t: z.number(),
+  /** Order id. */
+  i: z.number(),
+});
+export type UserDataTradeLite = z.infer<typeof UserDataTradeLiteSchema>;
+
+/**
+ * `ALGO_UPDATE` (USDⓈ-M) — algo order create / status change. The `o` object
+ * carries the algo order fields; `ia` (BOOLEAN) reports trailing-stop
+ * activation: per the 2026-08-21 change log it is fully active — before
+ * trigger (status `X` stays `NEW`) two `NEW` pushes may arrive, first
+ * `ia:false` then `ia:true` once the order activates.
+ *
+ * Identifier and status fields are strict; the remaining order fields are
+ * optional because Binance varies them by algo type, and the schema must
+ * never reject a real frame.
+ */
+export const UserDataAlgoUpdateSchema = z.object({
+  e: z.literal('ALGO_UPDATE'),
+  E: z.number(),
+  T: z.number(),
+  o: z.object({
+    /** Client algo id (when the request carried one). */
+    caid: z.string().optional(),
+    /** Algo id. */
+    aid: z.number(),
+    /** Algo type. */
+    at: z.string(),
+    /** Conditional order type. */
+    o: z.string(),
+    s: z.string(),
+    S: z.string(),
+    ps: z.string(),
+    f: z.string(),
+    q: DecimalStringSchema.optional(),
+    /** Algo status (NEW / TRIGGERING / TRIGGERED / CANCELED / FINISHED / REJECTED / EXPIRED). */
+    X: z.string(),
+    ai: z.string().optional(),
+    tp: DecimalStringSchema.optional(),
+    p: DecimalStringSchema.optional(),
+    V: z.string().optional(),
+    wt: z.string().optional(),
+    pm: z.string().optional(),
+    cp: z.boolean().optional(),
+    pP: z.boolean().optional(),
+    R: z.boolean().optional(),
+    tt: z.number().optional(),
+    gtd: z.union([z.number(), z.string()]).optional(),
+    /**
+     * Trailing-stop activation flag (2026-08-07, placeholder until fully
+     * active on 2026-08-21): `false` then `true` while `X` stays `NEW`.
+     */
+    ia: z.boolean().optional(),
+  }),
+});
+export type UserDataAlgoUpdate = z.infer<typeof UserDataAlgoUpdateSchema>;
+
+/**
  * Unknown-but-typed event passthrough: a frame whose `e` is a string this SDK
- * does not model (e.g. `ALGO_UPDATE`, `STRATEGY_UPDATE`, `GRID_UPDATE`,
- * `CONDITIONAL_ORDER_TRIGGER_REJECT`, `TRADE_LITE`, or any future event)
+ * does not model (e.g. `STRATEGY_UPDATE`, `GRID_UPDATE`,
+ * `CONDITIONAL_ORDER_TRIGGER_REJECT`, or any future event)
  * validates as an unknown event instead of throwing, so a new upstream event
  * can never crash the stream processor. The full raw frame is preserved.
  */
@@ -307,6 +391,8 @@ export type UserDataEvent =
   | UserDataMarginCall
   | UserDataAccountConfigUpdate
   | ListenKeyExpired
+  | UserDataTradeLite
+  | UserDataAlgoUpdate
   | UserDataUnknownEvent;
 
 /**
@@ -337,6 +423,8 @@ export function parseUserDataEvent(raw: unknown): UserDataEvent {
   if (eventType === 'MARGIN_CALL') return UserDataMarginCallSchema.parse(raw);
   if (eventType === 'ACCOUNT_CONFIG_UPDATE') return UserDataAccountConfigUpdateSchema.parse(raw);
   if (eventType === 'listenKeyExpired') return ListenKeyExpiredSchema.parse(raw);
+  if (eventType === 'TRADE_LITE') return UserDataTradeLiteSchema.parse(raw);
+  if (eventType === 'ALGO_UPDATE') return UserDataAlgoUpdateSchema.parse(raw);
   if (typeof eventType === 'string' && eventType !== '') {
     return UserDataUnknownEventSchema.parse(raw);
   }

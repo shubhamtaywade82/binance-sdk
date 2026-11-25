@@ -42,6 +42,8 @@ export const USER_DATA_EVENTS = [
   'MARGIN_CALL',
   'ACCOUNT_CONFIG_UPDATE',
   'listenKeyExpired',
+  'TRADE_LITE',
+  'ALGO_UPDATE',
 ] as const;
 
 export type UserDataEventName = (typeof USER_DATA_EVENTS)[number];
