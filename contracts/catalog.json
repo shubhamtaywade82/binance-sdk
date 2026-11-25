@@ -1,8 +1,8 @@
 {
   "$schema": "./catalog.schema.json",
   "catalogVersion": 1,
-  "sdkVersion": "3.2.0",
-  "generatedAt": "2026-10-28T05:07:57.983Z",
+  "sdkVersion": "3.6.1",
+  "generatedAt": "2026-11-25T09:40:05.359Z",
   "description": "Machine-readable inventory of the SDK REST + WebSocket surface, derived from src/registry and the v3 WS platform. Schema catalogs land with the coverage compiler milestone.",
   "products": [
     "algo",
@@ -31,7 +31,7 @@
     "vipLoan",
     "wallet"
   ],
-  "totalEndpoints": 798,
+  "totalEndpoints": 799,
   "wsFamilies": [
     "coinm",
     "spot",

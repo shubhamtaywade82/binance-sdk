@@ -1,6 +1,6 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-10-28T05:07:57.983Z",
+  "generatedAt": "2026-11-25T09:40:05.359Z",
   "endpoints": [
     {
       "product": "spot",
@@ -2201,6 +2201,16 @@
       "security": "API_KEY",
       "weight": null,
       "implementedBy": "coinm.userStream.closeListenKey"
+    },
+    {
+      "product": "margin",
+      "operation": "margin.createUserListenTokenUserStream",
+      "transport": "rest",
+      "method": "POST",
+      "path": "/sapi/v1/userListenToken",
+      "security": "SIGNED",
+      "weight": null,
+      "implementedBy": "margin.createUserListenTokenUserStream"
     },
     {
       "product": "margin",

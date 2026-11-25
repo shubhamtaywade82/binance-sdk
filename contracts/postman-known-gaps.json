@@ -452,6 +452,11 @@
       "method": "GET",
       "path": "/sapi/v3/portfolio/collateralRate",
       "reason": "Not in Binance's API reference (developers.binance.com, checked 2026-10-24); Portfolio Margin Pro serves `/sapi/v2/portfolio/collateralRate`"
+    },
+    {
+      "method": "POST",
+      "path": "/sapi/v1/userListenToken",
+      "reason": "Margin listen-token user-data stream (docs: developers.binance.com products/margin-trading/listen-token-data-stream, checked 2026-11-25): `POST /sapi/v1/userListenToken` creates a short-lived listen token for the margin user stream — the verified successor to the deprecated listen-key margin stream; absent from the vendored Postman collections."
     }
   ]
 }

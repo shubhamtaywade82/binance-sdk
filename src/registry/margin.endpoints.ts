@@ -4,6 +4,9 @@ import type { EndpointEntry, EndpointAuth, EndpointMethod } from './endpoints.js
 type Row = [operation: string, method: EndpointMethod, path: string, auth: EndpointAuth, implementedBy: string];
 
 const rows: Row[] = [
+  // ---- Margin listen-token user-data stream (docs: products/margin-trading/listen-token-data-stream, checked 2026-11-25) ----
+  ["margin.createUserListenTokenUserStream", "POST", "/sapi/v1/userListenToken", "signed", "margin.createUserListenTokenUserStream"],
+
   // ---- Wave 6: contract-first gap closure (Postman-driven) ----
   ["margin.closeUserDataStreamV2UserStream", "DELETE", "/sapi/v2/margin/listen-key", "apiKey", "margin.closeUserDataStreamV2UserStream"],
   ["margin.queryLiquidationLoanUserData", "GET", "/sapi/v1/margin/liquidation-loan", "signed", "margin.queryLiquidationLoanUserData"],

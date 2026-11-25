@@ -60,6 +60,40 @@ describe('MarginAccount', () => {
     const res = await marginAccount().transfer('USDT', 50, 1);
     expect(res.tranId).toBe(7);
   });
+
+  it('creates a listen token for the margin user data stream', async () => {
+    let params: Record<string, string> = {};
+    server.use(
+      http.post('https://api.binance.com/sapi/v1/userListenToken', ({ request }) => {
+        params = Object.fromEntries(new URL(request.url).searchParams);
+        return HttpResponse.json({ token: 'mock-margin-listen-token-fixture', expirationTime: 1758792204196 });
+      }),
+    );
+
+    const res = await marginAccount().createListenToken({ isIsolated: true, symbol: 'BNBUSDT' });
+    expect(res.token).toBe('mock-margin-listen-token-fixture');
+    expect(res.expirationTime).toBe(1758792204196);
+    // Signed requests carry params in the query string; booleans serialize as strings.
+    expect(params.isIsolated).toBe('true');
+    expect(params.symbol).toBe('BNBUSDT');
+    expect(params.signature).toBeDefined();
+  });
+
+  it('omits the listen-token params when no options are given (cross margin, default validity)', async () => {
+    let params: Record<string, string> = {};
+    server.use(
+      http.post('https://api.binance.com/sapi/v1/userListenToken', ({ request }) => {
+        params = Object.fromEntries(new URL(request.url).searchParams);
+        return HttpResponse.json({ token: 't', expirationTime: 1 });
+      }),
+    );
+
+    await marginAccount().createListenToken();
+    expect(params.isIsolated).toBeUndefined();
+    expect(params.symbol).toBeUndefined();
+    expect(params.validity).toBeUndefined();
+    expect(params.signature).toBeDefined();
+  });
 });
 
 describe('MarginTrading', () => {

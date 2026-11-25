@@ -289,6 +289,9 @@ export { OptionsUserWS } from './ws/OptionsUserWS.js';
 export type { OptionsUserWSOptions } from './ws/OptionsUserWS.js';
 export { PortfolioMarginUserWS } from './ws/PortfolioMarginUserWS.js';
 export type { PortfolioMarginUserWSOptions } from './ws/PortfolioMarginUserWS.js';
+// Margin user-data stream over the WebSocket API (listen-token auth).
+export { MarginUserWS } from './ws/MarginUserWS.js';
+export type { MarginUserWSOptions } from './ws/MarginUserWS.js';
 export { WsApi } from './ws/WsApi.js';
 export type { WsApiOptions } from './ws/WsApi.js';
 export { SpotWsApi } from './ws/SpotWsApi.js';
@@ -381,6 +384,7 @@ export * from './types/ws.types.js';
 export * from './types/account.types.js';
 export * from './types/trading.types.js';
 export * from './types/userdata.types.js';
+export * from './types/pmUserdata.types.js';
 export * from './types/coinm.types.js';
 export * from './types/margin.types.js';
 export * from './types/wallet.types.js';
@@ -586,6 +590,8 @@ export {
 
 export {
   subscribeSpotUserDataSession,
+  subscribeSpotUserDataListenToken,
+  type ListenTokenSubscription,
 } from './ws/SpotUserWS.js';
 
 export { BinanceCancelRestrictionFailedError } from './errors/BinanceCancelRestrictionFailedError.js';

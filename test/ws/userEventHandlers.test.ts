@@ -2,7 +2,11 @@ import { WebSocketServer } from 'ws';
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from 'vitest';
 import { FuturesUserWS } from '../../src/ws/FuturesUserWS.js';
 import { CoinMUserWS } from '../../src/ws/CoinMUserWS.js';
-import type { UserDataOrderTradeUpdate, UserDataUnknownEvent } from '../../src/types/userdata.types.js';
+import type {
+  UserDataAlgoUpdate,
+  UserDataOrderTradeUpdate,
+  UserDataUnknownEvent,
+} from '../../src/types/userdata.types.js';
 
 const orderFrame = {
   e: 'ORDER_TRADE_UPDATE',
@@ -52,18 +56,51 @@ describe.each([
   });
 
   it('delivers unmodelled event names as UserDataUnknownEvent', async () => {
-    server.on('connection', (socket) => socket.send(JSON.stringify({ e: 'ALGO_UPDATE', E: 2, i: 'algo-9' })));
+    server.on('connection', (socket) => socket.send(JSON.stringify({ e: 'STRATEGY_UPDATE', E: 2, i: 'algo-9' })));
     const client = build(url);
 
     const received = await new Promise<UserDataUnknownEvent>((resolve) => {
-      client.onUserEvent('ALGO_UPDATE', (event) => {
+      client.onUserEvent('STRATEGY_UPDATE', (event) => {
         expectTypeOf(event).toEqualTypeOf<UserDataUnknownEvent>();
         resolve(event);
       });
       client.connect();
     });
 
-    expect(received.e).toBe('ALGO_UPDATE');
+    expect(received.e).toBe('STRATEGY_UPDATE');
+    client.close();
+  });
+
+  it('delivers ALGO_UPDATE as a modelled event (no unknownEvent emission)', async () => {
+    server.on(
+      'connection',
+      (socket) =>
+        socket.send(
+          JSON.stringify({
+            e: 'ALGO_UPDATE',
+            E: 1755842461373,
+            T: 1755842461360,
+            o: { aid: 7, at: 'TRAILING_STOP_MARKET', o: 'TRAILING_STOP_MARKET', s: 'BTCUSDT', S: 'SELL', ps: 'BOTH', f: 'GTC', X: 'NEW', ia: true },
+          }),
+        ),
+    );
+    const client = build(url);
+
+    const [received, unknown] = await Promise.all([
+      new Promise<UserDataAlgoUpdate>((resolve) => {
+        client.onUserEvent('ALGO_UPDATE', (event) => resolve(event));
+        client.connect();
+      }),
+      new Promise<unknown[]>((resolve) => {
+        client.on('unknownEvent', () => resolve(['emitted']));
+        // The frame is modelled now — a short window without unknownEvent means it stayed typed.
+        setTimeout(() => resolve([]), 150);
+      }),
+    ]);
+
+    expect(received.o.aid).toBe(7);
+    expect(received.o.ia).toBe(true);
+    expect(unknown).toHaveLength(0);
     client.close();
   });
 

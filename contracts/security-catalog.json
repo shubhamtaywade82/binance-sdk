@@ -1,6 +1,6 @@
 {
   "catalogVersion": 1,
-  "generatedAt": "2026-10-28T05:07:57.983Z",
+  "generatedAt": "2026-11-25T09:40:05.359Z",
   "products": {
     "algo": {
       "public": 0,
@@ -65,8 +65,8 @@
     "margin": {
       "public": 1,
       "apiKey": 16,
-      "signed": 54,
-      "total": 71
+      "signed": 55,
+      "total": 72
     },
     "mining": {
       "public": 0,
