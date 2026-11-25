@@ -121,12 +121,14 @@ describe('redactPrivateUrl (credential redaction for logs/events)', () => {
 });
 
 describe('user-data event helpers', () => {
-  it('classifies the five natively modeled event types', () => {
+  it('classifies the seven natively modeled event types', () => {
     for (const name of USER_DATA_EVENTS) {
       expect(isKnownUserDataEvent(name)).toBe(true);
     }
-    expect(isKnownUserDataEvent('TRADE_LITE')).toBe(false);
-    expect(isKnownUserDataEvent('ALGO_UPDATE')).toBe(false);
+    // TRADE_LITE and ALGO_UPDATE are modelled since the 2026-11 P1 wave.
+    expect(USER_DATA_EVENTS).toContain('TRADE_LITE');
+    expect(USER_DATA_EVENTS).toContain('ALGO_UPDATE');
+    expect(isKnownUserDataEvent('GRID_UPDATE')).toBe(false);
     expect(isKnownUserDataEvent('')).toBe(false);
   });
 

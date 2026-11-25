@@ -4,11 +4,15 @@ import {
   formatOrderExpiryReason,
   ORDER_EXPIRY_REASONS,
   parseUserDataEvent,
+  UserDataAlgoUpdateSchema,
   UserDataOrderTradeUpdateSchema,
+  UserDataTradeLiteSchema,
   type OrderExecutionType,
   type PriceMatchMode,
+  type UserDataAlgoUpdate,
   type UserDataEventOf,
   type UserDataOrderTradeUpdate,
+  type UserDataTradeLite,
   type UserDataUnknownEvent,
 } from '../../src/types/userdata.types.js';
 
@@ -105,9 +109,104 @@ describe('classifyClientOrderOrigin', () => {
 describe('parseUserDataEvent and typed event lookup', () => {
   it('resolves modelled names to strict types and unmodelled names to the unknown type', () => {
     expectTypeOf<UserDataEventOf<'ORDER_TRADE_UPDATE'>>().toEqualTypeOf<UserDataOrderTradeUpdate>();
-    expectTypeOf<UserDataEventOf<'ALGO_UPDATE'>>().toEqualTypeOf<UserDataUnknownEvent>();
-    const parsed = parseUserDataEvent({ e: 'ALGO_UPDATE', E: 1, i: 'algo-1' });
-    expect(parsed.e).toBe('ALGO_UPDATE');
+    expectTypeOf<UserDataEventOf<'ALGO_UPDATE'>>().toEqualTypeOf<UserDataAlgoUpdate>();
+    expectTypeOf<UserDataEventOf<'STRATEGY_UPDATE'>>().toEqualTypeOf<UserDataUnknownEvent>();
+    const parsed = parseUserDataEvent({ e: 'STRATEGY_UPDATE', E: 1 });
+    expect(parsed.e).toBe('STRATEGY_UPDATE');
+  });
+});
+
+describe('TRADE_LITE (fast trade push)', () => {
+  const frame = {
+    e: 'TRADE_LITE',
+    E: 1725317599259,
+    T: 1725317599256,
+    s: 'BTCUSDT',
+    q: '0.002',
+    p: '61000.1',
+    m: false,
+    c: 'web_abc',
+    S: 'BUY',
+    L: '61000.1',
+    l: '0.002',
+    t: 987654321,
+    i: 429953,
+  };
+
+  it('parses a real-shaped frame with decimals preserved as strings', () => {
+    const parsed = UserDataTradeLiteSchema.parse(frame);
+    expect(parsed.e).toBe('TRADE_LITE');
+    expect(parsed.q).toBe('0.002');
+    expect(parsed.L).toBe('61000.1');
+    expect(parsed.m).toBe(false);
+    expect(parsed.t).toBe(987654321);
+    expect(parsed.i).toBe(429953);
+  });
+
+  it('rejects a non-decimal quantity instead of guessing', () => {
+    expect(() => UserDataTradeLiteSchema.parse({ ...frame, q: 'abc' })).toThrow();
+    expectTypeOf<UserDataTradeLite['q']>().toEqualTypeOf<string>();
+  });
+
+  it('routes through parseUserDataEvent as a modelled event', () => {
+    const parsed = parseUserDataEvent(frame);
+    expect(parsed.e).toBe('TRADE_LITE');
+  });
+});
+
+describe('ALGO_UPDATE (algo order update, USDⓈ-M)', () => {
+  const frame = {
+    e: 'ALGO_UPDATE',
+    E: 1755842461373,
+    T: 1755842461360,
+    o: {
+      caid: 'my-algo-1',
+      aid: 42,
+      at: 'TRAILING_STOP_MARKET',
+      o: 'TRAILING_STOP_MARKET',
+      s: 'BTCUSDT',
+      S: 'SELL',
+      ps: 'BOTH',
+      f: 'GTC',
+      q: '0.010',
+      X: 'NEW',
+      ai: '0',
+      tp: '0',
+      p: '0',
+      V: 'NONE',
+      wt: 'CONTRACT_PRICE',
+      pm: 'NONE',
+      cp: false,
+      pP: false,
+      R: false,
+      tt: 0,
+      gtd: 0,
+    },
+  };
+
+  it('parses the algo payload and keeps decimals as strings', () => {
+    const parsed = UserDataAlgoUpdateSchema.parse(frame);
+    expect(parsed.o.aid).toBe(42);
+    expect(parsed.o.s).toBe('BTCUSDT');
+    expect(parsed.o.X).toBe('NEW');
+    expect(parsed.o.q).toBe('0.010');
+    expect(parsed.o.ia).toBeUndefined();
+  });
+
+  it('surfaces the trailing-stop activation flag ia (false then true while X stays NEW)', () => {
+    // 2026-08-21: ia is fully active — two NEW pushes, ia:false then ia:true.
+    const inactive = UserDataAlgoUpdateSchema.parse(frame);
+    const active = UserDataAlgoUpdateSchema.parse({ ...frame, o: { ...frame.o, ia: true } });
+    expect(inactive.o.ia).toBeUndefined();
+    expect(active.o.ia).toBe(true);
+  });
+
+  it('requires the algo identifier and status fields', () => {
+    expect(() => UserDataAlgoUpdateSchema.parse({ e: 'ALGO_UPDATE', E: 1, T: 1, o: { s: 'BTCUSDT' } })).toThrow();
+  });
+
+  it('routes through parseUserDataEvent as a modelled event', () => {
+    expect(parseUserDataEvent(frame).e).toBe('ALGO_UPDATE');
   });
 });
 

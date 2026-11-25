@@ -28,6 +28,53 @@ jobs:
         with:
           node-version: 'lts/*'
           cache: npm
+      # Trusted publishing validates the CALLING workflow's filename, the
+      # repository and (if set) the environment against the trusted-publisher
+      # entry on npmjs.com. Print those claims up front so a mismatch fails
+      # in seconds instead of after the full gate suite. The OIDC token itself
+      # is decoded and never printed.
+      - name: OIDC identity preflight (trusted publishing)
+        run: |
+          set -euo pipefail
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            echo "::error::This runner exposes no OIDC request endpoint; npm trusted publishing cannot work here."
+            exit 1
+          fi
+          sep='?'
+          case "${ACTIONS_ID_TOKEN_REQUEST_URL}" in *\?*) sep='&' ;; esac
+          if ! response="$(curl -sS -f -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+              "${ACTIONS_ID_TOKEN_REQUEST_URL}${sep}audience=npm")"; then
+            echo "::error::OIDC token request rejected. Grant 'id-token: write' to the publish job in BOTH release-please.yml (caller) and release.yml (this file)."
+            exit 1
+          fi
+          node -e '
+            const response = process.argv[1];
+            let claims;
+            try {
+              const payload = JSON.parse(response).value.split(".")[1]
+                .replace(/-/g, "+").replace(/_/g, "/");
+              claims = JSON.parse(Buffer.from(payload, "base64").toString("utf8"));
+            } catch {
+              console.error("::error::Could not decode the OIDC token payload.");
+              process.exit(1);
+            }
+            const filename = (ref) =>
+              ref ? ref.replace(/^.*\.github\/workflows\//, "").replace(/@.*$/, "") : "(absent)";
+            console.log("OIDC claims the npm registry will validate:");
+            console.log("  repository:         " + (claims.repository ?? "(absent)"));
+            console.log("  calling workflow:   " + filename(claims.workflow_ref));
+            console.log("  reusable workflow:  " + filename(claims.job_workflow_ref));
+            console.log("  ref:                " + (claims.ref ?? "(absent)"));
+            console.log("  environment:        " + (claims.environment ?? "(none)"));
+            const caller = filename(claims.workflow_ref);
+            if (caller !== "release-please.yml") {
+              console.error(
+                "::error::npm validates the CALLING workflow filename. The caller of this run is " +
+                caller + " — the trusted-publisher entry on npmjs.com must match it exactly."
+              );
+              process.exit(1);
+            }
+          ' "$response"
       # Trusted publishing needs npm >= 11.21.0 for dist-tag handling.
       - name: Pin npm for trusted publishing
         run: npm install -g npm@^11.21.0
@@ -75,4 +122,17 @@ jobs:
       - name: Publish via trusted publishing (OIDC)
         env:
           NPM_DIST_TAG: ${{ inputs.tag }}
-        run: npm publish --provenance --access public --tag "$NPM_DIST_TAG" --ignore-scripts
+        run: |
+          set +e
+          npm publish --provenance --access public --tag "$NPM_DIST_TAG" --ignore-scripts
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ]; then
+            echo "::error::npm publish failed (exit $status). ENEEDAUTH here almost always means the trusted-publisher entry on npmjs.com does not match this run. Verify the package Trusted Publisher settings:"
+            echo "  1. Repository:        shubhamtaywade82/binance-sdk"
+            echo "  2. Workflow filename: release-please.yml   (the CALLER, not release.yml)"
+            echo "  3. Environment:       empty — this job declares no GitHub environment"
+            echo "  4. Allowed actions:   direct npm publish must be allowed"
+            echo "Compare with the claims printed by the 'OIDC identity preflight' step above."
+          fi
+          exit "$status"

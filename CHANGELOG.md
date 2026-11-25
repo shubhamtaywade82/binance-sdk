@@ -5,6 +5,66 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+
+**Portfolio Margin / Portfolio Margin Pro user-data events (P1).**
+
+- **Added:** `PM_PRO_ACCOUNT_UPDATE` — the PM-Pro 5-second account asset
+  status push (Binance change log 2026-04-17). Decimal fields stay strings;
+  `u` (uniMMR) and `eq` (account equity) semantics verified, the remaining
+  fields (`ae`, `im`, `mm`, `avb`, `vmw`) pass through unmodeled. The
+  PM-Pro stream rides `wss://fstream.binance.com/pm-classic/ws/<listenKey>`.
+- **Added:** `riskLevelChange` — the risk-ratio (uniMMR) guidance push
+  (NORMAL / MARGIN_CALL / REDUCE_ONLY / FORCE_LIQUIDATION). This is the
+  event the upstream audit calls the "uniMMR drop" notification; no event
+  named `uniMMRDrop` exists in the docs or change log.
+- **Added:** `openOrderLoss` typed schema with the 2026-11-23 breaking
+  payload: the aggregated account-level open order loss (USD) now arrives
+  as a single string field `o`, replacing the per-asset array
+  `O: [{a, o}]` (change log 2026-11-17). The legacy `O` shape is still
+  accepted for pre-migration frames; frames carrying neither fail
+  validation instead of passing silently.
+- **Added:** `ALGO_UPDATE` on Portfolio Margin — algo order payload rides
+  the `ao` object, with `ao.ia` (BOOLEAN) the trailing-stop activation
+  flag (`false` then `true` while the algo status stays `NEW`; fully
+  active since 2026-08-21).
+- **Changed:** `PortfolioMarginUserWS` now validates frames through
+  `parsePmUserEvent` — modeled events emit typed payloads, unmodeled
+  events surface as `unknownEvent` + `userData` with every field
+  preserved (previously everything was emitted raw). Frames without an
+  `e` field keep the legacy `raw` emission.
+
+**USDⓈ-M `TRADE_LITE` and `ALGO_UPDATE` schemas (P1).**
+
+- **Added:** `TRADE_LITE` — the fast trade push (reduced-field
+  counterpart of `ORDER_TRADE_UPDATE`, TRADE execution type only):
+  `e, E, T, s, q, p, m, c, S, L, l, t, i`, decimals preserved as strings.
+- **Added:** `ALGO_UPDATE` (USDⓈ-M) — algo order update with the `o`
+  payload; `o.ia` (BOOLEAN) is the trailing-stop activation flag, fully
+  active since 2026-08-21. Identifier and status fields are strict,
+  variable order fields optional, so real frames never fail.
+- **Changed:** both events are removed from the unknown-event passthrough:
+  `USER_DATA_EVENTS` / `parseUserDataEvent` now model them, so
+  `wsUser.onUserEvent('TRADE_LITE', …)` receives a typed event and
+  `unknownEvent` no longer fires for them.
+
+**Margin listen-token user-data stream (P1).**
+
+- **Added:** `margin.account.createListenToken()` — `POST
+  /sapi/v1/userListenToken` (docs: Listen Token User Data Stream), the
+  verified successor to the deprecated listen-key margin stream. Params:
+  `isIsolated` (default cross), `symbol` (required for isolated tokens),
+  `validity` ms (default and max 24 h). Returns `{token, expirationTime}`.
+- **Added:** `userDataStream.subscribe.listenToken` subscription support —
+  `SpotUserWS` gains an optional `getListenToken` provider (mode
+  precedence: session.logon → listen token → signed API key), and the new
+  `MarginUserWS` class packages the margin stream with a fresh token pull
+  on every (re)subscribe. `eventStreamTerminated` re-subscribes with a
+  new token; an invalid token is rejected with Binance error code
+  `-1209` and surfaced as an `error` event.
+- **Note:** the endpoint is absent from the vendored Postman collections
+  and is recorded in `contracts/postman-known-gaps.json` (`sdkOnlyEndpoints`).
+
 ## [3.5.1] - 2026-10-30
 
 **v3.5.1 is a protocol-correctness and execution-safety remediation release.**

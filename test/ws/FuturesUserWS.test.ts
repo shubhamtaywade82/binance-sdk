@@ -202,7 +202,9 @@ describe('FuturesUserWS (v3.5.1 private routing and event safety)', () => {
 
   it('surfaces unknown event types as unknownEvent + userData instead of errors', async () => {
     server.once('connection', (socket) => {
-      socket.send(JSON.stringify({ e: 'ALGO_UPDATE', E: 1, i: 'algo-1' }));
+      // ALGO_UPDATE and TRADE_LITE are modelled since the 2026-11 P1 wave —
+      // GRID_UPDATE stays unmodelled and exercises the passthrough.
+      socket.send(JSON.stringify({ e: 'GRID_UPDATE', E: 1, i: 'algo-1' }));
       socket.send(JSON.stringify({ e: 'STRATEGY_UPDATE', E: 2 }));
     });
     const client = new FuturesUserWS({
@@ -218,7 +220,7 @@ describe('FuturesUserWS (v3.5.1 private routing and event safety)', () => {
     client.connect();
     await new Promise<void>((resolve) => setTimeout(resolve, 150));
     expect(unknown).toHaveLength(2);
-    expect((unknown[0] as { e: string }).e).toBe('ALGO_UPDATE');
+    expect((unknown[0] as { e: string }).e).toBe('GRID_UPDATE');
     expect(userData).toHaveLength(2);
     // A new upstream event type is not an error — the stream keeps processing.
     expect(errors).toHaveLength(0);
