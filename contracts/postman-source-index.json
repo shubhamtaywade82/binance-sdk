@@ -2,9 +2,10 @@
   "schemaVersion": 1,
   "sourceUrl": "https://github.com/binance/binance-api-postman",
   "officialDocsUrl": "https://developers.binance.com/en/docs/sdks-tools/postman/collections",
-  "pinnedSha": "1856d66cecd544191a01d60cdfbd99900d310547",
-  "pinnedAt": "2026-11-12",
+  "pinnedSha": "8e32f5d68bf68cf3c890161c4aaee952cdbd6df8",
+  "pinnedAt": "2026-11-24",
   "unmappedCollections": [
+    "Binance Stock Options API.json",
     "Binance Stocks API.json",
     "Binance W3W Prediction API.json"
   ],
@@ -69,14 +70,14 @@
       "collectionFile": "Binance Derivatives Trading Portfolio Margin API.json",
       "collectionName": "Portfolio Margin REST API",
       "description": "Access account information, manage margin positions, and trade with Binance Portfolio Margin.",
-      "endpointCount": 102,
+      "endpointCount": 108,
       "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Derivatives%20Trading%20Portfolio%20Margin%20API.json"
     },
     {
       "collectionFile": "Binance Derivatives Trading Portfolio Margin Pro API.json",
       "collectionName": "Portfolio Margin Pro REST API",
       "description": "Access advanced account management and high-frequency trading with Binance Portfolio Margin Pro.",
-      "endpointCount": 24,
+      "endpointCount": 25,
       "sourceUrl": "https://github.com/binance/binance-api-postman/blob/master/collections/Binance%20Derivatives%20Trading%20Portfolio%20Margin%20Pro%20API.json"
     },
     {

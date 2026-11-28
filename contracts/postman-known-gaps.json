@@ -1,7 +1,43 @@
 {
   "$comment": "Every upstream Postman endpoint the SDK does not implement, and every upstream collection the importer does not map, with the reason. test/contracts/known-gaps.test.ts fails on an unrecorded gap and on a stale entry (implemented, or gone upstream). Entries recorded at the 2026-10-24 baseline carry that reason; every later gap needs a real one. sdkOnlyEndpoints lists every SDK endpoint absent from the upstream Postman collections; each is @deprecated in src and slated for removal in the next major. known-gaps.test.ts fails on an unrecorded SDK-only endpoint and on a stale entry.",
   "schemaVersion": 1,
-  "endpoints": [],
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/papi/v1/cm/income/asyn",
+      "reason": "Upstream addition (pin 8e32f5d, 2026-11-24): COIN-M counterpart of the implemented `/papi/v1/um/income/asyn` (`portfolio.um.requestIncomeDownload`); queued for the PM-Pro REST additions wave (audit P2)"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/cm/income/asyn/id",
+      "reason": "Upstream addition (pin 8e32f5d, 2026-11-24): COIN-M counterpart of the implemented `/papi/v1/um/income/asyn/id` (`portfolio.um.getIncomeDownloadStatus`); queued for the PM-Pro REST additions wave (audit P2)"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/cm/order/asyn",
+      "reason": "Upstream addition (pin 8e32f5d, 2026-11-24): COIN-M counterpart of the implemented `/papi/v1/um/order/asyn` (`portfolio.um.requestOrderDownload`); queued for the PM-Pro REST additions wave (audit P2)"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/cm/order/asyn/id",
+      "reason": "Upstream addition (pin 8e32f5d, 2026-11-24): COIN-M counterpart of the implemented `/papi/v1/um/order/asyn/id` (`portfolio.um.getOrderDownloadStatus`); queued for the PM-Pro REST additions wave (audit P2)"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/cm/trade/asyn",
+      "reason": "Upstream addition (pin 8e32f5d, 2026-11-24): COIN-M counterpart of the implemented `/papi/v1/um/trade/asyn` (`portfolio.um.requestTradeDownload`); queued for the PM-Pro REST additions wave (audit P2)"
+    },
+    {
+      "method": "GET",
+      "path": "/papi/v1/cm/trade/asyn/id",
+      "reason": "Upstream addition (pin 8e32f5d, 2026-11-24): COIN-M counterpart of the implemented `/papi/v1/um/trade/asyn/id` (`portfolio.um.getTradeDownloadStatus`); queued for the PM-Pro REST additions wave (audit P2)"
+    },
+    {
+      "method": "GET",
+      "path": "/sapi/v2/portfolio/retail/collateralRate",
+      "reason": "Upstream addition (pin 8e32f5d, 2026-11-24): retail Portfolio Margin tiered collateral rates (MARKET_DATA), distinct from the signed `/sapi/v2/portfolio/collateralRate` (`portfolioPro.account.collateralRateV2`); queued for the PM-Pro REST additions wave (audit P2)"
+    }
+  ],
   "collections": [
     {
       "file": "Binance Stocks API.json",
@@ -10,6 +46,10 @@
     {
       "file": "Binance W3W Prediction API.json",
       "reason": "pre-existing (baseline 2026-10-24): collection has no COLLECTION_TO_PRODUCT mapping yet"
+    },
+    {
+      "file": "Binance Stock Options API.json",
+      "reason": "New upstream collection (pin 8e32f5d, 2026-11-24): stock-options product has no COLLECTION_TO_PRODUCT mapping yet"
     }
   ],
   "sdkOnlyEndpoints": [
