@@ -128,11 +128,12 @@ jobs:
           status=$?
           set -e
           if [ "$status" -ne 0 ]; then
-            echo "::error::npm publish failed (exit $status). ENEEDAUTH here almost always means the trusted-publisher entry on npmjs.com does not match this run. Verify the package Trusted Publisher settings:"
-            echo "  1. Repository:        shubhamtaywade82/binance-sdk"
-            echo "  2. Workflow filename: release-please.yml   (the CALLER, not release.yml)"
-            echo "  3. Environment:       empty — this job declares no GitHub environment"
-            echo "  4. Allowed actions:   direct npm publish must be allowed"
-            echo "Compare with the claims printed by the 'OIDC identity preflight' step above."
+            echo "::error::npm publish failed (exit $status). ENEEDAUTH here almost always means the package has no Trusted Publisher entry on npmjs.com, or the entry does not match this run. The GitHub side is already verified by the 'OIDC identity preflight' step above — fix the npm side:"
+            echo "  1. npmjs.com -> package @nemesis-oss/binance-sdk -> Settings -> Trusted publisher (create it if absent)"
+            echo "  2. Repository:        shubhamtaywade82/binance-sdk"
+            echo "  3. Workflow filename: release-please.yml   (the CALLER, not release.yml)"
+            echo "  4. Environment:       empty — this job declares no GitHub environment"
+            echo "  5. Allowed actions:   direct npm publish must be allowed"
+            echo "Then re-run THIS failed job (Actions -> this run -> Re-run failed jobs). The git tag and GitHub release already exist, so no new release PR is needed."
           fi
           exit "$status"
